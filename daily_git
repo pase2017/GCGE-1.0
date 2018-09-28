@@ -1,7 +1,6 @@
 日常命令
 git clone git@github.com:pase2017/GCGE-1.0.git
 git checkout new_branch
-git push origin new_branch
 git pull
 git pull origin dev
 git add <files>
@@ -11,3 +10,4 @@ git log
 git reset --hard <commit id>
 
 git branch:看当前branch
+git checkout -b local origin/remote
