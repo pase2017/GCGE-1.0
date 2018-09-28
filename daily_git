@@ -9,3 +9,5 @@ git commit -m "<commits>"
 git push
 git log
 git reset --hard <commit id>
+
+git branch:看当前branch
