@@ -130,7 +130,7 @@ void CSR_VecSetRandomValue(CSR_VEC *vec)
     //srand((unsigned)time(&ts));
     for( j=0; j<size; j++ )
     {
-       vec->Entries[j] = rand()%(size+1)/((double)size);
+       vec->Entries[j] = ((double)rand())/((double)RAND_MAX+1);
     }
 }
 
