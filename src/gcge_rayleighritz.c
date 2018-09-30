@@ -30,37 +30,38 @@ void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, GCGE_IN
     GCGE_INT w_length = end_V - start_W;
     GCGE_INT xp_length = end_V - w_length;
 
-    GCGE_INT ip_start[2];
-    GCGE_INT ip_end[2];
+    GCGE_INT mv_s[2];
+    GCGE_INT mv_e[2];
 
-    ip_start[0] = start_W;
-    ip_end[0]   = end_V;
-    ip_start[1] = 0;
-    ip_end[1]   = w_length;
+    mv_s[0] = start_W;
+    mv_e[0] = end_V;
+    mv_s[1] = 0;
+    mv_e[1] = w_length;
     
+    printf("mv_s: %d, %d, mv_e: %d, %d\n", mv_s[0], mv_s[1], mv_e[0], mv_e[1]);
     //计算 workspace(0:w_length) = A * W(start[1]:end[1])
-    ops->MatDotMultiVec(A, V, workspace, ip_start, ip_end, ops);
+    ops->MatDotMultiVec(A, V, workspace, mv_s, mv_e, ops);
 
-    ip_start[0] = 0;
-    ip_end[0]   = xp_length;
-    ip_start[1] = 0;
-    ip_end[1]   = w_length;
+    mv_s[0] = 0;
+    mv_e[0] = xp_length;
+    mv_s[1] = 0;
+    mv_e[1] = w_length;
 
     //计算 subspace_mat = V * workspace
-    ops->MultiVecInnerProd(V, workspace, subspace_mat, "nonsym", ip_start, ip_end, end_V, ops);
+    ops->MultiVecInnerProd(V, workspace, subspace_mat, "nonsym", mv_s, mv_e, end_V, ops);
 
     double *vTAw = subspace_mat;
 
 //    printf ( "VTAW\n" );
 
 
-    ip_start[0] = start_W;
-    ip_end[0]   = end_V;
-    ip_start[1] = 0;
-    ip_end[1]   = w_length;
+    mv_s[0] = start_W;
+    mv_e[0] = end_V;
+    mv_s[1] = 0;
+    mv_e[1] = w_length;
 
     //计算 subspace_mat = W * workspace, 且已知 subspace_mat 是对称矩阵
-    ops->MultiVecInnerProd(V, workspace, subspace_mat + xp_length, "sym", ip_start, ip_end, end_V, ops);
+    ops->MultiVecInnerProd(V, workspace, subspace_mat + xp_length, "sym", mv_s, mv_e, end_V, ops);
 
 //    printf ( "%f\t%f\n",  vTAw[0],  vTAw[3] );
 //    printf ( "%f\t%f\n",  vTAw[1],  vTAw[4] );
@@ -106,6 +107,7 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
 #if 0
     GCGE_DOUBLE t3 = GCGE_GetTime();
 #endif
+    printf("dim_xp: %d\n", dim_xp);
     GCGE_ComputeSubspaceMatrixVTAW(V, A, dim_xp, ldm, subspace_matrix+dim_xp*ldm, 
 	  ops, workspace->V_tmp);
 #if 0

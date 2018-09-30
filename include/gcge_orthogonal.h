@@ -40,9 +40,9 @@
  * @param workspace
  */
 void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
-      void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace);
-void GCGE_OrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT start, GCGE_INT *end,  GCGE_INT ldV, 
-      GCGE_DOUBLE *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
-      GCGE_WORKSPACE *workspace);
+      void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, 
+      void **V_tmp, GCGE_DOUBLE *d_tmp);
 
+void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
 #endif

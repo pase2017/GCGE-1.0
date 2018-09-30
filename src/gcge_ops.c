@@ -96,7 +96,7 @@ void GCGE_Default_MatDotMultiVec(void *mat, void **x, void **y,
     {
         ops->GetVecFromMultiVec(x, start[0]+i, &xs);
         ops->GetVecFromMultiVec(y, start[1]+i, &ys);
-        ops->MatDotVec(mat, x[start[0]+i], y[start[1]+i]);
+        ops->MatDotVec(mat, xs, ys);
         ops->RestoreVecForMultiVec(x, start[0]+i, &xs);
         ops->RestoreVecForMultiVec(y, start[1]+i, &ys);
     }

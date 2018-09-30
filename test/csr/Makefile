@@ -11,6 +11,10 @@ OBJS5 = test_ops.o
 OBJS6 = test_cg.o
 OBJS7 = test_rayleighritz.o
 OBJS8 = test_solver_dsyev.o
+OBJS9 = test_orth_ops.o
+OBJS10 = test_orth_subspace.o
+OBJS11 = test_p.o
+OBJS12 = test_w.o
 EXE1  = $(GCGEBIN)/solver.exe 
 EXE2  = $(GCGEBIN)/test_matvec.exe 
 EXE3  = $(GCGEBIN)/test_orthogonal.exe 
@@ -19,9 +23,14 @@ EXE5  = $(GCGEBIN)/test_ops.exe
 EXE6  = $(GCGEBIN)/test_cg.exe 
 EXE7  = $(GCGEBIN)/test_rayleighritz.exe
 EXE8  = $(GCGEBIN)/test_solver_dsyev.exe
+EXE9  = $(GCGEBIN)/test_orth_ops.exe
+EXE10  = $(GCGEBIN)/test_orth_subspace.exe
+EXE11  = $(GCGEBIN)/test_p.exe
+EXE12  = $(GCGEBIN)/test_w.exe
 
-INC   = -I../ -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
-LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) $(LIBBLAS)
+INC   = -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
+LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) \
+	$(LIBBLAS) $(LIBGFORTRAN) -lm 
 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA
@@ -33,7 +42,8 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 
 all:	    help
 
-exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) 
+#exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9)
+exe:        $(EXE1)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe 
@@ -58,7 +68,7 @@ info:
 	@echo " "
 
 run-solver:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE1)
+	$(EXE1)
 	
 run-matvec:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE2)
@@ -81,6 +91,18 @@ run-rr:
 run-dsyev:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE8)
 
+run-orth-ops:
+	$(EXE9)
+
+run-orth-sub:
+	$(EXE10)
+
+run-p:
+	valgrind -v $(EXE11)
+
+run-w:
+	valgrind -v $(EXE12)
+	 
 ############################################################
 .f.o:
 	@echo '$(F77) -c $(FFLAGS) ' $*.f
@@ -136,6 +158,30 @@ $(EXE7): $(OBJS7)
 	@echo ''
 
 $(EXE8): $(OBJS8)
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE9): $(OBJS9)
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE10): $(OBJS10)
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE11): $(OBJS11)
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE12): $(OBJS12)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)

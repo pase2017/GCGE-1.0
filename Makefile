@@ -1,5 +1,6 @@
 GCGEHOME = .
 include $(GCGEHOME)/config/make.inc
+.PHONY: clean
 
 
 ###########################################################
@@ -39,11 +40,11 @@ test-csr:
 #	@cd $(GCGEHOME)/test/slepc;  $(MAKE) exe run-ex1
 
 clean:
-	@dirlist="src src/app/* test/* external/csr/src"; \
-	   for dir in $$dirlist; do \
-	   cd $$dir; $(MAKE) clean; cd "$(CURDIR)"; \
-	   done;
-	@$(RM) $(RMFLAGS) $(GCGEBIN)/*.exe
+	@cd $(GCGEHOME)/src; make clean
+	@cd $(GCGEHOME)/src/app/csr; make clean
+	@cd $(GCGEHOME)/external/csr/src; make clean
+	@cd $(GCGEHOME)/test/csr; make clean
+
 
 cleanlibs: 
 	@cd $(GCGELIB);  $(RM) $(RMFLAGS) *.a
