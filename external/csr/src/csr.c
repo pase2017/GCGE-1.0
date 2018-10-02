@@ -137,10 +137,15 @@ void CSR_VecSetRandomValue(CSR_VEC *vec)
 //稀疏矩阵乘向量
 void CSR_MatDotVec(CSR_MAT *mat, CSR_VEC *x, CSR_VEC *r)
 {
+    if (mat == NULL)
+    {
+       CSR_VecAxpby(1.0, x, 0.0, r);
+       return;
+    }
     int    N_Rows = mat->N_Rows, 
-               N_Columns = mat->N_Columns,
-               i, j, length, start, end,
-               *RowPtr,*KCol;
+           N_Columns = mat->N_Columns,
+	   i, j, length, start, end,
+	  *RowPtr,*KCol;
     double *Mat_Entries, *x_Entries, *r_Entries, tmp;
     RowPtr      = mat->RowPtr;
     KCol        = mat->KCol;

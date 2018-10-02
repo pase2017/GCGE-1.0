@@ -33,11 +33,9 @@ int main(int argc, char* argv[])
 
     //创建矩阵
     const char *file_A = "../data/testA";
-    const char *file_B = "../data/testB";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
-    CSR_MAT *B = CSR_ReadMatFile(file_B);
 
-    GCGE_OPS *ops;
+    GCGE_OPS *ops = NULL;
     GCGE_OPS_Create(&ops);
     GCGE_CSR_SetOps(ops);
     GCGE_OPS_Setup(ops);
@@ -50,9 +48,6 @@ int main(int argc, char* argv[])
     ops->BuildMultiVecByMat((void *)A, (void ***)(&multi_vec_x), num_vec_x, ops);
     ops->BuildMultiVecByMat((void *)A, (void ***)(&multi_vec_y), num_vec_y, ops);
 
-//    printf ( "MultiVecSetRandomValue x, y\n" );
-//    ops->MultiVecSetRandomValue((void **)multi_vec_x, num_vec_x, ops);
-//    ops->MultiVecSetRandomValue((void **)multi_vec_y, num_vec_y, ops);
     int i, k;
     for(k=0; k<num_vec_x; k++)
     {
@@ -75,9 +70,25 @@ int main(int argc, char* argv[])
     ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
 
 
-    double mvTmv[4];
+    double mvTmv[4], norm[2];
     int    mv_s[2] = {0, 1};
     int    mv_e[2] = {2, 3};
+//    printf ( "MultiVecSetRandomValue x, y\n" );
+//    ops->MultiVecSetRandomValue((void **)multi_vec_x, mv_s, mv_e, ops);
+//    ops->MultiVecSetRandomValue((void **)multi_vec_y, mv_s+1, mv_e+1, ops);
+//    printf ( "x\n" );
+//    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+//    printf ( "y\n" );
+//    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+
+    printf ( "MultiVecNorm \n" );
+    printf ( "x norm\n" );
+    ops->MultiVecNorm((void **)multi_vec_x, norm, mv_s, mv_e, ops);
+    printf ( "%f\t%f\n", norm[0], norm[1] );
+    printf ( "y norm\n" );
+    ops->MultiVecNorm((void **)multi_vec_y, norm, mv_s+1, mv_e+1, ops);
+    printf ( "%f\t%f\n", norm[0], norm[1] );
+
     printf ( "MatDotMultiVec y = Ax\n" );
     printf ( "A\n" );
     CSR_PrintMat(A);
@@ -117,8 +128,8 @@ int main(int argc, char* argv[])
     printf ( "%f\t%f\t%f\n", xTy[1], xTy[3], xTy[5] );
 
     printf ( "MultiVecSwap x<->y\n" );
-    mv_s[0] = 0; mv_s[1] = 0;
-    mv_e[0] = 2; mv_e[1] = 2;
+    mv_s[0] = 0; mv_s[1] = 1;
+    mv_e[0] = 2; mv_e[1] = 3;
     ops->MultiVecSwap((void **)multi_vec_x, (void **)multi_vec_y, 
 	  mv_s, mv_e, ops);
     printf ( "x\n" );
@@ -134,10 +145,8 @@ int main(int argc, char* argv[])
     ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
 
 
-
     //释放矩阵空间
     CSR_MatFree(&A);
-    CSR_MatFree(&B);
 
     ops->FreeMultiVec ((void ***)&multi_vec_x, num_vec_x, ops);
     ops->FreeMultiVec ((void ***)&multi_vec_y, num_vec_y, ops);

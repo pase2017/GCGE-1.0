@@ -89,7 +89,9 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //如果用户不给初值，这里给随机初值，用户需要提供给向量设随机值的函数
     if(para->given_init_evec == 0)
     {
-        ops->MultiVecSetRandomValue(evec, nev, ops);
+        mv_s[0] = 0;
+        mv_e[0] = nev;
+        ops->MultiVecSetRandomValue(evec, mv_s, mv_e, ops);
     }
 
     //把用户提供的evec初值copy给V
@@ -277,8 +279,8 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
             ops->MatDotVec(B, ev, tmp2);
             ops->VecAxpby(-eval[i], tmp2, 1.0, tmp1);
         }
-        res_norm  = GCGE_VecNorm(tmp1, ops);
-        evec_norm = GCGE_VecNorm(ev, ops);
+        ops->VecNorm(tmp1, &res_norm,  ops);
+        ops->VecNorm(ev,   &evec_norm, ops);
         //计算相对/绝对残差
         if(strcmp(conv_type, "R"))
         {

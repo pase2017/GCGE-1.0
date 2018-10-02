@@ -85,9 +85,9 @@ typedef struct GCGE_PARA_ {
  * @param para
  * @param nev
  */
+GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **argv);
 void GCGE_PARA_Create(GCGE_PARA **para);
 void GCGE_PARA_Free(GCGE_PARA **para);
-GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **argv);
 void GCGE_PARA_SetNumEigen(GCGE_PARA *para, GCGE_INT nev);
 void GCGE_PARA_Setup(GCGE_PARA *para);
 #endif

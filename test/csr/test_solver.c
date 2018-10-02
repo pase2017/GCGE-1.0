@@ -42,9 +42,11 @@ int main(int argc, char* argv[])
     //创建矩阵
     //const char *file_A = "../data/testA";
     //const char *file_B = "../data/testB";
+    const char *file_A = "../data/A_3.txt";
+    const char *file_B = "../data/M_3.txt";
     //const char *file_A = "/home/nzhang/Andrews.csr";
-    const char *file_A = "/Users/zn/MATRIX_TEST/A_5.txt";
-    const char *file_B = "/Users/zn/MATRIX_TEST/M_5.txt";
+//    const char *file_A = "/Users/zn/MATRIX_TEST/A_5.txt";
+//    const char *file_B = "/Users/zn/MATRIX_TEST/M_5.txt";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_MAT *B = CSR_ReadMatFile(file_B);
 

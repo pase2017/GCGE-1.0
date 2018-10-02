@@ -23,6 +23,7 @@
 #include "gcge_ops.h"
 
 
+
 //MultiVec默认值的设定是要依赖Get与Restore这两个函数的
 void GCGE_Default_GetVecFromMultiVec(void **V, GCGE_INT j, void **x)
 {
@@ -32,6 +33,28 @@ void GCGE_Default_GetVecFromMultiVec(void **V, GCGE_INT j, void **x)
 void GCGE_Default_RestoreVecForMultiVec(void **V, GCGE_INT j, void **x)
 {
     V[j] = *x;
+}
+
+
+void GCGE_Default_VecNorm(void *x,  GCGE_DOUBLE *norm_x,  GCGE_OPS *ops)
+{
+   ops->VecInnerProd(x, x, norm_x);
+   *norm_x = sqrt(*norm_x);
+}
+
+void GCGE_Default_MultiVecNorm(void **multi_vec,  GCGE_DOUBLE *norm_x,
+        GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops)
+{
+    GCGE_INT i = 0;
+    void     *x;
+    GCGE_INT n_vec = end[0]-start[0];
+    for(i=0; i<n_vec; i++)
+    {
+        ops->GetVecFromMultiVec(multi_vec, start[0]+i, &x);
+        ops->VecInnerProd(x, x, norm_x+i);
+	*(norm_x+i) = sqrt(*(norm_x+i));
+        ops->RestoreVecForMultiVec(multi_vec, start[0]+i, &x);
+    }
 }
 
 void GCGE_Default_BuildMultiVecByVec(void *vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
@@ -74,15 +97,17 @@ void GCGE_Default_FreeMultiVec(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS
     free(*MultiVec); *MultiVec = NULL;
 }
 
-void GCGE_Default_MultiVecSetRandomValue(void **multi_vec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_Default_MultiVecSetRandomValue(void **multi_vec, 
+        GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops)
 {
     GCGE_INT i = 0;
     void     *x;
+    GCGE_INT n_vec = end[0]-start[0];
     for(i=0; i<n_vec; i++)
     {
-        ops->GetVecFromMultiVec(multi_vec, i, &x);
+        ops->GetVecFromMultiVec(multi_vec, start[0]+i, &x);
         ops->VecSetRandomValue(x);
-        ops->RestoreVecForMultiVec(multi_vec, i, &x);
+        ops->RestoreVecForMultiVec(multi_vec, start[0]+i, &x);
     }
 }
 
@@ -118,16 +143,16 @@ void GCGE_Default_MultiVecAxpby(GCGE_DOUBLE a, void **x, GCGE_DOUBLE b, void **y
     }
 }
 
-void GCGE_Default_MultiVecAxpbyColumn(GCGE_DOUBLE a, void **x, GCGE_INT col_x, 
-        GCGE_DOUBLE b, void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops)
-{
-    void     *xs, *ys;
-    ops->GetVecFromMultiVec(x, col_x, &xs);
-    ops->GetVecFromMultiVec(y, col_y, &ys);
-    ops->VecAxpby(a, x[col_x], b, y[col_y]);
-    ops->RestoreVecForMultiVec(x, col_x, &xs);
-    ops->RestoreVecForMultiVec(y, col_y, &ys);
-}
+//void GCGE_Default_MultiVecAxpbyColumn(GCGE_DOUBLE a, void **x, GCGE_INT col_x, 
+//        GCGE_DOUBLE b, void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops)
+//{
+//    void     *xs, *ys;
+//    ops->GetVecFromMultiVec(x, col_x, &xs);
+//    ops->GetVecFromMultiVec(y, col_y, &ys);
+//    ops->VecAxpby(a, x[col_x], b, y[col_y]);
+//    ops->RestoreVecForMultiVec(x, col_x, &xs);
+//    ops->RestoreVecForMultiVec(y, col_y, &ys);
+//}
 
 /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i][j] */
 void GCGE_Default_MultiVecLinearComb(void **x, void **y, GCGE_INT *start, GCGE_INT *end,
@@ -280,6 +305,7 @@ void GCGE_Default_DenseSymMatDotDenseMat(char *side, char *uplo,
 }
 
 
+
 void GCGE_OPS_Create(GCGE_OPS **ops)
 {
     *ops = (GCGE_OPS*)malloc(sizeof(GCGE_OPS));
@@ -290,6 +316,9 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->VecLocalInnerProd = NULL;
     (*ops)->BuildVecByVec = NULL;
     (*ops)->FreeVec = NULL;
+
+    (*ops)->VecNorm = NULL;
+    (*ops)->MultiVecNorm = NULL;
     (*ops)->BuildMultiVecByVec = NULL;
     (*ops)->BuildMultiVecByMat = NULL;
     (*ops)->BuildMultiVecByMultiVec = NULL;
@@ -297,7 +326,7 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->MultiVecSetRandomValue = NULL;
     (*ops)->MatDotMultiVec = NULL;
     (*ops)->MultiVecAxpby = NULL;
-    (*ops)->MultiVecAxpbyColumn = NULL;
+//    (*ops)->MultiVecAxpbyColumn = NULL;
     (*ops)->MultiVecLinearComb = NULL;
     (*ops)->MultiVecInnerProd = NULL;
     (*ops)->MultiVecSwap = NULL;
@@ -306,10 +335,13 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->DenseMatEigenSolver = NULL;
     (*ops)->DenseMatDotDenseMat = NULL;
     (*ops)->DenseSymMatDotDenseMat = NULL;
-    (*ops)->Orthogonal = NULL;
-    (*ops)->DenseMatCreate = NULL;
-    (*ops)->DenseMatDestroy = NULL;
-    (*ops)->LinearSolver = NULL;
+//    (*ops)->DenseMatCreate = NULL;
+//    (*ops)->DenseMatDestroy = NULL;
+//    (*ops)->LinearSolver = NULL;
+    (*ops)->Orthogonalize = NULL;
+    (*ops)->orthogonalize_workspace = NULL;
+    (*ops)->SolveLinearEquations = NULL;
+    (*ops)->solve_linear_equations_workspace = NULL;
 }
 
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
@@ -363,6 +395,11 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
         printf("ERROR: Please provide the VecSetRandomValue operation!\n");
         return error;
     }
+    if(ops->VecNorm == NULL)
+    {
+        ops->VecNorm = GCGE_Default_VecNorm;
+    }
+
     if(ops->BuildMultiVecByVec == NULL)
     {
         ops->BuildMultiVecByVec = GCGE_Default_BuildMultiVecByVec;
@@ -379,6 +416,10 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
     {
         ops->FreeMultiVec = GCGE_Default_FreeMultiVec; 
     }
+    if(ops->MultiVecNorm == NULL)
+    {
+        ops->MultiVecNorm = GCGE_Default_MultiVecNorm;
+    }
     if(ops->MultiVecSetRandomValue == NULL)
     {
         ops->MultiVecSetRandomValue = GCGE_Default_MultiVecSetRandomValue;
@@ -391,10 +432,10 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
     {
         ops->MultiVecAxpby = GCGE_Default_MultiVecAxpby;
     }
-    if(ops->MultiVecAxpbyColumn == NULL)
-    {
-        ops->MultiVecAxpbyColumn = GCGE_Default_MultiVecAxpbyColumn;
-    }
+//    if(ops->MultiVecAxpbyColumn == NULL)
+//    {
+//        ops->MultiVecAxpbyColumn = GCGE_Default_MultiVecAxpbyColumn;
+//    }
     if(ops->MultiVecLinearComb == NULL)
     {
         ops->MultiVecLinearComb = GCGE_Default_MultiVecLinearComb;
