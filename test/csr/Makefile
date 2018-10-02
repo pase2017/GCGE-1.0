@@ -71,7 +71,7 @@ run-solver:
 	$(EXE1)
 	
 run-orth:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE3)
+	$(EXE3)
 
 run-xpw:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE4)

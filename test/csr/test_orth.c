@@ -199,11 +199,11 @@ int main(int argc, char* argv[])
    srand((unsigned)time(NULL));
 
    //创建矩阵
-    const char *file_A = "../data/A_5.txt";
+    const char *file_A = "../data/A_3.txt";
 //   const char *file_A = "../data/testA";
    CSR_MAT *A = CSR_ReadMatFile(file_A);
    CSR_VEC **multi_vec, **vec_tmp;
-   int num_vec = 10;
+   int num_vec = 20;
    double array_tmp[num_vec];
 
    GCGE_OPS *ops;
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
    ops->BuildMultiVecByMat((void *)A, (void ***)&vec_tmp,   num_vec, ops);
 
    ops->Orthogonalize = GCGE_Default_Orthogonalize;
-   ORTH_WS workspace = {1e-3, 3, 1e-8, (void **)vec_tmp, array_tmp, 1};
+   ORTH_WS workspace = {1e-3, 3, 1e-8, (void **)vec_tmp, array_tmp, 0};
    ops->orthogonalize_workspace = &workspace;
 
    int mv_s[2], mv_e[2];
@@ -242,9 +242,9 @@ int main(int argc, char* argv[])
       {
 	 for (int k = 0; k < num_vec; ++k)
 	 {
-	    printf ( "%e\t", xAx[k*num_vec+j] );
+//	    printf ( "%0.1e  ", xAx[k*num_vec+j] );
 	 }
-	 printf ( "\n" );
+//	 printf ( "\n" );
       }
    }
    free(xAx);

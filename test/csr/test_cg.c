@@ -33,6 +33,80 @@ typedef struct SLE_WS_ {
 
 }SLE_WS;
 
+#if 1
+
+void GCGE_Default_SolveLinearEquations(void *Matrix, void *b, void *x, GCGE_OPS *ops)
+{
+    //临时向量
+    SLE_WS      *workspace = (SLE_WS*)(ops->solve_linear_equations_workspace);
+    GCGE_INT    max_it     = workspace->cg_max_it;
+    GCGE_DOUBLE rate       = workspace->cg_rate;
+    void        **V_tmp    = workspace->vec_tmp;
+
+    //临时向量
+    void        *r, *p, *w;
+
+    //CG迭代中用到的临时向量
+    /* TODO 对于SLEPc中的多向量操作并不适用 */
+    r = V_tmp[0]; //记录残差向量
+    p = V_tmp[1];  //记录下降方向
+    w = V_tmp[2];  //记录tmp=A*p
+
+    GCGE_INT    niter = 0;
+    GCGE_DOUBLE tmp1, tmp2, alpha, beta, rho1, rho2, error, last_error, pTw;
+
+    ops->MatDotVec(Matrix,x,r); //tmp = A*x
+    ops->VecAxpby(1.0, b, -1.0, r);  
+    ops->VecInnerProd(r, r, &rho2);//用残量的模来判断误差
+    error = sqrt(rho2);
+    /* TODO */
+    //这里应该判断以下如果error充分小就直接返回!!!
+    printf("the initial residual: %e\n",error);
+    //ops->VecAxpby(1.0, r, 0.0, p);
+    niter = 1;
+    last_error = error;
+    printf("Rate = %e,  max_it = %d\n",rate,max_it);
+    while((last_error/error >= rate)&&(niter<max_it))
+    {
+	if(niter == 1)
+	{
+	  //set the direction as r
+	  ops->VecAxpby(1.0, r, 0.0, p);
+	  //p = r;
+	}
+	else
+	{
+	  //printf("come here!\n");
+	  //compute the value of beta
+	  beta = rho2/rho1; 
+	  //compute the new direction: p = r + beta * p
+	  ops->VecAxpby(1.0, r, beta, p);
+	}//end for if(niter == 1)
+	//compute the vector w = A*p
+	ops->MatDotVec(Matrix,p,w);
+	//compute the value pTw = p^T * w 
+	ops->VecInnerProd(p, w, &pTw);
+	//compute the value of alpha
+	//printf("pTw=%e\n",pTw);
+	alpha = rho2/pTw; 
+	//compute the new solution x = alpha * p + x
+	ops->VecAxpby(alpha, p, 1.0, x);
+	//compute the new residual: r = - alpha*w + r
+	ops->VecAxpby(-alpha, w, 1.0, r);
+	//set rho1 as rho2
+	rho1 = rho2;
+	//compute the new rho2
+	ops->VecInnerProd(r, r, &rho2);  
+	last_error = sqrt(rho2);      
+	printf("  niter= %d,  The current residual: %e\n",niter, last_error);
+	printf("  error=%e, last_error=%e,  last_error/error= %e\n",error, last_error, last_error/error);
+	//update the iteration time
+	niter++;   
+    }
+
+}
+
+#else
 void GCGE_Default_SolveLinearEquations(void *mat, void *b, void *x, struct GCGE_OPS_ *ops)
 {
     //临时向量
@@ -72,6 +146,8 @@ void GCGE_Default_SolveLinearEquations(void *mat, void *b, void *x, struct GCGE_
         ops->VecInnerProd(r, r, &error);   //用残量的模来判断误差
         error = sqrt(error);
     
+	printf("error: %e, last_error: %e, error/last_error: %e, rate: %e\n", 
+	      error, last_error, error/last_error, rate);
         if(error/last_error < rate)
         {
             //printf("error: %e, last_error: %e, error/last_error: %e, rate: %e\n", 
@@ -90,6 +166,7 @@ void GCGE_Default_SolveLinearEquations(void *mat, void *b, void *x, struct GCGE_
 
     printf ( "niter = %d\n", niter );
 }
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -112,11 +189,11 @@ int main(int argc, char* argv[])
     ops->BuildMultiVecByMat((void *)A, (void ***)&vec_tmp, 3, ops);
 
     ops->SolveLinearEquations = GCGE_Default_SolveLinearEquations;
-    SLE_WS workspace = {30, 1e-2, (void **)vec_tmp};
+    SLE_WS workspace = {10, 1e-6, (void **)vec_tmp};
     ops->solve_linear_equations_workspace = &workspace;
 
     double norm;
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 1; ++i)
     {
        ops->VecSetRandomValue((void *)rhs);
        ops->VecSetRandomValue((void *)x);
