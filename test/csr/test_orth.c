@@ -37,6 +37,77 @@ typedef struct ORTH_WS_ {
 
 }ORTH_WS;
 
+
+/**
+ * @brief 
+ *
+ * 正交化V, 从start到end, 且返回end, 因为正交化过程中会去掉线性相关的向量
+ * 默认从0到start-1已经被正交化
+ *
+ *
+ * V_tmp只需要一个，记录当前要正交的向量V[current]与B的乘积
+ * d_tmp记录当前要正交的向量V[current]与之前向量以及与自己的B内积, 长度为输入的end
+ *
+ * 过程中需要做重正交化，当向量的模改变太大(此时，会包含太多以前的分量)
+ *
+ * 若向量的模太小，则与*end向量交换指针，并(*end)--
+ *
+ * 最后做一次归一化
+ *
+ * 注意：大写表示向量组，小写表示单向量
+ *
+ * for current = (*start) ; current < (*end); ++current
+ *     计算V_tmp
+ *     reorth_count = 0;
+ *     do{
+ *     MatDotVec(B, V[current], V_tmp)
+ *     计算d_tmp
+ *
+ *     mv_s = {0, 0}
+ *     mv_e = {current+1, 1}
+ *     MultiVecInnerProd(V, &V_tmp, d_tmp, "ns", d_tmp, mv_s, mv_e, current+1, ops )
+ *
+ *    // V[current] = V[current] - sum_{i=0}^{current-1} d_tmp[i] V[i]
+ *    // d_tmp[current] = d_tmp[current] - sum_{i=0}^{current-1} d_tmp[i]^2
+ *    // V[current] = V[current] / d_tmp[current]
+ * 
+ *     if(current != 0)
+ *     {
+ *       mv_s = {0, 0}
+ *       mv_e = {current, 1}
+ *       MultiVecLinearComb (V, &V_tmp, mv_s, mv_e, d_tmp, current, ops)
+ *       VecAxpby(-1, V_tmp, 1, V[current]);
+ *     }
+ *
+ *     vin   = d_tmp[current] 
+ *     d_tmp[current] = d_tmp[current] - sum_{i=0}^{current-1} d_tmp[i]^2
+ *
+ *     ratio = d_tmp[current] / vin
+ *
+ *     reorth_count++
+ *     
+ *     }while(ratio < orth_para->reorth_tol && reorth_count < orth_para->max_reorth_count)
+ *
+ *     if (d_tmp[current] > orth_para->orth_zero_tol)
+ *     {
+ *         VecAxpby(0, V_tmp, 1/d_tmp[current], V[current])
+ *     }
+ *     else 
+ *     {
+ *         mv_s = {current, *end-1}
+ *         mv_e = {current+1, *end}
+ *         MultiVecSwap(V, V, mv_s, mv_e, ops);
+ *         (*end)--;
+ *         current--;
+ *     }
+ * end
+ *
+ * @param V
+ * @param start 从0 到 (*start)-1已经正交归一
+ * @param end   输入要正交的向量个数， 返回被正交化的向量个数
+ * @param B
+ * @param ops
+ */
 void GCGE_Default_Orthogonalize(void **V, GCGE_INT *start, GCGE_INT *end, void *B, GCGE_OPS *ops)
 {
    ORTH_WS     *workspace       = (ORTH_WS*)(ops->orthogonalize_workspace);
