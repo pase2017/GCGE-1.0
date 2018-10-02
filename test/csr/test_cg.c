@@ -98,11 +98,12 @@ void GCGE_Default_SolveLinearEquations(void *Matrix, void *b, void *x, GCGE_OPS 
 	//compute the new rho2
 	ops->VecInnerProd(r, r, &rho2);  
 	last_error = sqrt(rho2);      
-	printf("  niter= %d,  The current residual: %e\n",niter, last_error);
-	printf("  error=%e, last_error=%e,  last_error/error= %e\n",error, last_error, last_error/error);
+//	printf("  niter= %d,  The current residual: %e\n",niter, last_error);
+//	printf("  error=%e, last_error=%e,  last_error/error= %e\n",error, last_error, last_error/error);
 	//update the iteration time
 	niter++;   
     }
+    printf("  niter= %d,  The residual: %e\n",niter, last_error);
 
 }
 
@@ -146,8 +147,6 @@ void GCGE_Default_SolveLinearEquations(void *mat, void *b, void *x, struct GCGE_
         ops->VecInnerProd(r, r, &error);   //用残量的模来判断误差
         error = sqrt(error);
     
-	printf("error: %e, last_error: %e, error/last_error: %e, rate: %e\n", 
-	      error, last_error, error/last_error, rate);
         if(error/last_error < rate)
         {
             //printf("error: %e, last_error: %e, error/last_error: %e, rate: %e\n", 
@@ -164,6 +163,7 @@ void GCGE_Default_SolveLinearEquations(void *mat, void *b, void *x, struct GCGE_
         niter++; 
     }while((error/last_error >= rate)&&(niter<max_it));
 
+    printf("error: %e\n", error);
     printf ( "niter = %d\n", niter );
 }
 #endif
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
     srand((unsigned)time(NULL));
 
     //创建矩阵
-    const char *file_A = "../data/A_3.txt";
+    const char *file_A = "../data/A_5.txt";
 //    const char *file_A = "../data/testA";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_VEC *rhs, *x, **vec_tmp;
@@ -189,11 +189,11 @@ int main(int argc, char* argv[])
     ops->BuildMultiVecByMat((void *)A, (void ***)&vec_tmp, 3, ops);
 
     ops->SolveLinearEquations = GCGE_Default_SolveLinearEquations;
-    SLE_WS workspace = {10, 1e-6, (void **)vec_tmp};
+    SLE_WS workspace = {1000, 1e-36, (void **)vec_tmp};
     ops->solve_linear_equations_workspace = &workspace;
 
     double norm;
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 10; ++i)
     {
        ops->VecSetRandomValue((void *)rhs);
        ops->VecSetRandomValue((void *)x);
