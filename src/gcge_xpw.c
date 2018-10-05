@@ -112,13 +112,14 @@ void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **RitzVec,
 void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
-    GCGE_INT w_start  = workspace->dim_xp;
-    GCGE_INT w_length = workspace->unconv_bs;
-    GCGE_INT *unlock  = workspace->unlock;
-    void     **V_tmp  = workspace->V_tmp;
-    void     *rhs;
-    void     *x_current;
-    void     *w_current;
+    GCGE_INT w_start  = workspace->dim_xp; //W向量在V空间中的起始位置
+    GCGE_INT w_length = workspace->unconv_bs; //W的向量个数
+    GCGE_INT *unlock  = workspace->unlock; //未收敛的编号
+    void     **V_tmp  = workspace->V_tmp; //临时空间，用于存储rhs以及CG迭代使用
+    void     *rhs; //线性方程组求解时的右端项
+    void     *x_current; //当前操作的X向量
+    void     *w_current; //当前操作的W向量
+     //rhs = V_tmp(:,0);
     ops->GetVecFromMultiVec(V_tmp, 0, &rhs);
 
     GCGE_INT idx = 0;
@@ -131,26 +132,47 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
         w_current_idx = w_start + idx;
         ops->GetVecFromMultiVec(V, x_current_idx, &x_current);
         ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
+        // B == NULL，那么 rhs = lambda * x_current
+        // B != NULL，那么 rhs = lambda * B * x_current
         if(B == NULL)
         {
-            ops->VecAxpby(1.0, x_current, 0.0, rhs);
+	  ops->VecAxpby(1.0, x_current, 0.0, rhs);
         }
         else
         {
-            ops->MatDotVec(B, x_current, rhs);
+	  ops->MatDotVec(B, x_current, rhs);
         }
-        ops->VecAxpby(0.0, rhs, eval[x_current_idx], rhs);
+        //对lambda的用途：
+        //赋初值
+        if(fabs(eval[x_current_idx]) <= 1.0)
+        {
+	  ops->VecAxpby(0.0, rhs, eval[x_current_idx], rhs);
+	  ops->VecAxpby(1.0, x_current, 0.0, w_current);	  
+	}
+	else
+	{
+	  ops->VecAxpby(1.0/eval[x_current_idx], x_current, 0.0, w_current);	  
+	}                
+        //CG迭代求解 A * W = lambda * B * X          
+        //V_tmp一定要从 1 开始设置 CG迭代中的 r 和 p
         GCGE_CG(A, rhs, w_current, ops, para, V_tmp);
+	//再把x_current 和 w_current 返回回去
         ops->RestoreVecForMultiVec(V, x_current_idx, &x_current);
         ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
-    }
+    }//for(idx=0; idx<w_length; idx++)
     ops->RestoreVecForMultiVec(V_tmp, 0, &rhs);
-}
+}//end for this subprogram
 
 
 /**
  * @brief 计算P的子空间系数，并进行小规模正交化
+ * 符号解释: XX: 表示新的X向量对现有的基向量组中X的依赖关系，
+ *           PX： 表示新的P向量对现有的基向量组中X的依赖关系
+ *			其他命名类同
  *        再线性组合得到P
+ *        XX  O  拷贝  XX  O   正交化  XX  PX  线性组合         PX
+ *        XP  O  ===>  XP  XP  =====>  XP  PP  =======> P = V * PP
+ *        XW  O        XW  XW          XW  PW                   PW
  *
  *  形式参数：coef, ldc, unlock, p_start, p_ncols, 
  *            xx_nrows: 基向量中X向量的个数,
@@ -158,29 +180,32 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
  *            V, V_tmp: 线性组合的临时空间，需要p_ncols的向量空间,至少block_size,
  *            ops
  *
- * coef :
+ * >coef :
  *
- *  XX  PX      XX  O
- *  XP  PP  =>  XP  XP
- *  XW  PW      XW  XW
+ *  XX  O      XX  O
+ *  XP  O  =>  XP  XP
+ *  XW  O      XW  XW
  *
+ * >赋0
  *  PX的指针 px = coef + ldc * p_start
- *  赋0
  *  for idx=0; idx<p_ncols; idx++
  *      memset(px+idx*ldc, 0.0, xx_nrows*sizeof(double))
  *  end
- *  复制
+ *
+ * >复制
  *  PP的指针 pp = coef + ldc * p_start + xx_nrows
  *  XP的指针 xp = coef + xx_nrows
  *  for idx_p=0; idx_p<p_ncols; idx_p++
  *      current_x = unlock[idx_p]
  *      memcpy(pp+idx_p*ldc, xp+current_x*ldc, (ldc-xx_nrows)*sizeof(double))
  *  end
+ *
+ * >对coef的p_start到p_end进行正交化
  *  p_end = p_start + p_ncols
- *  对coef的p_start到p_end进行正交化
  *  GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, orth_para)
  *  p_ncols = p_end - p_start
- *  V线性组合得到P向量，存放在V_tmp中
+ *
+ * >V线性组合得到P向量，存放在V_tmp中
  *  mv_s = { 0, 0 }
  *  mv_e = { ldc, p_ncols }
  *  MultiVecLinearComb(V, V_tmp, mv_s, mv_e, px, ldc, NULL, -1, ops)
@@ -189,67 +214,55 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
  *  mv_e = { p_end, p_ncols }
  *  MultiVecSwap(V, V_tmp, mv_s, mv_e, ops)
  *
- * @param subspace_evec
- * @param V
- * @param ops
- * @param para
- * @param workspace
+ * > out : 更新 dim_xp
+ *         更新 V
+ *
  */
 //获取P向量组
 //V表示用于计算的基底向量组(GCGE_Vec)
 void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     //要给的形式参数
-    GCGE_DOUBLE *coef    = subspace_evec;
-    GCGE_INT    ldc      = workspace->dim_xpw;
-    GCGE_INT    *unlock  = workspace->unlock;
-    GCGE_INT    p_start  = workspace->dim_x;
-    GCGE_INT    p_ncols  = workspace->unconv_bs;
-    GCGE_INT    xx_ncols = workspace->dim_x;
-    GCGE_INT    xx_nrows = workspace->last_dim_x;
+    GCGE_DOUBLE *coef    = subspace_evec; //线性组合系数
+    GCGE_INT    ldc      = workspace->dim_xpw; //系数矩阵ldc的leading dimension
+    GCGE_INT    *unlock  = workspace->unlock; //未收敛的编号,要对X中unlock的列进行操作
+    GCGE_INT    p_start  = workspace->dim_x; //P向量(在V中)的起始位置
+    GCGE_INT    p_ncols  = workspace->unconv_bs; //P向量的个数
+    GCGE_INT    xx_ncols = workspace->dim_x; //更新后基向量中X的个数,由CheckMultiplity 函数计算得到
+    GCGE_INT    xx_nrows = workspace->last_dim_x; //基向量中, 现有的X的向量个数,
     void        **V_tmp  = workspace->V_tmp;
     GCGE_INT    mv_s[2]  = { 0,0 };
     GCGE_INT    mv_e[2]  = { 0,0 };
 
     //函数中用到的参数定义
-    GCGE_INT    current_p = 0;
-    GCGE_INT    current_x = 0;
-    GCGE_INT    p_end     = 0;
-    GCGE_DOUBLE *px = coef + p_start * ldc;
-    GCGE_DOUBLE *pp = px   + xx_nrows;
-    GCGE_DOUBLE *xp = coef + xx_nrows;
-    /*
-    printf("221 subspace_evec: \n");
-    printf("%f\t%f\t%f\n", coef[0], coef[3], coef[6]);
-    printf("%f\t%f\t%f\n", coef[1], coef[4], coef[7]);
-    printf("%f\t%f\t%f\n", coef[2], coef[5], coef[8]);
-    */
+    GCGE_INT    current_p = 0; //当前P向量的位置
+    GCGE_INT    current_x = 0; //当前X向量的位置
+    GCGE_INT    p_end     = 0; //P向量的终点位置
 
-    //初始化为0并进行复制
+    /* XX  PX 
+     * XP  PP 
+     * XW  PW 
+     * px表示上述矩阵中PX的起始位置
+     * pp表示上述矩阵中PP的起始位置
+     * xp表示上述矩阵中XP的起始位置 */
+     //px: 表示P中第一个向量对X的依赖系数在subspace_evec中的起始位置
+    GCGE_DOUBLE *px = coef + p_start * ldc;
+    //pp: 表示P中第一个向量对P的依赖系数在subspace_evec中的起始位置
+    GCGE_DOUBLE *pp = px   + xx_nrows;
+    //xp: 表示X中第一个向量对P的依赖系数在subspace_evec中的起始位置
+    GCGE_DOUBLE *xp = coef + xx_nrows;
+
+    //初始化为0并进行复制,详细见函数名前的注释
     memset(px, 0.0, p_ncols*ldc*sizeof(GCGE_DOUBLE));
-    /*
-    printf("228 subspace_evec: \n");
-    printf("%f\t%f\t%f\n", coef[0], coef[3], coef[6]);
-    printf("%f\t%f\t%f\n", coef[1], coef[4], coef[7]);
-    printf("%f\t%f\t%f\n", coef[2], coef[5], coef[8]);
-    */
     for(current_p=0; current_p<p_ncols; current_p++)
     {
         current_x = unlock[current_p];
         memcpy(pp+current_p*ldc, xp+current_x*ldc, (ldc-xx_nrows)*sizeof(GCGE_DOUBLE));
     }
-
-    /*
-    printf("subspace_evec: \n");
-    printf("%f\t%f\t%f\n", coef[0], coef[3], coef[6]);
-    printf("%f\t%f\t%f\n", coef[1], coef[4], coef[7]);
-    printf("%f\t%f\t%f\n", coef[2], coef[5], coef[8]);
-    */
-    //子空间正交化
+    //现在得到了与[X,P]相对应的coeff矩阵的初始向量
+    //对coef的p_start到p_end列进行正交化，会修改p_end
     p_end = p_start + p_ncols;
-    //printf("p_start:%d, p_end: %d\n", p_start, p_end);
     GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, para->orth_para);
-    //printf("p_start:%d, p_end: %d\n", p_start, p_end);
     p_ncols = p_end - p_start;
 
     //V线性组合得到P向量，存放在V_tmp中
