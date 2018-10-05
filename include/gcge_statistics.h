@@ -47,6 +47,23 @@ typedef struct GCGE_STATISTIC_PARA_ {
 	GCGE_OPS_TIME_COUNT *ops_time_count_linear_solver;
 }GCGE_STATISTIC_PARA;
 
+//需要有一个保存收敛结果的结构, 用来使用户可以在GCGE_SOLVER_SOLVE结束后查看收敛结果
+GCGE_OUTPUT_PARA_ {
+
+    GCGE_INT     num_conv; //收敛个数
+    GCGE_INT     num_iter; //迭代次数
+
+    GCGE_DOUBLE  *max_res; //每次迭代的最大残差
+    GCGE_DOUBLE **max_ind; //每次迭代的最大残差的位置
+    GCGE_DOUBLE  *min_res; //每次迭代的最小残差
+    GCGE_DOUBLE **min_ind; //每次迭代的最小残差的位置
+    GCGE_DOUBLE  *sum_res; //每次迭代的残差和
+    GCGE_DOUBLE **res;     //每次迭代的所有残差
+
+	GCGE_STATISTIC_PARA *stat_para;
+
+}GCGE_OUTPUT_PARA;
+
 void GCGE_STATISTIC_PARA_Create(GCGE_STATISTIC_PARA **stat_para);
 void GCGE_STATISTIC_PARA_Free  (GCGE_STATISTIC_PARA **stat_para);
 

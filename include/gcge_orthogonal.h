@@ -25,24 +25,18 @@
 #include "gcge_ops.h"
 
 #include "gcge_workspace.h"
-#include "gcge_matvec.h"
 
 //GCGE算法中用到的正交化操作
-/**
- * @brief 
- *
- * @param V
- * @param start
- * @param[in|out] end
- * @param B
- * @param ops
- * @param orth_para
- * @param workspace
- */
-void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
-      void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, 
-      void **V_tmp, GCGE_DOUBLE *d_tmp);
+void GCGE_ClassicalOrthogonalize(void **V, GCGE_INT start, GCGE_INT *end, 
+                                 void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, 
+                                 void **V_tmp, GCGE_DOUBLE *d_tmp);
+void GCGE_ModifiedOrthogonalize(void **V, GCGE_INT start, GCGE_INT *end, 
+                                void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, 
+                                void **V_tmp, GCGE_DOUBLE *d_tmp);
+void GCGE_BlockedOrthogonalize(void **V, GCGE_INT start, GCGE_INT *end, 
+                               void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, 
+                               void **V_tmp, GCGE_DOUBLE *d_tmp);
 
-void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
-      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
+void GCGE_ModifiedOrthogonalInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+                                       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
 #endif
