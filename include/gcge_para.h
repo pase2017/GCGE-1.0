@@ -44,19 +44,25 @@ typedef struct GCGE_EIGSOL_PARA_ {
 
 }GCGE_EIGSOL_PARA;
 
-GCGE_INT GCGE_EIGSOL_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **argv);
+GCGE_INT GCGE_EIGSOL_PARA_SetFromCommandLine(GCGE_EIGSOL_PARA *para, GCGE_INT argc, char **argv);
 //para不需要创建和销毁，只需要初始化
 void GCGE_EIGSOL_PARA_Initialize(GCGE_EIGSOL_PARA *para); //初始化参数
+//设置特征值个数，同时检查block_size不能大于nev
 void GCGE_EIGSOL_PARA_SetNumEigen(GCGE_EIGSOL_PARA *para, GCGE_INT nev);
+//设置特征值个数，同时检查block_size不能大于nev
+void GCGE_EIGSOL_PARA_SetEvMaxIter(GCGE_EIGSOL_PARA *para, GCGE_INT ev_max_it);
+//设置block_size，不能大于nev
 void GCGE_EIGSOL_PARA_SetBlockSize(GCGE_EIGSOL_PARA *para, GCGE_INT block_size);
 void GCGE_EIGSOL_PARA_SetEigenvalueTolerance(GCGE_EIGSOL_PARA *para, GCGE_DOUBLE ev_tol);
-void GCGE_EIGSOL_PARA_SetConvergenceType(GCGE_EIGSOL_PARA *para, GCGE_CHAR *conv_type);
-void GCGE_EIGSOL_PARA_SetOrthogonalizeType(GCGE_EIGSOL_PARA *para, GCGE_CHAR *orth_type);
-void GCGE_EIGSOL_PARA_SetEvalMultiplicityTolerance(GCGE_EIGSOL_PARA *para, GCGE_DOUBLE *eval_multi_tol);
-void GCGE_EIGSOL_PARA_SetEvalMultiplicityMaximumIndex(GCGE_EIGSOL_PARA *para, GCGE_DOUBLE *eval_multi_max);
-void GCGE_EIGSOL_PARA_SetPrintEval(GCGE_EIGSOL_PARA *para, GCGE_INT *print_eval);
-void GCGE_EIGSOL_PARA_SetPrintResult(GCGE_EIGSOL_PARA *para, GCGE_INT *print_result);
-void GCGE_EIGSOL_PARA_SetPrintPartTime(GCGE_EIGSOL_PARA *para, GCGE_INT *print_part_time);
+//conv_type,相对残差为"R",其余为绝对残差
+void GCGE_EIGSOL_PARA_SetConvergenceType(GCGE_EIGSOL_PARA *para, char *conv_type);
+//正交化类型为"A"或"B"
+void GCGE_EIGSOL_PARA_SetOrthogonalizeType(GCGE_EIGSOL_PARA *para, char *orth_type);
+void GCGE_EIGSOL_PARA_SetEvalMultiplicityTolerance(GCGE_EIGSOL_PARA *para, GCGE_DOUBLE eval_multi_tol);
+void GCGE_EIGSOL_PARA_SetEvalMultiplicityMaximumIndex(GCGE_EIGSOL_PARA *para, GCGE_DOUBLE eval_multi_max);
+void GCGE_EIGSOL_PARA_SetPrintEval(GCGE_EIGSOL_PARA *para, GCGE_INT print_eval);
+void GCGE_EIGSOL_PARA_SetPrintResult(GCGE_EIGSOL_PARA *para, GCGE_INT print_result);
+void GCGE_EIGSOL_PARA_SetPrintPartTime(GCGE_EIGSOL_PARA *para, GCGE_INT print_part_time);
 
 //为了防止参数互斥，比如我们设置nev的时候，就把可能会互斥的参数也设置一遍
 //对于nev会影响的参数block_size，设置的时候，如果互斥了，要给一个提示，block_size不能比nev大

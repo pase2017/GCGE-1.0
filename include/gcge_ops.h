@@ -20,12 +20,12 @@
 #define  _GCGE_OPS_H_
 
 #include "gcge_type.h"
-
+//把每一个操作都写好，这样以后进行算法设计的时候才能方便。
 
 typedef struct GCGE_OPS_ {
 
     void (*VecSetRandomValue)       (void *vec);
-    void (*MatDotVec)               (void *mat, void *x, void *r);
+    void (*MatDotVec)               (void *Matrix, void *x, void *r);
     void (*VecAxpby)                (GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y); /* y = ax+by */
     void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *xTy);
     void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *xTy);
@@ -35,27 +35,15 @@ typedef struct GCGE_OPS_ {
 
 
     /* option */
-    void (*VecNorm)                 (void *x, GCGE_DOUBLE *norm_x, struct GCGE_OPS_ *ops);
-
     /* TODO */
-//    void (*LinearSolver)            (void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops);
-    void (*SolveLinearEquations)    (void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops);
-    void *solve_linear_equations_workspace;
+    void (*LinearSolver)            (void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops);
+    void *linear_solver_workspace;
 
     /* DenseMatCreate, DenseMatDestroy should in function Orthogonal 
      * Add struct member name void *orth_workspace to save tmp variables */
-    /* 对V从start到*end进行正交化，且认为从0到start-1已经正交化了 */
-    void (*Orthogonalize)           (void **V, GCGE_INT *start, GCGE_INT *end, 
-                                     void *B, //GCGE_ORTH_PARA *orth_para, 
-                                     struct GCGE_OPS_ *ops); /* TODO */
-    void *orthogonalize_workspace;
-
-    /* TODO 可以加入SolveEigenpairs */
-
-
-    void (*DenseMatCreate)          (void **densemat, GCGE_INT nrows, GCGE_INT ncols);
-    void (*DenseMatDestroy)         (void **mat);
- 
+    void (*Orthogonalize)           (void **V, GCGE_INT start, GCGE_INT *end, 
+                                     void *B, struct GCGE_OPS_ *ops);
+	void *orthogonalize_workspace;//需要有正交化的参数以及工作空间，工作空间也许可以指向到eigsol_ws->V_tmp?
 
     /* DEEP */
 
@@ -65,36 +53,29 @@ typedef struct GCGE_OPS_ {
                                      struct GCGE_OPS_ *ops);
     void (*BuildMultiVecByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct GCGE_OPS_ *ops);
-    void (*FreeMultiVec)            (void ***MultiVec, GCGE_INT n_vec, 
-	                             struct GCGE_OPS_ *ops);
+    void (*FreeMultiVec)            (void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
 
     /* TODO */
-    void (*MultiVecNorm)            (void **multi_vec, GCGE_DOUBLE *norm, GCGE_INT *start, GCGE_INT *end,
-	                             struct GCGE_OPS_ *ops);
-    void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT *start, GCGE_INT *end,
-	                             struct GCGE_OPS_ *ops);
+    void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT start, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
     void (*MatDotMultiVec)          (void *mat, void **x, void **y, GCGE_INT *start, GCGE_INT *end, 
                                      struct GCGE_OPS_ *ops);
     void (*MultiVecAxpby)           (GCGE_DOUBLE a, void **x, GCGE_DOUBLE b, void **y, 
-                                     GCGE_INT *start, GCGE_INT *end, 
-				     struct GCGE_OPS_ *ops);
-//    void (*MultiVecAxpbyColumn)     (GCGE_DOUBLE a, void **x, GCGE_INT col_x, GCGE_DOUBLE b, 
-//                                     void **y, GCGE_INT col_y, 
-//				     struct GCGE_OPS_ *ops);
+                                     GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops);
+    void (*MultiVecAxpbyColumn)     (GCGE_DOUBLE a, void **x, GCGE_INT col_x, GCGE_DOUBLE b, 
+                                     void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops);
     /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i][j] */
     void (*MultiVecLinearComb)      (void **x, void **y, GCGE_INT *start, GCGE_INT *end,
                                      GCGE_DOUBLE *a, GCGE_INT lda, 
-                                     void *dmat, GCGE_INT lddmat, 
-				     struct GCGE_OPS_ *ops);
+                                     void *dmat, GCGE_INT lddmat, struct GCGE_OPS_ *ops);
     void (*MultiVecInnerProd)       (void **V, void **W, GCGE_DOUBLE *a, char *is_sym, 
-                                     GCGE_INT *start, GCGE_INT *end, GCGE_INT lda, 
-				     struct GCGE_OPS_ *ops);
+                                     GCGE_INT *start, GCGE_INT *end, GCGE_INT lda, struct GCGE_OPS_ *ops);
     void (*MultiVecSwap)            (void **V_1, void **V_2, GCGE_INT *start, GCGE_INT *end, 
                                      struct GCGE_OPS_ *ops);
 
     /* TODO kernal function should use this op to get j-th vector */
     void (*GetVecFromMultiVec)      (void **V, GCGE_INT j, void **x);
     void (*RestoreVecForMultiVec)   (void **V, GCGE_INT j, void **x);
+    void (*SetDirichletBoundary)(void**Vecs, GCGE_INT nev, void* A, void* B);
 
 
     /* DEEP option */
@@ -216,7 +197,6 @@ typedef struct GCGE_OPS_ {
                                      GCGE_DOUBLE *b, GCGE_INT *ldb, GCGE_DOUBLE *beta,
                                      GCGE_DOUBLE *c, GCGE_INT *ldc);
 
-    /* TODO 应该是用户提供单向量，我们写成多向量 */
     void (*PrintMultiVec)           (void **x, GCGE_INT n);
    
 }GCGE_OPS;
