@@ -2,6 +2,8 @@
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
+CC      = $(MPICC)
+CLINKER = $(MPICC)
 ############################################################
 OBJS1 = test_solver.o
 OBJS2 = test_matvec.o
@@ -15,7 +17,7 @@ OBJS9 = test_orth_ops.o
 OBJS10 = test_orth_subspace.o
 OBJS11 = test_p.o
 OBJS12 = test_w.o
-OBJS13 = test_csr_solver.o
+OBJS13 = test_hypre_solver.o
 
 EXE1  = $(GCGEBIN)/solver.exe 
 EXE2  = $(GCGEBIN)/test_matvec.exe 
@@ -29,11 +31,10 @@ EXE9  = $(GCGEBIN)/test_orth_ops.exe
 EXE10  = $(GCGEBIN)/test_orth_subspace.exe
 EXE11  = $(GCGEBIN)/test_p.exe
 EXE12  = $(GCGEBIN)/test_w.exe
-EXE13  = $(GCGEBIN)/test_csr_solver.exe
+EXE13  = $(GCGEBIN)/test_hypre_solver.exe
 
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
-LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) \
-	$(LIBBLAS) $(LIBGFORTRAN) -lm 
+INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC)
+LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS)
 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA
@@ -106,7 +107,7 @@ run-p:
 run-w:
 	valgrind -v $(EXE12)
 	 
-run-csr-solver:
+run-hypre-solver:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE13)
 
 ############################################################

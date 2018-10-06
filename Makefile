@@ -14,7 +14,7 @@ libs:
 	@cd $(GCGESRC);             $(MAKE) lib
 	@cd $(GCGESRC)/app/csr;     $(MAKE) lib
 	@cd $(EXTERNAL)/csr/src;    $(MAKE) lib
-#	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
+	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
 #	@cd $(GCGESRC)/app/pase;    $(MAKE) lib
 #	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
 #	@cd $(GCGESRC)/app/slepc;   $(MAKE) lib
