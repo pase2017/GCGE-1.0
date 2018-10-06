@@ -59,8 +59,9 @@ void GCGE_WORKSPACE_Create(GCGE_WORKSPACE **workspace)
 }
 void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *ops, void *A)
 {
-    GCGE_INT       i, nev    = para->nev,
-                   max_dim_x = (nev*1.25 > nev+2) ? (nev*1.25) : (nev+2);
+    GCGE_INT   i,    nev = para->nev,
+               max_dim_x_tmp = (nev*1.25 < nev+8) ? (nev*1.25) : (nev+8),
+               max_dim_x = (max_dim_x_tmp > nev + 3)? max_dim_x_tmp : (nev+3);
 
     //对GCGE算法中用到的一些参数进行初始化
     workspace->max_dim_x = max_dim_x;
@@ -72,12 +73,12 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
 
     GCGE_INT max_dim_xpw = max_dim_x + 2 * para->block_size;
     //近似特征值
-    workspace->eval          = (GCGE_DOUBLE*)calloc(max_dim_xpw, sizeof(GCGE_DOUBLE));
+    workspace->eval      = (GCGE_DOUBLE*)calloc(max_dim_xpw, sizeof(GCGE_DOUBLE));
     //小规模的临时工作空间
     //GCGE_INT lwork1 = 26*max_dim_xpw;
     //GCGE_INT lwork2 = 1+6*max_dim_xpw+2*max_dim_xpw*max_dim_xpw;
-    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+300*max_dim_xpw, sizeof(GCGE_INT));
-            //+(lwork1>lwork2)?lwork1:lwork2, sizeof(GCGE_DOUBLE));
+    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+300*max_dim_xpw, sizeof(GCGE_DOUBLE));
+    //+(lwork1>lwork2)?lwork1:lwork2, sizeof(GCGE_DOUBLE));
     workspace->subspace_itmp = (GCGE_INT*)calloc(12*max_dim_xpw, sizeof(GCGE_INT));
     //存储子空间矩阵的特征向量
     workspace->subspace_evec = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw, sizeof(GCGE_DOUBLE));
@@ -96,7 +97,7 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
 
     //V,V_tmp,RitzVec是向量工作空间
     ops->BuildMultiVecByMat(A, &(workspace->V), max_dim_xpw, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->V_tmp), (max_dim_xpw>4)?max_dim_xpw:4, ops);
+    ops->BuildMultiVecByMat(A, &(workspace->V_tmp), (max_dim_xpw>4)? max_dim_xpw: 4, ops);
     ops->BuildMultiVecByMat(A, &(workspace->RitzVec), max_dim_x, ops);
     ops->BuildMultiVecByMat(A, &(workspace->CG_p), para->block_size, ops);
     ops->BuildMultiVecByMat(A, &(workspace->CG_r), para->block_size, ops);

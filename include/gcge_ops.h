@@ -41,9 +41,12 @@ typedef struct GCGE_OPS_ {
 
     /* DenseMatCreate, DenseMatDestroy should in function Orthogonal 
      * Add struct member name void *orth_workspace to save tmp variables */
-    void (*Orthogonalize)           (void **V, GCGE_INT start, GCGE_INT *end, 
-                                     void *B, struct GCGE_OPS_ *ops);
-	void *orthogonalize_workspace;//需要有正交化的参数以及工作空间，工作空间也许可以指向到eigsol_ws->V_tmp?
+    void (*Orthogonal)              (void **V, GCGE_INT start, GCGE_INT *end, 
+                                     void *B, GCGE_DOUBLE orth_zero_tol, 
+                                     void **work); /* TODO */
+    void (*DenseMatCreate)          (void **densemat, GCGE_INT nrows, GCGE_INT ncols);
+    void (*DenseMatDestroy)         (void **mat);
+ 
 
     /* DEEP */
 

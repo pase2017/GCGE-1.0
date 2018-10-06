@@ -28,9 +28,9 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, voi
     //临时向量
     void        *r, *p, *w;
     GCGE_INT    niter = 0;
-    GCGE_INT    max_it = para->cg_max_it;
+    GCGE_INT    max_it = para->cg_max_it, type = para->cg_type;
     GCGE_DOUBLE rate = para->cg_rate;
-    GCGE_DOUBLE tmp1, tmp2, alpha, beta, rho1, rho2, error, last_error, pTw;
+    GCGE_DOUBLE tmp1, tmp2, alpha, beta, rho1, rho2, error, last_error, pTw, wTw;
 
     //CG迭代中用到的临时向量
     r = V_tmp[1]; //记录残差向量
@@ -51,41 +51,60 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, voi
     //printf("Rate = %e,  max_it = %d\n",rate,max_it);
     while((last_error/error >= rate)&&(niter<max_it))
     {
-        if(niter == 1)
-        {
-            //set the direction as r
-            ops->VecAxpby(1.0, r, 0.0, p);
-            //p = r;
-        }
-        else
-        {
-            //printf("come here!\n");
-            //compute the value of beta
-            beta = rho2/rho1; 
-            //compute the new direction: p = r + beta * p
-            ops->VecAxpby(1.0, r, beta, p);
-        }//end for if(niter == 1)
-        //compute the vector w = A*p
-        ops->MatDotVec(Matrix,p,w);
-        //compute the value pTw = p^T * w 
-        ops->VecInnerProd(p, w, &pTw);
-        //compute the value of alpha
-        //printf("pTw=%e\n",pTw);
-        alpha = rho2/pTw; 
-        //compute the new solution x = alpha * p + x
-        ops->VecAxpby(alpha, p, 1.0, x);
-        //compute the new residual: r = - alpha*w + r
-        ops->VecAxpby(-alpha, w, 1.0, r);
-        //set rho1 as rho2
-        rho1 = rho2;
-        //compute the new rho2
-        ops->VecInnerProd(r, r, &rho2);  
-        last_error = sqrt(rho2);      
-        //printf("  niter= %d,  The current residual: %10.5f\n",niter, last_error);
-        //printf("  error=%10.5f, last_error=%10.5f,  last_error/error= %10.5f\n",error, last_error, last_error/error);
-        //update the iteration time
-        niter++;   
-    }
-
-}
+	if(niter == 1)
+	{
+	  //set the direction as r
+	  ops->VecAxpby(1.0, r, 0.0, p);
+	  //p = r;
+	}
+	else
+	{
+	  //printf("come here!\n");
+	  //compute the value of beta
+	  beta = rho2/rho1; 
+	  //compute the new direction: p = r + beta * p
+	  ops->VecAxpby(1.0, r, beta, p);
+	}//end for if(niter == 1)
+	//compute the vector w = A*p
+	ops->MatDotVec(Matrix,p,w);
+	if(type == 1)
+	{
+		//compute the value pTw = p^T * w 
+		ops->VecInnerProd(p, w, &pTw);
+		//compute the value of alpha
+		//printf("pTw=%e\n",pTw);
+		alpha = rho2/pTw; 
+		//compute the new solution x = alpha * p + x
+		ops->VecAxpby(alpha, p, 1.0, x);
+		//compute the new residual: r = - alpha*w + r
+		ops->VecAxpby(-alpha, w, 1.0, r);
+		//set rho1 as rho2
+		rho1 = rho2;
+		//compute the new rho2
+		ops->VecInnerProd(r, r, &rho2); 
+	}
+	else
+	{    
+	       //这里我们把两个向量内积放在一起计算，这样可以减少一次的向量内积的全局通讯，提高可扩展性
+	      //compute the value pTw = p^T * w, wTw = w^T*w 
+	      ops->VecInnerProd(p, w, &pTw);
+	      ops->VecInnerProd(w, w, &wTw);
+	    
+	      alpha = rho2/pTw; 
+		//compute the new solution x = alpha * p + x
+		ops->VecAxpby(alpha, p, 1.0, x);
+		//compute the new residual: r = - alpha*w + r
+		ops->VecAxpby(-alpha, w, 1.0, r);
+		//set rho1 as rho2
+		rho1 = rho2;
+		//compute the new rho2	
+		rho2 = rho1 - 2.0*alpha*pTw + alpha*alpha*wTw;
+	} 
+	last_error = sqrt(rho2);      
+	//printf("  niter= %d,  The current residual: %10.5f\n",niter, last_error);
+	//printf("  error=%10.5f, last_error=%10.5f,  last_error/error= %10.5f\n",error, last_error, last_error/error);
+	//update the iteration time
+	niter++;   
+    }//end while((last_error/error >= rate)&&(niter<max_it))
+}//end for the CG program
 

@@ -28,4 +28,5 @@
 void GCGE_CSR_SetOps(GCGE_OPS *ops);
 void GCGE_SOLVER_SetCSROps(GCGE_SOLVER *solver);
 
+GCGE_SOLVER *GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, int argc, char* argv[]);
 #endif

@@ -24,6 +24,61 @@
 
 #include "csr.h"
 
+
+void CSR_SetDirichletBoundary(CSR_VEC **Vecs, int nev, CSR_MAT *A, CSR_MAT *B)
+{
+   //检查矩阵A或者矩阵B是否都是输入的矩阵
+  if((A == NULL)|| (B == NULL))
+     return;
+  int i, j, N_Rows = A->N_Rows, start, end, length, ind_A, ind_B;
+  int *A_RowPtr = A->RowPtr, *A_KCol = A->KCol, 
+       *B_RowPtr = B->RowPtr, *B_KCol = B->KCol;
+  double *A_Entries = A->Entries, *B_Entries = B->Entries;
+  double tol = 1e-20;  
+
+  for(i=0;i<N_Rows;i++)
+  {
+    //检查矩阵B的i行是否只有一个1
+   start = B_RowPtr[i];
+   end   = B_RowPtr[i+1];
+   //ind=0是表示这一行有非零元
+   ind_B = 1;
+   for(j=start;j<end;j++)
+   {
+     if(fabs(B_Entries[j]) > tol)
+     {
+       ind_B = 0; 
+       break;         
+     }//end if 
+    } //end for j
+    //如果矩阵B的这一行全为零，那么去处理A的相应行
+    if(ind_B == 1)
+    {
+      //ind_A用来记录有多少个非零元
+      ind_A = 0;
+      start = A_RowPtr[i];
+      end   = A_RowPtr[i+1];
+      for(j=start;j<end;j++)
+      {
+	if(fabs(A_Entries[j]) > tol)
+	{
+	  ind_A ++;
+	}//end if 
+      }//end for j
+      if(ind_A == 1)
+      {
+	//处理边条件  
+	//printf("The %d-th position is boundary!\n",i);
+	for(j=0;j<nev;j++)
+	{
+	  //把第i个元素设置为零
+	  
+	  Vecs[j]->Entries[i] = 0.0;
+	}//end for j=1:nev
+      }//end for ind_A==1      
+    }//end if ind_B ==1    
+  }//end for i  
+}
 //从文件读入CSR格式矩阵
 CSR_MAT *CSR_ReadMatFile(const char *filename)
 {
@@ -77,7 +132,7 @@ CSR_MAT *CSR_ReadMatFile(const char *filename)
     fclose(file);
     return matrix;
 }
-
+//打印稀疏矩阵
 void CSR_PrintMat(CSR_MAT *mat)
 {
    int nrow, ncol, idx;
@@ -102,6 +157,7 @@ void CSR_PrintMat(CSR_MAT *mat)
 
    }
 }
+//打印向量
 void CSR_PrintVec(CSR_VEC *vec)
 {
    int nrow;
@@ -122,6 +178,7 @@ void CSR_MatFree(CSR_MAT **mat)
 	free((*mat));            (*mat)          = NULL;
 }
 
+//随机产生向量作为初始值
 void CSR_VecSetRandomValue(CSR_VEC *vec)
 {
     int j, size = vec->size;
@@ -137,22 +194,17 @@ void CSR_VecSetRandomValue(CSR_VEC *vec)
 //稀疏矩阵乘向量
 void CSR_MatDotVec(CSR_MAT *mat, CSR_VEC *x, CSR_VEC *r)
 {
-    if (mat == NULL)
-    {
-       CSR_VecAxpby(1.0, x, 0.0, r);
-       return;
-    }
     int    N_Rows = mat->N_Rows, 
-           N_Columns = mat->N_Columns,
-	   i, j, length, start, end,
-	  *RowPtr,*KCol;
+               N_Columns = mat->N_Columns,
+               i, j, length, start, end,
+               *RowPtr,*KCol;
     double *Mat_Entries, *x_Entries, *r_Entries, tmp;
     RowPtr      = mat->RowPtr;
     KCol        = mat->KCol;
     Mat_Entries = mat->Entries;
     x_Entries   = x->Entries;
     r_Entries   = r->Entries;
-
+    //把r设置位零向量。
     memset(r_Entries,0.0,N_Rows*sizeof(double));
 
     start = RowPtr[0];

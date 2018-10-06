@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
 {
     //    mwInit();
     srand((unsigned)time(NULL));
+    //创建
     GCGE_SOLVER *solver;
     GCGE_INT help = GCGE_SOLVER_Create(&solver, argc, argv);
     if(help)
@@ -42,11 +43,8 @@ int main(int argc, char* argv[])
     //创建矩阵
     //const char *file_A = "../data/testA";
     //const char *file_B = "../data/testB";
-    const char *file_A = "../data/A_3.txt";
-    const char *file_B = "../data/M_3.txt";
-    //const char *file_A = "/home/nzhang/Andrews.csr";
-//    const char *file_A = "/Users/zn/MATRIX_TEST/A_5.txt";
-//    const char *file_B = "/Users/zn/MATRIX_TEST/M_5.txt";
+    const char *file_A = "../data/A_5.txt";
+    const char *file_B = "../data/M_5.txt";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_MAT *B = CSR_ReadMatFile(file_B);
 
@@ -54,11 +52,16 @@ int main(int argc, char* argv[])
     //    int nev = GCGE_SOLVER_GetNumEigen(solver);
     //    GCGE_SOLVER_SetNumEigen(solver, nev);
     solver->para->nev = 10;
-    solver->para->ev_tol = 1e-4;
+    solver->para->ev_tol = 1e-8;
+    solver->para->orth_para->print_orth_zero = 1;
+    solver->para->dirichlet_boundary = 1;
     int nev = solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double));
     CSR_VEC **evec = (CSR_VEC**)malloc(nev*sizeof(CSR_VEC*));
+    solver->para->cg_max_it = 10;
+    solver->para->ev_max_it = 30;
     int i = 0; 
+    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
     for(i=0; i<nev; i++)
     {
         CSR_BuildVecByMat(A, evec+i);
@@ -74,6 +77,7 @@ int main(int argc, char* argv[])
 
     //setup and solve
     GCGE_SOLVER_Setup(solver);
+    printf("line 80\n");
     GCGE_SOLVER_Solve(solver);
     GCGE_SOLVER_Free(&solver);
 

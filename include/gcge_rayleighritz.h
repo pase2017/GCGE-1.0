@@ -29,13 +29,9 @@
 
 //计算 work_space = V^T * A * W
 void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, GCGE_INT end_V, GCGE_DOUBLE *subspace_mat, GCGE_OPS *ops, void **workspace);
-//计算 submat = coef^T * submat_old * coef
-void GCGE_ComputeSubspaceMatrixInSubspace(GCGE_Double *submat, GCGE_INT ldm, GCGE_Double *coef, GCGE_INT ldc, GCGE_DOUBLE *dtmp);
-
 //计算 subspace_matrix = V^T * A * V
-//包含上面两个函数
-void GCGE_ComputeSubspaceMatrix(void *A, void **V, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-
+void GCGE_ComputeSubspaceMatrix(void *A, void **V, 
+        GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 //计算子空间矩阵特征值 AA * u = \lambda * u
 void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix, 
         GCGE_DOUBLE *eval, GCGE_DOUBLE *subspace_evec, 

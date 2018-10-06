@@ -115,11 +115,11 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
     GCGE_INT w_start  = workspace->dim_xp; //W向量在V空间中的起始位置
     GCGE_INT w_length = workspace->unconv_bs; //W的向量个数
     GCGE_INT *unlock  = workspace->unlock; //未收敛的编号
-    void     **V_tmp  = workspace->V_tmp; //临时空间，用于存储rhs以及CG迭代使用
-    void     *rhs; //线性方程组求解时的右端项
-    void     *x_current; //当前操作的X向量
-    void     *w_current; //当前操作的W向量
-     //rhs = V_tmp(:,0);
+    void     **V_tmp  = workspace->V_tmp;  //临时空间，用于存储rhs以及CG迭代使用
+    void     *rhs;                         //线性方程组求解时的右端项
+    void     *x_current;                   //当前操作的X向量
+    void     *w_current;                    //当前操作的W向量
+    //rhs = V_tmp(:,0);
     ops->GetVecFromMultiVec(V_tmp, 0, &rhs);
 
     GCGE_INT idx = 0;

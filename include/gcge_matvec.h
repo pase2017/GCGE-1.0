@@ -22,8 +22,8 @@
 #include "gcge_ops.h"
 
 //GCGE算法中用到的一些线性代数操作
-//GCGE_DOUBLE GCGE_VecMatrixVec(void *a, void *Matrix, void *b, void *temp, GCGE_OPS *ops);
-//GCGE_DOUBLE GCGE_VecNorm(void *x, GCGE_OPS *ops);
+GCGE_DOUBLE GCGE_VecMatrixVec(void *a, void *Matrix, void *b, void *temp, GCGE_OPS *ops);
+GCGE_DOUBLE GCGE_VecNorm(void *x, GCGE_OPS *ops);
 
 //子空间线性代数操作
 GCGE_DOUBLE GCGE_VecDotVecSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT n);

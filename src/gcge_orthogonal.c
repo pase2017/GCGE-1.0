@@ -120,7 +120,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     GCGE_INT    mv_s[2] = { 0, 0 };
     //mv_end: 
     GCGE_INT    mv_e[2] = { 0, 0 };
-
+    
     GCGE_DOUBLE vin = 0.0, vout = 0.0, norm_value = 0.0, ipv = 0.0; //ipv: inner product value
     GCGE_DOUBLE ratio = 1.0, sum_res = para->sum_res, 
                 criterion_tol = orth_para->criterion_tol;
@@ -131,179 +131,179 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     //end[0]: 表示需要正交化向量的最终位置
     for(current = start; current < (*end); ++current)
     {
-        reorth_count = 0;
-
-        //下面是严格的单个向量重正交化的方式(数值稳定性比较好)
-        //这里根据目前的残差的量级来进行自动选择
-        //printf("sum_res= %e\n",sum_res);
-        if((sum_res >0.0)&&(sum_res<criterion_tol))
-        {
-            //printf("do the column version!\n");
-            ops->GetVecFromMultiVec(V, current, &vec_current); //vec_current = V[current]
+      reorth_count = 0;
+      
+      //下面是严格的单个向量重正交化的方式(数值稳定性比较好)
+      //这里根据目前的残差的量级来进行自动选择
+      //printf("sum_res= %e\n",sum_res);
+     if((sum_res >0.0)&&(sum_res<criterion_tol))
+     {
+        //printf("do the column version!\n");
+        ops->GetVecFromMultiVec(V, current, &vec_current); //vec_current = V[current]
+      if(B == NULL)
+      {
+	ops->VecInnerProd(vec_current, vec_current, &norm_value);      
+	vout = sqrt(norm_value);	
+      }
+      else
+      {
+	//vec_tmp2 = B*vec_current
+	ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
+	ops->MatDotVec(B, vec_current, vec_tmp2); 
+	ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
+	vout = sqrt(norm_value);
+	ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
+      }
+      do{
+            // B != NULL, 计算 vec_tmp = B * vec_current
+            // B == NULL, 计算 vec_tmp = vec_current
+            //ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp); //vec_tmp = V_tmp[0] 
+            //ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
+            for (j=0; j<current; j++)
+            {
+	      ops->GetVecFromMultiVec(V, j, &vec_tmp); //vectmp = V(:,j)
+	      //下面做内积
+	      if(B == NULL)
+	      {
+		ops->VecInnerProd(vec_current, vec_tmp, &ipv);
+	      }
+	      else
+	      {
+		//vec_tmp2 = B*vec_current
+		ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
+		ops->MatDotVec(B, vec_current, vec_tmp2); 
+		ops->VecInnerProd(vec_tmp, vec_tmp2, &ipv);		
+		ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);		
+	      }//end for if
+	      //接下来做： V(:,current) = V(:,current) - ipv*V(:,j)
+	      ops->VecAxpby(-ipv, vec_tmp, 1.0, vec_current);
+	      //ops->GetVecFromMultiVec(V, j, &vec_tmp); //vectmp = V(:,j)
+	      ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+            }//end for j
+            vin = vout;       
+            if(B == NULL)
+	    {
+	      ops->VecInnerProd(vec_current, vec_current, &norm_value);
+	      //vout = sqrt(norm_value);		      
+	    }
+	    else
+	    {
+	      //vec_tmp2 = B*vec_current
+	      ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
+	      ops->MatDotVec(B, vec_current, vec_tmp2); 
+	      ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
+	      //vout = sqrt(norm_value);
+	      ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);	      
+	    }
+	    //ops->VecInnerProd(vec_current, vec_current, &norm_value);
+	    vout = sqrt(norm_value);
+	   
+	    ratio = vout/vin;
+	    reorth_count; 	
+      }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time) 
+	        && (vout > orth_para->orth_zero_tol) );
+	//ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
+	//ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
+	}
+	else
+	{
+	    //printf("do the block version!\n");
+	    do{
+            // B != NULL, 计算 vec_tmp = B * vec_current
+            // B == NULL, 计算 vec_tmp = vec_current
+            ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp);
+            ops->GetVecFromMultiVec(V, current, &vec_current);
             if(B == NULL)
             {
-                ops->VecInnerProd(vec_current, vec_current, &norm_value);      
-                vout = sqrt(norm_value);    
+                ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);
             }
             else
             {
-                //vec_tmp2 = B*vec_current
-                ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
-                ops->MatDotVec(B, vec_current, vec_tmp2); 
-                ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
-                vout = sqrt(norm_value);
-                ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
+                ops->MatDotVec(B, vec_current, vec_tmp);
             }
-            do{
-                // B != NULL, 计算 vec_tmp = B * vec_current
-                // B == NULL, 计算 vec_tmp = vec_current
-                //ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp); //vec_tmp = V_tmp[0] 
-                //ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
-                for (j=0; j<current; j++)
-                {
-                    ops->GetVecFromMultiVec(V, j, &vec_tmp); //vectmp = V(:,j)
-                    //下面做内积
-                    if(B == NULL)
-                    {
-                        ops->VecInnerProd(vec_current, vec_tmp, &ipv);
-                    }
-                    else
-                    {
-                        //vec_tmp2 = B*vec_current
-                        ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
-                        ops->MatDotVec(B, vec_current, vec_tmp2); 
-                        ops->VecInnerProd(vec_tmp, vec_tmp2, &ipv);        
-                        ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);        
-                    }//end for if
-                    //接下来做： V(:,current) = V(:,current) - ipv*V(:,j)
-                    ops->VecAxpby(-ipv, vec_tmp, 1.0, vec_current);
-                    //ops->GetVecFromMultiVec(V, j, &vec_tmp); //vectmp = V(:,j)
-                    ops->RestoreVecForMultiVec(V, j, &vec_tmp);
-                }//end for j
-                vin = vout;       
-                if(B == NULL)
-                {
-                    ops->VecInnerProd(vec_current, vec_current, &norm_value);
-                    //vout = sqrt(norm_value);              
-                }
-                else
-                {
-                    //vec_tmp2 = B*vec_current
-                    ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
-                    ops->MatDotVec(B, vec_current, vec_tmp2); 
-                    ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
-                    //vout = sqrt(norm_value);
-                    ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);          
-                }
-                //ops->VecInnerProd(vec_current, vec_current, &norm_value);
-                vout = sqrt(norm_value);
-
-                ratio = vout/vin;
-                reorth_count;     
-            }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time) 
-                    && (vout > orth_para->orth_zero_tol) );
-            //ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
-            //ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
-        }
-        else
-        {
-            printf("do the block version!\n");
-            do{
-                // B != NULL, 计算 vec_tmp = B * vec_current
-                // B == NULL, 计算 vec_tmp = vec_current
-                ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp);
-                ops->GetVecFromMultiVec(V, current, &vec_current);
-                if(B == NULL)
-                {
-                    ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);
-                }
-                else
-                {
-                    ops->MatDotVec(B, vec_current, vec_tmp);
-                }
-                ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
-                ops->RestoreVecForMultiVec(V, current, &vec_current);
-
-                // 计算 d_tmp = V^T * vec_tmp
-                // 即为 d_tmp[j] = (v_j, vec_current)_B
+            ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
+            ops->RestoreVecForMultiVec(V, current, &vec_current);
+            
+            // 计算 d_tmp = V^T * vec_tmp
+            // 即为 d_tmp[j] = (v_j, vec_current)_B
+            mv_s[0] = 0;
+            mv_e[0] = current+1;
+            mv_s[1] = 0;
+            mv_e[1] = 1;
+            ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, current+1, ops);
+            
+            // 如果当前计算的不是向量组中的第一个向量，那么需要减去前面的分量
+            if(current != 0)
+            {
+                // 计算线性组合 V_tmp[0] = V * d_tmp
+                // 即为 V_tmp[0] = \sum_{j=0}^{current-1} d_tmp[j] * v_j
                 mv_s[0] = 0;
-                mv_e[0] = current+1;
+                mv_e[0] = current;
                 mv_s[1] = 0;
                 mv_e[1] = 1;
-                ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, current+1, ops);
+                ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, d_tmp, current, NULL, -1, ops);
+                
+                // 计算 vec_current = vec_current - V_tmp[0]
+                ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp);
+                ops->GetVecFromMultiVec(V, current, &vec_current);
+                ops->VecAxpby(-1.0, vec_tmp, 1.0, vec_current);
+                ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
+                ops->RestoreVecForMultiVec(V, current, &vec_current);
+            }
+            
+            // d_tmp[current] 即为 (v_current_in, vec_current_in)_B
+            // vin为vec_current去掉前面分量前的B范数
+            vin = sqrt(d_tmp[current]);
+            /* 记 vi0 为正交化前的 v_i, vi1 为去掉前面分量后的 v_i
+             *  那么有 vi1 = vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j
+             *  要计算vi1的范数，我们有
+             *  (vi1, vi1) = (vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j, 
+             *                vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j)
+             *             = (vi0, vi0) - \sum_{j=0}^{i-1} (vi0, v_j)^2 */
+            d_tmp[current] = d_tmp[current] - GCGE_VecDotVecSubspace(d_tmp, d_tmp, current);
+            // ratio = vout / vin
+            vout = sqrt(d_tmp[current]);
+            ratio = vout/vin;
+            reorth_count++;
+            //如果vec_current范数几乎没有变小，或者已经达到了最大重正交化次数
+            //或者vec_current范数已经比判定向量为0的阈值还小
+            //就不做重正交化
+            
+        }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time)
+              && (vout > orth_para->orth_zero_tol));
+	}//end if (sum_res)
+	
+	
+	//下面看看目前处理的向量是否是一个零向量    
 
-                // 如果当前计算的不是向量组中的第一个向量，那么需要减去前面的分量
-                if(current != 0)
-                {
-                    // 计算线性组合 V_tmp[0] = V * d_tmp
-                    // 即为 V_tmp[0] = \sum_{j=0}^{current-1} d_tmp[j] * v_j
-                    mv_s[0] = 0;
-                    mv_e[0] = current;
-                    mv_s[1] = 0;
-                    mv_e[1] = 1;
-                    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, d_tmp, current, NULL, -1, ops);
-
-                    // 计算 vec_current = vec_current - V_tmp[0]
-                    ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp);
-                    ops->GetVecFromMultiVec(V, current, &vec_current);
-                    ops->VecAxpby(-1.0, vec_tmp, 1.0, vec_current);
-                    ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
-                    ops->RestoreVecForMultiVec(V, current, &vec_current);
-                }
-
-                // d_tmp[current] 即为 (v_current_in, vec_current_in)_B
-                // vin为vec_current去掉前面分量前的B范数
-                vin = sqrt(d_tmp[current]);
-                /* 记 vi0 为正交化前的 v_i, vi1 为去掉前面分量后的 v_i
-                 *  那么有 vi1 = vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j
-                 *  要计算vi1的范数，我们有
-                 *  (vi1, vi1) = (vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j, 
-                 *                vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j)
-                 *             = (vi0, vi0) - \sum_{j=0}^{i-1} (vi0, v_j)^2 */
-                d_tmp[current] = d_tmp[current] - GCGE_VecDotVecSubspace(d_tmp, d_tmp, current);
-                // ratio = vout / vin
-                vout = sqrt(d_tmp[current]);
-                ratio = vout/vin;
-                reorth_count++;
-                //如果vec_current范数几乎没有变小，或者已经达到了最大重正交化次数
-                //或者vec_current范数已经比判定向量为0的阈值还小
-                //就不做重正交化
-
-            }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time)
-                    && (vout > orth_para->orth_zero_tol));
-        }//end if (sum_res)
-
-
-        //下面看看目前处理的向量是否是一个零向量    
-
-        if(vout > orth_para->orth_zero_tol)
-        {
-            //如果vec_current不为0，就做归一化
-            //ops->GetVecFromMultiVec(V, current, &vec_current);
-            ops->VecAxpby(0.0, vec_current, 1/vout, vec_current);     
-            ops->RestoreVecForMultiVec(V, current, &vec_current);
-            //ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
-            //ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
-        }
-        else 
-        {
-            //如果vec_current为0，就把此向量与最后一个向量进行指针交换
-            //同时(*end)--,把总向量的个数减1
-            //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
-            mv_s[0] = current;
-            mv_s[1] = *end-1;
-            mv_e[0] = current+1;
-            mv_e[1] = *end;
-            ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
-            (*end)--;
-            current--;
-            if(orth_para->print_orth_zero == 1)
-            {
-                printf("In Orthogonal, there is a zero vector!, "
-                        "current = %d, start = %d, end = %d\n", current, start, *end);
-            }//end if(orth_para->print_orth_zero == 1)      
-        }//end if(vout > orth_para->orth_zero_tol)    
-
+	if(vout > orth_para->orth_zero_tol)
+	{
+	  //如果vec_current不为0，就做归一化
+	  //ops->GetVecFromMultiVec(V, current, &vec_current);
+	  ops->VecAxpby(0.0, vec_current, 1/vout, vec_current);	 
+	  ops->RestoreVecForMultiVec(V, current, &vec_current);
+	  //ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
+	  //ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);
+	}
+	else 
+	{
+	  //如果vec_current为0，就把此向量与最后一个向量进行指针交换
+	  //同时(*end)--,把总向量的个数减1
+          //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+          mv_s[0] = current;
+          mv_s[1] = *end-1;
+          mv_e[0] = current+1;
+          mv_e[1] = *end;
+          ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
+          (*end)--;
+          current--;
+          if(orth_para->print_orth_zero == 1)
+          {
+              printf("In Orthogonal, there is a zero vector!, "
+                      "current = %d, start = %d, end = %d\n", current, start, *end);
+          }//end if(orth_para->print_orth_zero == 1)	  
+	}//end if(vout > orth_para->orth_zero_tol)    
+	
     }//end for(current = start; current < (*end); ++current)
 }//end of this subprogram
 

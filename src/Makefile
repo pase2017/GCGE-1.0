@@ -4,10 +4,10 @@ include $(GCGEHOME)/config/make.inc
 
 ########################################################################
 OBJS = gcge_utilities.o gcge_statistics.o gcge_para.o gcge_ops.o \
-       gcge_matvec.o gcge_workspace.o \
-       gcge_orthogonal.o gcge_rayleighritz.o gcge_cg.o gcge_xpw.o \
-       gcge_eigsol.o \
-       gcge_solver.o
+       gcge_workspace.o \
+       gcge_orthogonal.o gcge_rayleighritz.o gcge_cg.o gcge_xpw.o 
+       #gcge_eigsol.o \
+       #gcge_solver.o
 INC  = -I$(GCGEINC)
 LIB  = $(LIBGCGE)
 LIBS = $(LIBBLAS) $(LIBLAPACK)

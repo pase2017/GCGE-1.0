@@ -48,6 +48,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
 void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-void GCGE_CheckEvalMultiplicity(GCGE_INT start, GCGE_INT end, GCGE_INT *dim_x, GCGE_DOUBLE *eval);
+void GCGE_CheckEvalMultiplicity(GCGE_INT start, GCGE_INT nev, GCGE_INT end, GCGE_INT *dim_x, GCGE_DOUBLE *eval);
 
 #endif
