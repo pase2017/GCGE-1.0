@@ -3,28 +3,33 @@ GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
 ############################################################
-OBJS1  = test_solver.o
-OBJS2  = test_matvec.o
-OBJS3  = test_orth.o
-OBJS4  = test_xpw.o
-OBJS5  = test_multivec.o
-OBJS6  = test_cg.o
-OBJS7  = test_rayleighritz.o
-OBJS8  = test_solver_dsyev.o
-OBJS10 = test_orth_blas.o
+OBJS1 = test_solver.o
+OBJS2 = test_matvec.o
+OBJS3 = test_orthogonal.o
+OBJS4 = test_xpw.o
+OBJS5 = test_ops.o
+OBJS6 = test_cg.o
+OBJS7 = test_rayleighritz.o
+OBJS8 = test_solver_dsyev.o
+OBJS9 = test_orth_ops.o
+OBJS10 = test_orth_subspace.o
 OBJS11 = test_p.o
 OBJS12 = test_w.o
-EXE1   = $(GCGEBIN)/solver.exe 
-EXE2   = $(GCGEBIN)/test_matvec.exe 
-EXE3   = $(GCGEBIN)/test_orth.exe 
-EXE4   = $(GCGEBIN)/test_xpw.exe 
-EXE5   = $(GCGEBIN)/test_multivec.exe 
-EXE6   = $(GCGEBIN)/test_cg.exe 
-EXE7   = $(GCGEBIN)/test_rayleighritz.exe
-EXE8   = $(GCGEBIN)/test_solver_dsyev.exe
-EXE10  = $(GCGEBIN)/test_orth_blas.exe
+OBJS13 = test_csr_solver.o
+
+EXE1  = $(GCGEBIN)/solver.exe 
+EXE2  = $(GCGEBIN)/test_matvec.exe 
+EXE3  = $(GCGEBIN)/test_orthogonal.exe 
+EXE4  = $(GCGEBIN)/test_xpw.exe 
+EXE5  = $(GCGEBIN)/test_ops.exe 
+EXE6  = $(GCGEBIN)/test_cg.exe 
+EXE7  = $(GCGEBIN)/test_rayleighritz.exe
+EXE8  = $(GCGEBIN)/test_solver_dsyev.exe
+EXE9  = $(GCGEBIN)/test_orth_ops.exe
+EXE10  = $(GCGEBIN)/test_orth_subspace.exe
 EXE11  = $(GCGEBIN)/test_p.exe
 EXE12  = $(GCGEBIN)/test_w.exe
+EXE13  = $(GCGEBIN)/test_csr_solver.exe
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
 LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) \
@@ -40,11 +45,11 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 
 all:	    help
 
-#exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9)
-exe:        $(EXE1)
+#exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9) $(EXE13)
+exe:         $(EXE1)
 
 clean:
-	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe 
+	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
 
 help:
 	@echo " "
@@ -68,17 +73,20 @@ info:
 run-solver:
 	$(EXE1)
 	
+run-matvec:
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE2)
+
 run-orth:
-	$(EXE3)
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE3)
 
 run-xpw:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE4)
 
-run-multivec:
-	$(EXE5)
+run-ops:
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE5)
 
 run-cg:
-	$(EXE6)
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE6)
 
 run-rr:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE7)
@@ -86,8 +94,11 @@ run-rr:
 run-dsyev:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE8)
 
-run-orth-blas:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE10)
+run-orth-ops:
+	$(EXE9)
+
+run-orth-sub:
+	$(EXE10)
 
 run-p:
 	valgrind -v $(EXE11)
@@ -95,6 +106,9 @@ run-p:
 run-w:
 	valgrind -v $(EXE12)
 	 
+run-csr-solver:
+	$(EXE13)
+
 ############################################################
 .f.o:
 	@echo '$(F77) -c $(FFLAGS) ' $*.f
@@ -179,5 +193,9 @@ $(EXE12): $(OBJS12)
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
 	@echo ''
 
-
+$(EXE13): $(OBJS13)
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
 ############################################################
