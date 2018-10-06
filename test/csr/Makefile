@@ -46,7 +46,7 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 all:	    help
 
 #exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9) $(EXE13)
-exe:         $(EXE1)
+exe:         $(EXE13)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
