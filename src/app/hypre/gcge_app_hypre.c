@@ -30,6 +30,7 @@ void GCGE_HYPRE_BuildVecByVec(void *s_vec, void **d_vec)
   MPI_Comm         comm         = hypre_ParVectorComm(x_hypre);
   GCGE_INT         global_size  = hypre_ParVectorGlobalSize(x_hypre);
   GCGE_INT        *partitioning = hypre_ParVectorPartitioning(x_hypre);
+//  printf ( "vec by vec partitioning: %d, %d, global_size = %d\n", partitioning[0], partitioning[1], global_size );
   HYPRE_ParVector  y_hypre      = hypre_ParVectorCreate(comm, global_size, partitioning);
   hypre_ParVectorInitialize(y_hypre);
   hypre_ParVectorSetPartitioningOwner(y_hypre, 0);
@@ -41,7 +42,14 @@ void GCGE_HYPRE_BuildVecByMat(void *mat, void **vec)
   MPI_Comm           comm         = hypre_ParCSRMatrixComm(A_hypre);
   GCGE_INT           global_size  = hypre_ParCSRMatrixGlobalNumRows(A_hypre);
   GCGE_INT          *partitioning = NULL;
+#ifdef HYPRE_NO_GLOBAL_PARTITION
+  partitioning = hypre_CTAlloc(HYPRE_Int,  2);
+  hypre_ParCSRMatrixGetLocalRange(A_hypre, partitioning, partitioning+1, partitioning, partitioning+1);
+  partitioning[1] += 1;
+#else
   HYPRE_ParCSRMatrixGetRowPartitioning(A_hypre, &partitioning);
+#endif
+//  printf ( "vec by mat partitioning: %d, %d, global_size = %d\n", partitioning[0], partitioning[1], global_size );
   HYPRE_ParVector    y_hypre      = hypre_ParVectorCreate(comm, global_size, partitioning);
   hypre_ParVectorInitialize(y_hypre);
   hypre_ParVectorSetPartitioningOwner(y_hypre, 1);
