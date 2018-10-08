@@ -47,13 +47,9 @@ void GCGE_SOLVER_Free(GCGE_SOLVER **solver)
 //把solver以及其中的特征值和特征向量全部都释放掉
 void GCGE_SOLVER_Free_All(GCGE_SOLVER **solver)
 {    
-    GCGE_INT i = 0, nev; 
+    GCGE_INT nev; 
     nev = (*solver)->para->nev;
-    for(i = 0; i<nev; i++)
-    {
-        (*solver)->ops->FreeVec((*solver)->evec+i);
-    }
-    free((*solver)->evec); (*solver)->evec = NULL;
+    (*solver)->ops->FreeMultiVec(&((*solver)->evec), nev, (*solver)->ops);
     free((*solver)->eval); (*solver)->eval = NULL;
     GCGE_SOLVER_Free(solver);     
 }
@@ -87,6 +83,5 @@ void GCGE_SOLVER_SetNumEigen(GCGE_SOLVER *solver, GCGE_INT nev)
 
 void GCGE_SOLVER_Solve(GCGE_SOLVER *solver)
 {    
-    printf("gcge_solver.c line 90\n");
     GCGE_EigenSolver(solver->A, solver->B, solver->eval, solver->evec, solver->para, solver->ops, solver->workspace);
 }

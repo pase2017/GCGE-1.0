@@ -2,10 +2,12 @@
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-#LIBLAPACK    = /home/nzhang/GCGE_newest/lib/liblapack.a
-#LIBBLAS      = /home/nzhang/GCGE_newest/lib/blas_LINUX.a
-LIBLAPACK    = -llapack -lgfortran -lm
-LIBBLAS      = -lblas
+LIBLAPACK    = $(GCGEHOME)/lib/libtmglib.a $(GCGEHOME)/lib/liblapack.a
+LIBBLAS      = $(GCGEHOME)/lib/librefblas.a
+LIBGFORTRAN  = -lgfortran
+#$(GCGEHOME)/lib/libgfortran.a
+#LIBLAPACK    = -llapack -lgfortran -lm
+#LIBBLAS      = -lblas
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
@@ -14,14 +16,14 @@ LIBBLAS      = -lblas
 CSRINC       = $(EXTERNAL)/csr/include
 LIBCSR       = $(EXTERNAL)/csr/lib/libcsr.a -lm
 
-PETSCINC     = 
-LIBPETSC     = 
+PETSCINC     = $(EXTERNAL)/petsc/include
+LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
 
 SLEPCINC     = 
 LIBSLEPC     = 
 
-HYPREINC     = $(EXTERNAL)/hypre/include
-LIBHYPRE     = $(EXTERNAL)/hypre/lib/libHYPRE.a -lm
+HYPREINC     = 
+LIBHYPRE     = 
 
 EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
 EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE) $(DEBUGLIBS)

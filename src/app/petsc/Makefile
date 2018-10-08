@@ -3,8 +3,9 @@ GCGEHOME = ../../..
 include $(GCGEHOME)/config/make.inc
 
 ########################################################################
-OBJS = xx.o xxx.o 
-INC  = -I$(APPINC) -I$(GCGEINC)
+OBJS = gcge_app_petsc.o 
+LIBS = $(LIBPETSC)
+INC  = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
 LIB  = $(LIBGCGEPETSC)
 
 ########################################################################

@@ -1,0 +1,68 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  test_solver.c
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  2018年09月24日 09时57分13秒
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  YOUR NAME (), 
+ *   Organization:  
+ *
+ * =====================================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+
+//#include "memwatch.h"
+#include <petscsys.h>
+#include <petscviewer.h>
+#include <petscmat.h>
+
+#include "gcge.h"
+#include "gcge_app_petsc.h"
+#include "external_petsc.h"
+
+static char help[] = "Use GCGE-PETSc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\n";
+
+int main(int argc, char* argv[])
+{
+    //创建矩阵
+    Mat A, B;
+    PetscErrorCode ierr;
+
+    PetscInitialize(&argc,&argv,(char*)0,help);
+
+    const char *file_A = "../data/A_5.petsc.bin";
+    const char *file_B = "../data/M_5.petsc.bin";
+    ierr = ReadPetscMatrixBinary(&A, file_A);CHKERRQ(ierr);
+    ierr = ReadPetscMatrixBinary(&B, file_B);CHKERRQ(ierr);
+    int nev = 30;
+    printf("test_petsc_solver.c nev: %d\n", nev);
+    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, nev, argc,  argv);   
+
+    /* TODO should be modidfied */
+    petsc_solver->para->ev_tol = 1e-8;
+    petsc_solver->para->orth_para->print_orth_zero = 1;
+    petsc_solver->para->dirichlet_boundary = 0;
+    petsc_solver->para->cg_max_it = 10;
+    petsc_solver->para->ev_max_it = 30;
+
+    GCGE_SOLVER_Solve(petsc_solver);  
+
+    GCGE_SOLVER_Free_All(&petsc_solver);
+    //释放矩阵空间
+    ierr = MatDestroy(&A);
+    ierr = MatDestroy(&B);
+    ierr = PetscFinalize();
+
+    return ierr;
+}
