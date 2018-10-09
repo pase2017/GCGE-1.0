@@ -5,8 +5,10 @@ include $(GCGEHOME)/config/make.inc
 
 ############################################################
 OBJS1 = test_petsc_solver.o
+OBJS2 = test_print.o
 
 EXE1  = $(GCGEBIN)/test_petsc_solver.exe 
+EXE2  = $(GCGEBIN)/test_print.exe 
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
 LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) \
@@ -22,7 +24,8 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 
 all:	    help
 
-exe:         $(EXE1)
+exe1:       $(EXE1)
+exe2:       $(EXE2)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -47,7 +50,10 @@ info:
 	@echo " "
 
 run-solver:
-	$(EXE1)
+	mpirun -np 2 $(EXE1)
+	
+run-print:
+	mpirun -np 2 $(EXE2)
 	
 ############################################################
 .f.o:
@@ -62,6 +68,12 @@ run-solver:
 
 ############################################################
 $(EXE1): $(OBJS1)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE2): $(OBJS2)
 	@echo ''
 	@echo 'Creating executable bin/xx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)

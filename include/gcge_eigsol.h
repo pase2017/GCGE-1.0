@@ -18,9 +18,10 @@
 #ifndef _GCGE_EIGSOL_H_
 #define _GCGE_EIGSOL_H_
 
-#include "gcge_utilities.h"
 
 #include "gcge_type.h"
+
+#include "gcge_utilities.h"
 
 #include "gcge_para.h"
 #include "gcge_ops.h"

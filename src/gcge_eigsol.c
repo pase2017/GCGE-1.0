@@ -70,7 +70,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
      *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
     //统计GCGE求解时间
     GCGE_DOUBLE ttotal1 = GCGE_GetTime();
-    printf("gcge_eigsol.c line 73\n");
     /* TODO */
     //GCGE_WORKSPACE_Create(solver);
     //printf("Eigensolving!\n");
@@ -84,7 +83,12 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     GCGE_DOUBLE *subspace_evec   = workspace->subspace_evec;   //subspace_evec表示Rayleigh-Ritz过程中的子空间向量
     void        *Orth_mat; //Orth_mat正交化时计算内积所用的矩阵: B 或者 A，通常是B
     void        *RayleighRitz_mat; //RayleighRitz_mat计算子空间矩阵时所用矩阵: A或者B,通常用A
-    
+
+    GCGE_STATISTIC_PARA *stat_para = para->stat_para;
+    //t1,t2用于统计时间
+    GCGE_DOUBLE t1 = 0.0;
+    GCGE_DOUBLE t2 = 0.0;
+
     GCGE_INT    i = 0;
     //因为计算中对矩阵乘向量和向量内积数乘等线性代数操作，
     //都尽量采用向量组操作,mv_s与mv_e表示计算中需要对向量组中的
@@ -93,7 +97,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //mv_e:matrix-vector operation end index + 1
     GCGE_INT    mv_s[2] = { 0, 0 };
     GCGE_INT    mv_e[2]   = { 0, 0 };
-    printf("line 95\n");
     //如果使用B内积，那么用矩阵B进行正交化，用矩阵A计算子空间矩阵
     //如果使用A内积，那么用矩阵A进行正交化，用矩阵B计算子空间矩阵
     //strcmp函数：当两个字符串相同时返回0, 如果orth_type==B, 返回0,运行else
@@ -112,34 +115,41 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //如果用户不给初值，这里给随机初值，用户需要提供给向量设随机值的函数
     if(num_init_evec < nev)
     {
-      do{
-	  //调用方式: MultiVecSetRandomValue(void** V, start, num_vecs, ops)
-	  //其中V是存储向量的对象， start：表示是从V中的start开始形成num_vecs个随机向量
-	  //V(:,start:start + num_vecs) 进行随机化
-	  ops->MultiVecSetRandomValue(evec, num_init_evec, nev - num_init_evec, ops);
-	 
-	  if(para->dirichlet_boundary == 1)
-	  {
-	    //理边界条件，把Dirichlet边界条件的位置强制设置为 0
-	    ops->SetDirichletBoundary(evec,nev,A,B);    
-	   }//end for SetDirichletBoundary
-	   //进行正交化, 并返回正交化向量的个数
-	   //对初始近似特征向量做B正交化, 
-	   //正交化这里修改了, 此时 dim_x = x_end
-	   //x_end: 表示X的终止位置
-	   //dim_x(x_end)表示 X 中的向量个数，初始为nev(参数dim_x需要被替换为x_end, x_start始终为0)
-	   workspace->dim_x = nev;
-	   // 对 V(:,0:dim_x)进行正交化,正交矩阵 Orth_mat,V_tmp:用来做正交的辅助向量,一般只用V_tmp[0]
-	   //subspace_dtmp: 用来记录不同的两个向量之间的内积 (是一个数组)
-	   GCGE_Orthogonal(evec, num_init_evec, &(workspace->dim_x), Orth_mat, ops, para, 
-			   workspace->V_tmp, workspace->subspace_dtmp);
-        
-	   num_init_evec = workspace->dim_x;
-	   printf("num_init_evec = %d\n",num_init_evec);
-        }while(num_init_evec < nev);
-     }//end for Initialization for the eigenvectors   
+        do{
+            //调用方式: MultiVecSetRandomValue(void** V, start, num_vecs, ops)
+            //其中V是存储向量的对象， start：表示是从V中的start开始形成num_vecs个随机向量
+            //V(:,start:start + num_vecs) 进行随机化
+            ops->MultiVecSetRandomValue(evec, num_init_evec, nev - num_init_evec, ops);
 
-     //把用户提供的evec初值copy给V, 从evec的0到nev-1拷贝到V的0到nev-1
+            if(para->dirichlet_boundary == 1)
+            {
+                //理边界条件，把Dirichlet边界条件的位置强制设置为 0
+                ops->SetDirichletBoundary(evec,nev,A,B);    
+            }//end for SetDirichletBoundary
+            //进行正交化, 并返回正交化向量的个数
+            //对初始近似特征向量做B正交化, 
+            //正交化这里修改了, 此时 dim_x = x_end
+            //x_end: 表示X的终止位置
+            //dim_x(x_end)表示 X 中的向量个数，初始为nev(参数dim_x需要被替换为x_end, x_start始终为0)
+            workspace->dim_x = nev;
+            // 对 V(:,0:dim_x)进行正交化,正交矩阵 Orth_mat,V_tmp:用来做正交的辅助向量,一般只用V_tmp[0]
+            //subspace_dtmp: 用来记录不同的两个向量之间的内积 (是一个数组)
+#if GET_PART_TIME
+            t1 = GCGE_GetTime();
+#endif
+            GCGE_Orthogonal(evec, num_init_evec, &(workspace->dim_x), Orth_mat, ops, para, 
+                    workspace->V_tmp, workspace->subspace_dtmp);
+#if GET_PART_TIME
+            t2 = GCGE_GetTime();
+            stat_para->part_time_total->w_orth_time += t2-t1;
+#endif
+
+            num_init_evec = workspace->dim_x;
+            printf("num_init_evec = %d\n",num_init_evec);
+        }while(num_init_evec < nev);
+    }//end for Initialization for the eigenvectors   
+
+    //把用户提供的evec初值copy给V, 从evec的0到nev-1拷贝到V的0到nev-1
     mv_s[0] = 0;
     mv_e[0] = nev;
     mv_s[1] = 0;
@@ -157,17 +167,17 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     // 对 V(:,0:dim_x)进行正交化,正交矩阵 Orth_mat,V_tmp:用来做正交的辅助向量,一般只用V_tmp[0]
     //subspace_dtmp: 用来记录不同的两个向量之间的内积 (是一个数组)
     GCGE_Orthogonal(V, 0, &(workspace->dim_x), Orth_mat, ops, para->orth_para, 
-            workspace->V_tmp, workspace->subspace_dtmp);
+    workspace->V_tmp, workspace->subspace_dtmp);
     //默认初始近似特征向量是线性无关的，否则报错
     if(workspace->dim_x < nev)
     {
-        printf("The initial eigenvectors is linearly dependent!\n");
-	ops->MultiVecSetRandomValue(evec, nev, ops);
-        exit(0);
+    printf("The initial eigenvectors is linearly dependent!\n");
+    ops->MultiVecSetRandomValue(evec, nev, ops);
+    exit(0);
     }
-    **/
+     **/
     //dim_xpw 表示V=[X,P,W]的总向量个数，此时V中只有X, 此时应该有 dim_xpw = dim_x. 
-     // ??应被替换为 w_end??
+    // ??应被替换为 w_end??
     workspace->dim_xpw = workspace->dim_x;
     //printf("Before start: dim_x=%d\n",workspace->dim_x);
     //last_dim_x表示上次迭代中X向量的个数，用于计算P时确定拷贝的起始位置
@@ -180,47 +190,90 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     workspace->last_dim_x = workspace->dim_x;
     //printf("Before start: last_ dim_x=%d\n",workspace->last_dim_x);
     //dim_xp表示[X,P]的向量个数
-     //也表示计算子空间矩阵时大规模操作的起始位置（目前是表示这个意思）
+    //也表示计算子空间矩阵时大规模操作的起始位置（目前是表示这个意思）
     //dim_xp需要被修改为三个参数：p_end与rrls_start(Rayleigh-Ritz large scale)
-     //以及w_start(W向量组在V中存放的起始位置）
-     //这里dim_xp赋值为0表示rrls_start,即计算子空间矩阵时大规模操作的起始位置
+    //以及w_start(W向量组在V中存放的起始位置）
+    //这里dim_xp赋值为0表示rrls_start,即计算子空间矩阵时大规模操作的起始位置
     workspace->dim_xp = 0;
-     //计算得到子空间矩阵subspace_matrix=V^TAV
-     //这个函数修改了workspace->subspace_matrix,没有修改参数
+    //计算得到子空间矩阵subspace_matrix=V^TAV
+    //这个函数修改了workspace->subspace_matrix,没有修改参数
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeSubspaceMatrix(RayleighRitz_mat, V, ops, para, workspace);
-     //计算子空间矩阵的特征对
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->rr_mat_time = t2-t1;
+    stat_para->part_time_total->rr_mat_time += t2-t1;
+#endif
+    //计算子空间矩阵的特征对
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
             ops, para, workspace);
-     //基向量 V 线性组合得到dim_x(x_end)个向量 X(RitzVec), 线性组合系数为 subspace_evec
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
+    stat_para->part_time_total->rr_eigen_time += t2-t1;
+#endif
+    //基向量 V 线性组合得到dim_x(x_end)个向量 X(RitzVec), 线性组合系数为 subspace_evec
     //RitzVec = V * subspace_evec
-     //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
-     //是因为计算P的时候需要用到，这个时候是不是 X 部分可以改变
+    //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
+    //是因为计算P的时候需要用到，这个时候是不是 X 部分可以改变
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
-     //检查收敛性
-     //检查X(RitzVec)向量的收敛性，这个函数会修改 unlock(未收敛的特征对编号）
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->x_axpy_time = t2-t1;
+    stat_para->part_time_total->x_axpy_time += t2-t1;
+#endif
+    //检查收敛性
+    //检查X(RitzVec)向量的收敛性，这个函数会修改 unlock(未收敛的特征对编号）
     //unconv_bs(当前批次中未收敛的特征对个数),num_unlock(总的未收敛个数）
-     //此函数会修改 num_iter (加1)
+    //此函数会修改 num_iter (加1)
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
-    for(i=0; i< (nev<200? nev: 200); i++)
-     {
-         printf("num_iter: %d, num_unlock: %d, eval[%d]: %6.15f, res: %e;\n", 
-                 para->num_iter, para->num_unlock, i, workspace->eval[i], para->res[i]);
-     }
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->conv_time = t2-t1;
+    stat_para->part_time_total->conv_time += t2-t1;
+#endif
+    GCGE_PrintIterationInfo(workspace->eval, para);
     //printf("after: sum_res=%e\n",para->sum_res);
-    printf("\n");
     //Ritz向量放到V中作为下次迭代中基向量的一部分,即为[X,P,W]中的X
     mv_s[0] = 0;
     mv_s[1] = 0;
     mv_e[0] = workspace->dim_x;
     mv_e[1] = workspace->dim_x;
     //基底向量组V已经没用，将RitzVec中的X向量与V进行指针交换，V中存储新的基向量
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     ops->MultiVecSwap(V, RitzVec, mv_s, mv_e, ops);
-     //这里修改dim_xp用于表示 W 向量存放的起始位置为dim_x，此时 V=[X,W]
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->x_axpy_time = t2-t1;
+    stat_para->part_time_total->x_axpy_time += t2-t1;
+#endif
+    //这里修改dim_xp用于表示 W 向量存放的起始位置为dim_x，此时 V=[X,W]
     workspace->dim_xp = workspace->dim_x;
-     //用未收敛的特征向量作为 X 求解线性方程组 A W = \lambda B X
-     //需要参数unlock及w_length(unconv_bs),w_start,
-     //修改向量组V中w_start至w_end列，不会修改参数
+    //用未收敛的特征向量作为 X 求解线性方程组 A W = \lambda B X
+    //需要参数unlock及w_length(unconv_bs),w_start,
+    //修改向量组V中w_start至w_end列，不会修改参数
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeW(A, B, V, workspace->eval, ops, para, workspace);
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->w_line_time = t2-t1;
+    stat_para->part_time_total->w_line_time += t2-t1;
+#endif
     //last_dim_xpw表示计算子空间矩阵时，小规模操作时使用的上次子空间矩阵的维数
     //dim_xpw会在正交化时被修改，所以这里先更新last_dim_xpw
     //last_dim_xpw需要修改为rr_last_ldm(Rayleigh-Ritz中上次迭代子空间矩阵的leading dimension)
@@ -229,34 +282,68 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     workspace->dim_xpw = workspace->dim_xp + workspace->unconv_bs;
     //对基向量组V的第dim_x列到dim_xpw列进行正交化
     //即为对W部分进行正交化,dim_x这里表示w_start,dim_xpw这里表示w_end
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_Orthogonal(V, workspace->dim_x, &(workspace->dim_xpw), Orth_mat, ops, para, 
-                    workspace->V_tmp, workspace->subspace_dtmp);
+            workspace->V_tmp, workspace->subspace_dtmp);
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->w_orth_time = t2-t1;
+    stat_para->part_time_total->w_orth_time += t2-t1;
+#endif
     //这里dim_xp表示计算子空间矩阵时大规模操作的起始位置(即rrls_start=0)
     workspace->dim_xp = 0;
     //计算子空间矩阵subspace_matrix = V^T*A*V
     //这里修改了workspace->subspace_matrix,没有修改参数
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeSubspaceMatrix(RayleighRitz_mat, V, ops, para, workspace);
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->rr_mat_time = t2-t1;
+    stat_para->part_time_total->rr_mat_time += t2-t1;
+#endif
     //计算子空间矩阵的特征对
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
             ops, para, workspace);
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
+    stat_para->part_time_total->rr_eigen_time += t2-t1;
+#endif
     //基向量 V 线性组合得到dim_x个向量 X(RitzVec), 线性组合系数为 subspace_evec
     //RitzVec = V * subspace_evec
     //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->x_axpy_time = t2-t1;
+    stat_para->part_time_total->x_axpy_time += t2-t1;
+#endif
     //检查收敛性
     //检查X(RitzVec)向量的收敛性，这个函数会修改 unlock(未收敛的特征对编号）
     //unconv_bs(当前批次中未收敛的特征对个数),num_unlock(总的未收敛个数）
     //并将num_iter加1
     //这里为什么用unconv_bs???
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
-     //做完第一步[X,W]之后得到的特征值
-    for(i=0; i< (nev<200? nev: 200); i++)
-     {
-        printf("num_iter: %d, num_unlock: %d, eval[%d]: %6.15f, res: %e;\n", 
-               para->num_iter, para->num_unlock, i, workspace->eval[i], para->res[i]);
-     }
-     //printf("after: sum_res=%e\n",para->sum_res);
-    printf("\n");
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->conv_time = t2-t1;
+    stat_para->part_time_total->conv_time += t2-t1;
+#endif
+    //做完第一步[X,W]之后得到的特征值
+    GCGE_PrintIterationInfo(workspace->eval, para);
     //--------------------开始循环--------------------------------------------
     while((para->num_unlock > 0)&&(para->num_iter < ev_max_it))
     {
@@ -265,7 +352,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //       XP  O  ===>  XP  XP  =====>  XP  PP  =======> P = V * PP
         //       XW  O        XW  XW          XW  PW                   PW
         //out:   输出时大规模P向量存储在V的dim_x(p_start)到dim_xp(p_end)列
-          //会修改dim_xp即p_end
+        //会修改dim_xp即p_end
         GCGE_ComputeP(subspace_evec, V, ops, para, workspace);
         //Ritz向量放到V中作为下次迭代中基向量的一部分
         mv_s[0] = 0;
@@ -275,50 +362,99 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //计算完P之后，基向量组V就没用了,将X放到V中,操作方法为：
         //交换V的前dim_x(x_end)列与X(RitzVec)的前dim_x(x_end)列的指针
         //把V中与X相对应的向量组更新
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
         ops->MultiVecSwap(V, RitzVec, mv_s, mv_e, ops);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->x_axpy_time = t2-t1;
+        stat_para->part_time_total->x_axpy_time += t2-t1;
+#endif
         //用未收敛的特征向量作为X求解线性方程组 A W = \lambda B X
         //需要参数unlock及w_length(unconv_bs),w_start,
         //修改向量组V中w_start至w_end列，不会修改参数
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
         GCGE_ComputeW(A, B, V, workspace->eval, ops, para, workspace);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->w_line_time = t2-t1;
+        stat_para->part_time_total->w_line_time += t2-t1;
+#endif
         //last_dim_xpw表示计算子空间矩阵时，小规模操作时使用的上次子空间矩阵的维数
         //dim_xpw会在正交化时被修改，所以这里先更新last_dim_xpw
         //last_dim_xpw需要修改为rr_last_ldm(Rayleigh-Ritz中上次迭代子空间矩阵的leading dimension)
         workspace->last_dim_xpw = workspace->dim_xpw;
         //dim_xpw(即w_end)
         workspace->dim_xpw = workspace->dim_xp + workspace->unconv_bs;
-         //对基向量组V的第dim_xp列到dim_xpw列进行正交化
-         //即为对W部分进行正交化,dim_xp这里表示w_start,dim_xpw这里表示w_end
-         //printf("before: sum_res=%e\n",para->sum_res);
-       GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+        //对基向量组V的第dim_xp列到dim_xpw列进行正交化
+        //即为对W部分进行正交化,dim_xp这里表示w_start,dim_xpw这里表示w_end
+        //printf("before: sum_res=%e\n",para->sum_res);
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
+        GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace->V_tmp, workspace->subspace_dtmp);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->w_orth_time = t2-t1;
+        stat_para->part_time_total->w_orth_time += t2-t1;
+#endif
         //计算子空间矩阵subspace_matrix = V^T*A*V
         //这里修改了workspace->subspace_matrix,没有修改参数
-       GCGE_ComputeSubspaceMatrix(RayleighRitz_mat, V, ops, para, workspace);
-         //计算子空间矩阵的特征对
-       GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
+        GCGE_ComputeSubspaceMatrix(RayleighRitz_mat, V, ops, para, workspace);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->rr_mat_time = t2-t1;
+        stat_para->part_time_total->rr_mat_time += t2-t1;
+#endif
+        //计算子空间矩阵的特征对
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
+        GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
                 ops, para, workspace);
-       workspace->last_dim_x = workspace->dim_x;
-         //检查特征值重数,确定新的dim_x(即x_end)
-         //这里是用什么方法进行检测的？？？
-       GCGE_CheckEvalMultiplicity(nev, nev, max_dim_x, &(workspace->dim_x), workspace->eval);
-       //para->num_unlock = workspace->dim_x;
-         //基向量 V 线性组合得到dim_x个向量 X(RitzVec), 线性组合系数为 subspace_evec
-       //RitzVec = V * subspace_evec
-         //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
-       GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
-         //检查收敛性
-         //检查X(RitzVec)向量的收敛性，这个函数会修改 unlock(未收敛的特征对编号）
-       //unconv_bs(当前批次中未收敛的特征对个数),num_unlock(总的未收敛个数）
-         //并将num_iter加1
-       GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
-         //输出特征值作为检验
-       for(i=0; i< (nev<200? nev: 200); i++)
-         {
-            printf("num_iter: %d, num_unlock: %d, eval[%d]: %6.15f, res: %e;\n", 
-                    para->num_iter, para->num_unlock, i, workspace->eval[i], para->res[i]);
-         }
-         //printf("after: sum_res=%e\n",para->sum_res);
-       printf("\n");
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
+        stat_para->part_time_total->rr_eigen_time += t2-t1;
+#endif
+        workspace->last_dim_x = workspace->dim_x;
+        //检查特征值重数,确定新的dim_x(即x_end)
+        //这里是用什么方法进行检测的？？？
+        GCGE_CheckEvalMultiplicity(nev, nev, max_dim_x, &(workspace->dim_x), workspace->eval);
+        //para->num_unlock = workspace->dim_x;
+        //基向量 V 线性组合得到dim_x个向量 X(RitzVec), 线性组合系数为 subspace_evec
+        //RitzVec = V * subspace_evec
+        //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
+        GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->x_axpy_time = t2-t1;
+        stat_para->part_time_total->x_axpy_time += t2-t1;
+#endif
+        //检查收敛性
+        //检查X(RitzVec)向量的收敛性，这个函数会修改 unlock(未收敛的特征对编号）
+        //unconv_bs(当前批次中未收敛的特征对个数),num_unlock(总的未收敛个数）
+        //并将num_iter加1
+#if GET_PART_TIME
+        t1 = GCGE_GetTime();
+#endif
+        GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
+#if GET_PART_TIME
+        t2 = GCGE_GetTime();
+        stat_para->part_time_one_iter->conv_time = t2-t1;
+        stat_para->part_time_total->conv_time += t2-t1;
+#endif
+        GCGE_PrintIterationInfo(workspace->eval, para);
 
     }//GCG算法迭代结束
 
@@ -331,6 +467,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     mv_s[1] = 0;
     mv_e[1] = nev;
     ops->MultiVecAxpby(1.0, RitzVec, 0.0, evec, mv_s, mv_e, ops);
+    GCGE_PrintFinalInfo(eval, para);
 
 }
 

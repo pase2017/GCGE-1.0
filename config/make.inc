@@ -2,8 +2,8 @@
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-LIBLAPACK    = $(GCGEHOME)/lib/libtmglib.a $(GCGEHOME)/lib/liblapack.a
-LIBBLAS      = $(GCGEHOME)/lib/librefblas.a
+LIBLAPACK    = $(GCGEHOME)/lib/liblapack.a
+LIBBLAS      = $(GCGEHOME)/lib/blas_LINUX.a
 LIBGFORTRAN  = -lgfortran
 #$(GCGEHOME)/lib/libgfortran.a
 #LIBLAPACK    = -llapack -lgfortran -lm
@@ -43,7 +43,7 @@ VALGRINDFLAGSN = --leak-check=full -v --show-reachable=yes
 # DEFINE compilers, linkers and execution
 ############################################################
 F77          = gfortran
-CC           = gcc
+CC           = mpicc
 CPP          = g++
 MAKE         = make
 

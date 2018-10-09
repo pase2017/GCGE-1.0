@@ -20,6 +20,7 @@
 #define  _GCGE_PARA_H_
 
 #include "gcge_type.h"
+#include "gcge_statistics.h"
 
 typedef struct GCGE_ORTH_PARA_ {
     //正交化用到的参数
@@ -78,7 +79,8 @@ typedef struct GCGE_PARA_ {
     GCGE_INT    print_matlab;       //如果要用matlab画图，那么就不要打印converged这些
     GCGE_INT    print_part_time;    //是否打印各部分的时间
     GCGE_INT    print_level;        //用打印层级来控制打印多少东西
-    //GCGE_STATISTIC_PARA *stat_para;
+
+    GCGE_STATISTIC_PARA *stat_para;
 
 }GCGE_PARA;
 
@@ -94,5 +96,10 @@ void GCGE_PARA_Free(GCGE_PARA **para);     //把para占用的内存空间释放�
 GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **argv);
 void GCGE_PARA_SetNumEigen(GCGE_PARA *para, GCGE_INT nev); //设置求解特征值的个数
 void GCGE_PARA_Setup(GCGE_PARA *para);  
+
+//打印收敛性信息
+void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para);
+//GCG迭代结束后打印特征值及收敛情况，时间信息
+void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para);
 #endif
 

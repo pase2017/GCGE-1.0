@@ -20,11 +20,16 @@
 #define  _GCGE_UTILITIES_H_
 
 #include "gcge_type.h"
+#include <stdarg.h>
+#if GCGE_USE_MPI
+#include <mpi.h>
+#endif
 
 GCGE_DOUBLE GCGE_GetTime();
 GCGE_INT    GCGE_GetIntFromCommandLine   (const char *para, GCGE_INT argc, char* argv[]);
 GCGE_DOUBLE GCGE_GetDoubleFromCommandLine(const char *para, GCGE_INT argc, char* argv[]);
 char *GCGE_GetCharFromCommandLine  (const char *para, GCGE_INT argc, char* argv[]);
+void GCGE_Printf(char *fmt, ...);
 /**
  * @brief 
  *

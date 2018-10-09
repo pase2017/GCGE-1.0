@@ -222,6 +222,12 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
 //V表示用于计算的基底向量组(GCGE_Vec)
 void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
+    //t1,t2用于统计时间
+    GCGE_DOUBLE t1 = 0.0;
+    GCGE_DOUBLE t2 = 0.0;
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     //要给的形式参数
     GCGE_DOUBLE *coef    = subspace_evec; //线性组合系数
     GCGE_INT    ldc      = workspace->dim_xpw; //系数矩阵ldc的leading dimension
@@ -265,6 +271,11 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, para->orth_para);
     p_ncols = p_end - p_start;
 
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    para->stat_para->part_time_one_iter->p_orth_time = t2-t1;
+    para->stat_para->part_time_total->p_orth_time += t2-t1;
+#endif
     //V线性组合得到P向量，存放在V_tmp中
     mv_s[0] = 0;
     mv_s[1] = 0;
@@ -281,6 +292,11 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
 
     //更新workspace中的dim_xp
     workspace->dim_xp = p_end;
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+    para->stat_para->part_time_one_iter->p_axpy_time = t1-t2;
+    para->stat_para->part_time_total->p_axpy_time += t1-t2;
+#endif
 
 }
 

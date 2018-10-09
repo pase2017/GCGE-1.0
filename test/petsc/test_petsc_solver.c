@@ -40,13 +40,14 @@ int main(int argc, char* argv[])
     PetscErrorCode ierr;
 
     PetscInitialize(&argc,&argv,(char*)0,help);
+    double t1 = 0.0;
+    double t2 = 0.0;
 
     const char *file_A = "../data/A_5.petsc.bin";
     const char *file_B = "../data/M_5.petsc.bin";
     ierr = ReadPetscMatrixBinary(&A, file_A);CHKERRQ(ierr);
     ierr = ReadPetscMatrixBinary(&B, file_B);CHKERRQ(ierr);
     int nev = 30;
-    printf("test_petsc_solver.c nev: %d\n", nev);
     GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, nev, argc,  argv);   
 
     /* TODO should be modidfied */
@@ -55,6 +56,7 @@ int main(int argc, char* argv[])
     petsc_solver->para->dirichlet_boundary = 0;
     petsc_solver->para->cg_max_it = 10;
     petsc_solver->para->ev_max_it = 30;
+    petsc_solver->para->print_part_time = 1;
 
     GCGE_SOLVER_Solve(petsc_solver);  
 
