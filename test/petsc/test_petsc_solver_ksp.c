@@ -48,13 +48,10 @@ int main(int argc, char* argv[])
     PETSC_ReadMatrixBinary(&A, file_A);
     PETSC_ReadMatrixBinary(&B, file_B);
     int nev = 30;
-    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, nev, argc,  argv);   
+    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init_KSPLinearSolver(A, B, A, nev, argc,  argv);   
 
-    /* TODO should be modidfied */
-    petsc_solver->para->ev_tol = 1e-8;
+    petsc_solver->para->ev_tol = 1e-12;
     petsc_solver->para->orth_para->print_orth_zero = 1;
-    petsc_solver->para->dirichlet_boundary = 0;
-    petsc_solver->para->cg_max_it = 10;
     petsc_solver->para->ev_max_it = 30;
     petsc_solver->para->print_part_time = 1;
 

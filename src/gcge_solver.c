@@ -81,6 +81,11 @@ void GCGE_SOLVER_SetNumEigen(GCGE_SOLVER *solver, GCGE_INT nev)
    GCGE_PARA_SetNumEigen(solver->para, nev);
 }
 
+void GCGE_SOLVER_SetOpsLinearSolverWorkspace(GCGE_SOLVER *solver, void *linear_solver_workspace)
+{
+    GCGE_OPS_SetLinearSolverWorkspace(solver->ops, linear_solver_workspace);
+}
+
 void GCGE_SOLVER_Solve(GCGE_SOLVER *solver)
 {    
     GCGE_EigenSolver(solver->A, solver->B, solver->eval, solver->evec, solver->para, solver->ops, solver->workspace);

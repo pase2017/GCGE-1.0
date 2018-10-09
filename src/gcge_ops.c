@@ -345,7 +345,7 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
 //OPS的setup: 主要是进行对OPS的赋值， 同时也判断赋值是否充足和合理了
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
 {
-    GCGE_INT error;
+    GCGE_INT error = 0;
     if(ops->MatDotVec == NULL)
     {
         error = 1;
@@ -465,4 +465,8 @@ void GCGE_OPS_Free(GCGE_OPS **ops)
     free(*ops); *ops = NULL;
 }
 
+void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_workspace)
+{
+    ops->linear_solver_workspace = linear_solver_workspace;
+}
 

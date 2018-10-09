@@ -229,4 +229,5 @@ void GCGE_OPS_Create(GCGE_OPS **ops);
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops);
 void GCGE_OPS_Free(GCGE_OPS **ops);
 
+void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_workspace);
 #endif

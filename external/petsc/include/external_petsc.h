@@ -25,7 +25,10 @@
 #include <petscmat.h>
 #include <petscsys.h>
 #include <petscviewer.h>
+#include <petscksp.h>
+#include <petscpc.h>
 
-PetscErrorCode ReadPetscMatrixBinary(Mat *A, const char *filename);
+void PETSC_ReadMatrixBinary(Mat *A, const char *filename);
+void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T);
 
 #endif

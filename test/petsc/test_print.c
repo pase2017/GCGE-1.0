@@ -34,6 +34,7 @@
 
 static char help[] = "Use GCGE-PETSc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\n";
 
+#if 0
 void GCGE_Printf(char *fmt, ...)
 {
 #if GCGE_USE_MPI
@@ -243,6 +244,7 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
                 100*(part_time->conv_time)    /total_time);
     }
 }
+#endif
 
 int main(int argc, char* argv[])
 {

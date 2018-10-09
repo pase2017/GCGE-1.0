@@ -6,9 +6,13 @@ include $(GCGEHOME)/config/make.inc
 ############################################################
 OBJS1 = test_petsc_solver.o
 OBJS2 = test_print.o
+OBJS3 = test_ksp_linear_solver.o
+OBJS4 = test_petsc_solver_ksp.o
 
 EXE1  = $(GCGEBIN)/test_petsc_solver.exe 
 EXE2  = $(GCGEBIN)/test_print.exe 
+EXE3  = $(GCGEBIN)/test_ksp_linear_solver.exe 
+EXE4  = $(GCGEBIN)/test_ksp_linear_solver_ksp.exe 
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
 LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) \
@@ -26,6 +30,8 @@ all:	    help
 
 exe1:       $(EXE1)
 exe2:       $(EXE2)
+exe3:       $(EXE3)
+exe4:       $(EXE4)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -50,10 +56,16 @@ info:
 	@echo " "
 
 run-solver:
-	mpirun -np 2 $(EXE1)
+	mpirun -np 8 $(EXE1)
 	
 run-print:
 	mpirun -np 2 $(EXE2)
+	
+run-ksp:
+	mpirun -np 2 $(EXE3)
+	
+run-solver-ksp:
+	mpirun -np 2 $(EXE4)
 	
 ############################################################
 .f.o:
@@ -74,6 +86,18 @@ $(EXE1): $(OBJS1)
 	@echo ''
 
 $(EXE2): $(OBJS2)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE3): $(OBJS3)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE4): $(OBJS4)
 	@echo ''
 	@echo 'Creating executable bin/xx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)

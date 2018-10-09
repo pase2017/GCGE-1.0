@@ -49,6 +49,7 @@ void GCGE_SOLVER_SetEigenvalues(GCGE_SOLVER *solver, GCGE_DOUBLE *eval);
 void GCGE_SOLVER_SetEigenvectors(GCGE_SOLVER *solver, void **evec);
 void GCGE_SOLVER_SetNumEigen(GCGE_SOLVER *solver, GCGE_INT nev);
 void GCGE_SOLVER_Setup(GCGE_SOLVER *solver);
+void GCGE_SOLVER_SetOpsLinearSolverWorkspace(GCGE_SOLVER *solver, void *linear_solver_workspace);
 //求解特征值的子程序
 void GCGE_SOLVER_Solve(GCGE_SOLVER *solver);
 

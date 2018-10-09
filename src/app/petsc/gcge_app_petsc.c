@@ -93,6 +93,12 @@ void GCGE_PETSC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
 	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, xTy);
 }
 
+void GCGE_PETSC_LinearSolver(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)
+{
+    PetscErrorCode ierr;
+    ierr = KSPSolve((KSP)(ops->linear_solver_workspace), (Vec)b, (Vec)x);
+}
+
 void GCGE_PETSC_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
@@ -150,6 +156,21 @@ GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc,
     GCGE_SOLVER_SetEigenvectors(petsc_solver, (void**)evec);
     //setup and solve
     GCGE_SOLVER_Setup(petsc_solver);
-    printf("Set up finish!\n");
+    GCGE_Printf("Set up finish!\n");
+    return petsc_solver;
+}
+
+void GCGE_PETSC_Solver_SetKSPLinearSolver(GCGE_SOLVER *solver, void *A, void *P)
+{
+    KSP ksp;
+    PETSC_LinearSolverCreate(&ksp, (Mat)A, (Mat)P);
+    GCGE_SOLVER_SetOpsLinearSolverWorkspace(solver, (void*)ksp);
+    solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
+}
+
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPLinearSolver(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[])
+{
+    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, num_eigenvalues, argc, argv);
+    GCGE_PETSC_Solver_SetKSPLinearSolver(petsc_solver, (void *)A, (void *)P);
     return petsc_solver;
 }

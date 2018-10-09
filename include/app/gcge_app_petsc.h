@@ -23,15 +23,16 @@
 #include "gcge_ops.h"
 #include "gcge_solver.h"
 
-//#include <petscksp.h>
 //#include <petscoptions.h>
 //#include <petsc/private/vecimpl.h>
 //#include <petscblaslapack.h>
 #include <petscvec.h>
 #include <petscmat.h>
+#include <petscksp.h>
 
 void GCGE_PETSC_SetOps(GCGE_OPS *ops);
 void GCGE_SOLVER_SetPETSCOps(GCGE_SOLVER *solver);
 
 GCGE_SOLVER *GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc, char* argv[]);
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPLinearSolver(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[]);
 #endif
