@@ -31,7 +31,7 @@
 #include "gcge_app_petsc.h"
 #include "external_petsc.h"
 
-static char help[] = "Use GCGE-PETSc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\n";
+static char help[] = "Use GCGE-PETSc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\nUse KSPSolve as default linear solver.\n";
 
 int main(int argc, char* argv[])
 {
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     PETSC_ReadMatrixBinary(&A, file_A);
     PETSC_ReadMatrixBinary(&B, file_B);
     int nev = 30;
-    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init_KSPLinearSolver(A, B, A, nev, argc,  argv);   
+    GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init_KSPDefault(A, B, A, nev, argc,  argv);   
 
     petsc_solver->para->ev_tol = 1e-12;
     petsc_solver->para->orth_para->print_orth_zero = 1;

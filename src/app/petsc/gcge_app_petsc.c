@@ -123,6 +123,7 @@ void GCGE_SOLVER_SetPETSCOps(GCGE_SOLVER *solver)
 }
 
 //下面是一个对PETSC 的GCG_Solver的初始化
+//用户只提供要求解特征值问题的矩阵A,B,线性解法器等都用默认值
 GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc, char* argv[])
 {
     //第一步: 定义相应的ops,para以及workspace
@@ -160,30 +161,31 @@ GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc,
     return petsc_solver;
 }
 
-void GCGE_PETSC_Solver_SetKSPLinearSolverByMatrix(GCGE_SOLVER *solver, void *A, void *P)
+//下面是一个对PETSC 的GCG_Solver的初始化
+//用户只提供要求解特征值问题的矩阵A,B,线性解法器使用KSPSolve,用户不接触ksp,设置参数均从命令行设置
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPDefault(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[])
 {
-    KSP ksp;
-    PETSC_LinearSolverCreate(&ksp, (Mat)A, (Mat)P);
-    GCGE_SOLVER_SetOpsLinearSolverWorkspace(solver, (void*)ksp);
-    solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
-}
-
-GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPLinearSolver(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[])
-{
+    //首先用矩阵A,B创建petsc_solver
     GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, num_eigenvalues, argc, argv);
-    GCGE_PETSC_Solver_SetKSPLinearSolverByMatrix(petsc_solver, (void *)A, (void *)P);
+    KSP ksp;
+    //使用矩阵A和预条件矩阵P创建ksp,ksp的参数均为默认参数,要修改ksp参数只能用命令行参数进行设置
+    PETSC_LinearSolverCreate(&ksp, (Mat)A, (Mat)P);
+    //把ksp作为ops->linear_solver_workspace
+    GCGE_SOLVER_SetOpsLinearSolverWorkspace(petsc_solver, (void*)ksp);
+    //将线性解法器设为KSPSolve
+    petsc_solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
     return petsc_solver;
 }
 
-void GCGE_PETSC_Solver_SetKSPLinearSolver(GCGE_SOLVER *solver, KSP ksp)
+//下面是一个对PETSC 的GCG_Solver的初始化
+//用户提供要求解特征值问题的矩阵A,B,以及线性解法器结构ksp,使用KSPSolve作为线性解法器
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPGivenByUser(Mat A, Mat B, KSP ksp, int num_eigenvalues, int argc, char* argv[])
 {
-    GCGE_SOLVER_SetOpsLinearSolverWorkspace(solver, (void*)ksp);
-    solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
-}
-
-GCGE_SOLVER* GCGE_PETSC_Solver_InitWithKSP(Mat A, Mat B, KSP ksp, int num_eigenvalues, int argc, char* argv[])
-{
+    //首先用矩阵A,B创建petsc_solver
     GCGE_SOLVER *petsc_solver = GCGE_PETSC_Solver_Init(A, B, num_eigenvalues, argc, argv);
-    GCGE_PETSC_Solver_SetKSPLinearSolver(petsc_solver, ksp);
+    //用户已创建好ksp,直接赋给petsc_solver
+    GCGE_SOLVER_SetOpsLinearSolverWorkspace(petsc_solver, (void*)ksp);
+    //将线性解法器设为KSPSolve
+    petsc_solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
     return petsc_solver;
 }

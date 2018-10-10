@@ -34,6 +34,6 @@ void GCGE_PETSC_SetOps(GCGE_OPS *ops);
 void GCGE_SOLVER_SetPETSCOps(GCGE_SOLVER *solver);
 
 GCGE_SOLVER *GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc, char* argv[]);
-GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPLinearSolver(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[]);
-GCGE_SOLVER* GCGE_PETSC_Solver_InitWithKSP(Mat A, Mat B, KSP ksp, int num_eigenvalues, int argc, char* argv[]);
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPDefault(Mat A, Mat B, Mat P, int num_eigenvalues, int argc, char* argv[]);
+GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPGivenByUser(Mat A, Mat B, KSP ksp, int num_eigenvalues, int argc, char* argv[]);
 #endif
