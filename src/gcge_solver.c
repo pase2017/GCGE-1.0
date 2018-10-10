@@ -86,6 +86,15 @@ void GCGE_SOLVER_SetOpsLinearSolverWorkspace(GCGE_SOLVER *solver, void *linear_s
     GCGE_OPS_SetLinearSolverWorkspace(solver->ops, linear_solver_workspace);
 }
 
+void GCGE_SOLVER_GetEigenvalues(GCGE_SOLVER *solver, GCGE_DOUBLE **eval)
+{
+    *eval = solver->eval;
+}
+void GCGE_SOLVER_GetEigenvectors(GCGE_SOLVER *solver, void ***evec)
+{
+    *evec = solver->evec;
+}
+
 void GCGE_SOLVER_Solve(GCGE_SOLVER *solver)
 {    
     GCGE_EigenSolver(solver->A, solver->B, solver->eval, solver->evec, solver->para, solver->ops, solver->workspace);
