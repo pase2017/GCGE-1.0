@@ -34,7 +34,7 @@ EXE12  = $(GCGEBIN)/test_w.exe
 EXE13  = $(GCGEBIN)/test_hypre_solver.exe
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC)
-LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS)
+LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFORTRAN) -lm
 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA
