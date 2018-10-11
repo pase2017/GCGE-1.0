@@ -61,7 +61,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->print_cg_error  = 0;
     (*para)->print_eval      = 1;
     //(*para)->print_matlab    = 0;
-    (*para)->print_part_time = 0;
+    (*para)->print_part_time = 1;
     (*para)->print_para      = 1;
     (*para)->print_result    = 1;
     /* print_level: 0：什么都不打印
@@ -219,31 +219,31 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
     }
     if (print_usage)
     {
-       printf("\n");
-       printf("Usage: %s [<options>]\n", argv[0]);
-       printf("\n");
-       printf("  -gcge_nev             <i>  : number of eigenpairs you need              (default: 6)\n");
-       printf("  -gcge_ev_max_it       <i>  : maximum of gcg iterations                  (default: 30)\n");
-       printf("  -gcge_block_size      <i>  : number of eigenpairs computed in one patch (default: nev)\n");
-       printf("  -gcge_if_lobpcg       <i>  : use lobpcg(1) or gcg(0)                    (default: 0)\n");
-       printf("  -gcge_given_init_evec <i>  : giben initial eigenvectors or not          (default: 0)\n");
-       printf("  -gcge_ev_tol          <d>  : convergence tolerance                      (default: 1e-4)\n");
-       printf("  -gcge_conv_type       <c>  : use reletive or abosolute residual         (default: R)\n");
-       printf("  -gcge_orth_type       <c>  : use A norm or B norm orthogonal            (default: B)\n");
-       printf("  -gcge_orth_zero_tol   <d>  : zero tolerance in orthogonal               (default: 1e-16)\n");
-       printf("  -gcge_reorth_tol      <d>  : reorthgonal tolerance                      (default: 0.75)\n");
-       printf("  -gcge_max_reorth_time <i>  : maximun reorthogonal times                 (default: 3)\n");
-       printf("  -gcge_print_orth_zero <i>  : print the zero index in orthogonal or not  (default: 0)\n");
-       printf("  -gcge_multi_tol       <d>  : tolerance for eigenvalue multiplicity      (default: 0.2)\n");
-       printf("  -gcge_if_use_cg       <i>  : use the internal cg or not                 (default: 1)\n");
-       printf("  -gcge_cg_max_it       <i>  : maximun numbers of cg iterations           (default: 20)\n");
-       printf("  -gcge_cg_rate         <d>  : descent rate of residual in cg             (default: 1e-2)\n");
-       printf("  -gcge_print_cg_error  <i>  : print residual error in cg or not          (default: 0)\n");
-       printf("  -gcge_print_eval      <i>  : print eigenvalue in each iteration or not  (default: 1)\n");
-       printf("  -gcge_print_part_time <i>  : print time of each part in gcg or not      (default: 0)\n");
-       printf("  -gcge_print_para      <i>  : print the parameters not                   (default: 1)\n");
-       printf("  -gcge_print_result    <i>  : print the final result or not              (default: 1)\n");
-       printf("\n");
+       GCGE_Printf("\n");
+       GCGE_Printf("Usage: %s [<options>]\n", argv[0]);
+       GCGE_Printf("\n");
+       GCGE_Printf("  -gcge_nev             <i>  : number of eigenpairs you need              (default: 6)\n");
+       GCGE_Printf("  -gcge_ev_max_it       <i>  : maximum of gcg iterations                  (default: 30)\n");
+       GCGE_Printf("  -gcge_block_size      <i>  : number of eigenpairs computed in one patch (default: nev)\n");
+       GCGE_Printf("  -gcge_if_lobpcg       <i>  : use lobpcg(1) or gcg(0)                    (default: 0)\n");
+       GCGE_Printf("  -gcge_given_init_evec <i>  : giben initial eigenvectors or not          (default: 0)\n");
+       GCGE_Printf("  -gcge_ev_tol          <d>  : convergence tolerance                      (default: 1e-4)\n");
+       GCGE_Printf("  -gcge_conv_type       <c>  : use reletive or abosolute residual         (default: R)\n");
+       GCGE_Printf("  -gcge_orth_type       <c>  : use A norm or B norm orthogonal            (default: B)\n");
+       GCGE_Printf("  -gcge_orth_zero_tol   <d>  : zero tolerance in orthogonal               (default: 1e-16)\n");
+       GCGE_Printf("  -gcge_reorth_tol      <d>  : reorthgonal tolerance                      (default: 0.75)\n");
+       GCGE_Printf("  -gcge_max_reorth_time <i>  : maximun reorthogonal times                 (default: 3)\n");
+       GCGE_Printf("  -gcge_print_orth_zero <i>  : print the zero index in orthogonal or not  (default: 0)\n");
+       GCGE_Printf("  -gcge_multi_tol       <d>  : tolerance for eigenvalue multiplicity      (default: 0.2)\n");
+       GCGE_Printf("  -gcge_if_use_cg       <i>  : use the internal cg or not                 (default: 1)\n");
+       GCGE_Printf("  -gcge_cg_max_it       <i>  : maximun numbers of cg iterations           (default: 20)\n");
+       GCGE_Printf("  -gcge_cg_rate         <d>  : descent rate of residual in cg             (default: 1e-2)\n");
+       GCGE_Printf("  -gcge_print_cg_error  <i>  : print residual error in cg or not          (default: 0)\n");
+       GCGE_Printf("  -gcge_print_eval      <i>  : print eigenvalue in each iteration or not  (default: 1)\n");
+       GCGE_Printf("  -gcge_print_part_time <i>  : print time of each part in gcg or not      (default: 0)\n");
+       GCGE_Printf("  -gcge_print_para      <i>  : print the parameters not                   (default: 1)\n");
+       GCGE_Printf("  -gcge_print_result    <i>  : print the final result or not              (default: 1)\n");
+       GCGE_Printf("\n");
     }
     if (print_usage)
        return 1;
@@ -467,3 +467,34 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     }
 }
 
+//打印参数信息
+void GCGE_PrintParaInfo(GCGE_PARA *para)
+{
+    if(para->print_para == 1)
+    {
+       GCGE_Printf("\n");
+       GCGE_Printf("GCGE_PARA:\n");
+       GCGE_Printf("\n");
+       GCGE_Printf("  nev             : %d, (number of eigenpairs you need              )\n", para->nev            );
+       GCGE_Printf("  ev_max_it       : %d, (maximum of gcg iterations                  )\n", para->ev_max_it      );
+       GCGE_Printf("  block_size      : %d, (number of eigenpairs computed in one patch )\n", para->block_size     );
+       GCGE_Printf("  given_init_evec : %d, (given initial eigenvectors or not          )\n", para->given_init_evec);
+       GCGE_Printf("  max_reorth_time : %d, (maximun reorthogonal times                 )\n", para->orth_para->max_reorth_time);
+       GCGE_Printf("  print_orth_zero : %d, (print the zero index in orthogonal or not  )\n", para->orth_para->print_orth_zero);
+       GCGE_Printf("  if_use_cg       : %d, (use the internal cg or not                 )\n", para->if_use_cg      );
+       GCGE_Printf("  cg_max_it       : %d, (maximun numbers of cg iterations           )\n", para->cg_max_it      );
+       GCGE_Printf("  print_cg_error  : %d, (print residual error in cg or not          )\n", para->print_cg_error );
+       GCGE_Printf("  print_eval      : %d, (print eigenvalue in each iteration or not  )\n", para->print_eval     );
+       GCGE_Printf("  print_part_time : %d, (print time of each part in gcg or not      )\n", para->print_part_time);
+       GCGE_Printf("  print_para      : %d, (print the parameters not                   )\n", para->print_para     );
+       GCGE_Printf("  print_result    : %d, (print the final result or not              )\n", para->print_result   );
+       GCGE_Printf("  conv_type       : %s, (use reletive or abosolute residual         )\n", para->conv_type      );
+       GCGE_Printf("  orth_type       : %s, (use A norm or B norm orthogonal            )\n", para->orth_type      );
+       GCGE_Printf("  ev_tol          : %e, (convergence tolerance                      )\n", para->ev_tol         );
+       GCGE_Printf("  orth_zero_tol   : %e, (zero tolerance in orthogonal               )\n", para->orth_para->orth_zero_tol  );
+       GCGE_Printf("  reorth_tol      : %e, (reorthgonal tolerance                      )\n", para->orth_para->reorth_tol     );
+       GCGE_Printf("  cg_rate         : %e, (descent rate of residual in cg             )\n", para->cg_rate        );
+       GCGE_Printf("  multi_tol       : %f, (tolerance for eigenvalue multiplicity      )\n", para->multi_tol      );
+       GCGE_Printf("\n");
+    }
+}

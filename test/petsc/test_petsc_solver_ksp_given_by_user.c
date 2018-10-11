@@ -48,11 +48,14 @@ int main(int argc, char* argv[])
     PETSC_ReadMatrixBinary(&A, file_A);
     PETSC_ReadMatrixBinary(&B, file_B);
     PETSC_ReadMatrixBinary(&P, file_P);
+    //如果用户需要从命令行读入特征值个数，这里nev需要设置为-1
     int nev = 30;
 
     //设定线性求解器
     KSP ksp;
     PETSC_LinearSolverCreate(&ksp, A, P);
+    PetscViewer viewer;
+    ierr = KSPView(ksp, viewer);
 
     GCGE_SOLVER *petsc_solver;
     petsc_solver = GCGE_PETSC_Solver_Init_KSPGivenByUser(A, B, ksp, nev, argc, argv);
@@ -60,6 +63,7 @@ int main(int argc, char* argv[])
     petsc_solver->para->ev_tol = 1e-12;
     petsc_solver->para->orth_para->print_orth_zero = 1;
     petsc_solver->para->ev_max_it = 30;
+    petsc_solver->para->block_size = 15;
     petsc_solver->para->print_part_time = 1;
 
     GCGE_SOLVER_Solve(petsc_solver);  

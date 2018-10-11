@@ -97,6 +97,8 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
 void GCGE_PARA_SetNumEigen(GCGE_PARA *para, GCGE_INT nev); //设置求解特征值的个数
 void GCGE_PARA_Setup(GCGE_PARA *para);  
 
+//打印参数信息
+void GCGE_PrintParaInfo(GCGE_PARA *para);
 //打印收敛性信息
 void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para);
 //GCG迭代结束后打印特征值及收敛情况，时间信息

@@ -43,7 +43,6 @@ void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T)
     PetscErrorCode ierr;
     ierr = KSPCreate(PETSC_COMM_WORLD,ksp);
     ierr = KSPSetOperators(*ksp,A,T);
-    ierr = KSPSetFromOptions(*ksp);
     ierr = KSPSetInitialGuessNonzero(*ksp, 1);
 
     ierr = KSPSetType(*ksp, KSPCG);
@@ -54,6 +53,8 @@ void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T)
     ierr = KSPGetPC(*ksp, &pc);
     ierr = PCSetType(pc, PCHYPRE);
     ierr = PCHYPRESetType(pc, "boomeramg");
+    //最后从命令行设置参数
+    ierr = KSPSetFromOptions(*ksp);
 }
 
 #endif
