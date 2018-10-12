@@ -69,6 +69,7 @@ typedef struct GCGE_PARA_ {
     GCGE_DOUBLE *res;               //残差
     GCGE_INT dirichlet_boundary;    //是否需要进行Dirichlet边界条件的处理
 
+    GCGE_INT    use_mpi_bcast;   //Rayleigh-Ritz中是否需要广播子空间特征向量
 
      //判定是否打印的参数
     GCGE_INT    print_eval;         //是否每次GCGE迭代后打印特征值

@@ -58,6 +58,8 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->num_iter        = 0; //output, old:-2
     (*para)->num_unlock      = 6; //output
 
+    (*para)->use_mpi_bcast   = 1; //Rayleigh-Ritz广播子空间特征向量
+
     (*para)->print_cg_error  = 0;
     (*para)->print_eval      = 1;
     //(*para)->print_matlab    = 0;
