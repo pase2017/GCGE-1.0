@@ -24,8 +24,11 @@
 
 //#include "memwatch.h"
 
+#include "_hypre_utilities.h"
+#include "HYPRE_krylov.h"
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
+
 
 #include "gcge.h"
 #include "gcge_app_hypre.h"
@@ -186,10 +189,90 @@ int main(int argc, char* argv[])
    /* Get the parcsr matrix object to use */
    HYPRE_IJMatrixGetObject(A, (void**) &parcsr_A);
    HYPRE_IJMatrixGetObject(B, (void**) &parcsr_B);
+   /* Create par vector for linear solver */
+   HYPRE_IJVector x;
+   HYPRE_ParVector par_x;
+   HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &x);
+   HYPRE_IJVectorSetObjectType(x, HYPRE_PARCSR);
+   HYPRE_IJVectorInitialize(x);
+   HYPRE_IJVectorAssemble(x);
+   HYPRE_IJVectorGetObject(x, (void **) &par_x);
    /* 创建矩阵 end */
 
-   //创建一个特征值solver实例
-   GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init(parcsr_A, parcsr_B, nev, argc,  argv);   
+   int solver_id = 3;
+   HYPRE_Solver linear_solver,  precond;
+   if (solver_id == 0)
+   {
+      /* 创建线性解法器amg */
+      /* Create solver */
+      HYPRE_BoomerAMGCreate(&linear_solver);
+      /* Set some parameters (See Reference Manual for more parameters) */
+      HYPRE_BoomerAMGSetPrintLevel(linear_solver, 0);  /* print solve info + parameters */
+      HYPRE_BoomerAMGSetOldDefault(linear_solver); /* Falgout coarsening with modified classical interpolaiton */
+      HYPRE_BoomerAMGSetRelaxType(linear_solver, 3);   /* G-S/Jacobi hybrid relaxation */
+      HYPRE_BoomerAMGSetRelaxOrder(linear_solver, 1);   /* uses C/F relaxation */
+      HYPRE_BoomerAMGSetNumSweeps(linear_solver, 1);   /* Sweeeps on each level */
+      HYPRE_BoomerAMGSetMaxLevels(linear_solver, 20);  /* maximum number of levels */
+      HYPRE_BoomerAMGSetTol(linear_solver, 1e-7);      /* conv. tolerance */
+      /* Now setup and solve! */
+      HYPRE_BoomerAMGSetup(linear_solver, parcsr_A, par_x, par_x);
+   }
+   else if (solver_id == 1)
+   {
+      /* 创建线性解法器pcg+amg */
+      /*  Create solver */
+      HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD,  &linear_solver);
+      /*  Set some parameters (See Reference Manual for more parameters) */
+      HYPRE_PCGSetMaxIter(linear_solver,  1000); /*  max iterations */
+      HYPRE_PCGSetTol(linear_solver,  1e-7); /*  conv. tolerance */
+      HYPRE_PCGSetTwoNorm(linear_solver,  1); /*  use the two norm as the stopping criteria */
+      HYPRE_PCGSetPrintLevel(linear_solver,  0); /*  print solve info */
+      HYPRE_PCGSetLogging(linear_solver,  0); /*  needed to get run info later */
+      /*  Now set up the AMG preconditioner and specify any parameters */
+      HYPRE_BoomerAMGCreate(&precond);
+      HYPRE_BoomerAMGSetPrintLevel(precond,  0); /*  print amg solution info */
+      HYPRE_BoomerAMGSetCoarsenType(precond,  6);
+      HYPRE_BoomerAMGSetOldDefault(precond);
+      HYPRE_BoomerAMGSetRelaxType(precond,  6); /*  Sym G.S./Jacobi hybrid */
+      HYPRE_BoomerAMGSetNumSweeps(precond,  1);
+      HYPRE_BoomerAMGSetTol(precond,  0.0); /*  conv. tolerance zero */
+      HYPRE_BoomerAMGSetMaxIter(precond,  1); /*  do only one iteration! */
+      /*  Set the PCG preconditioner */
+      HYPRE_PCGSetPrecond(linear_solver,  (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve, 
+	    (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,  precond);
+      /*  Now setup and solve! */
+      HYPRE_ParCSRPCGSetup(linear_solver, parcsr_A, par_x, par_x);
+   }
+   else if (solver_id == 2)
+   {
+      /* 创建线性解法器gmres+amg */
+      /* Create solver */
+      HYPRE_ParCSRFlexGMRESCreate(MPI_COMM_WORLD, &linear_solver);
+      /* Set some parameters (See Reference Manual for more parameters) */
+      HYPRE_FlexGMRESSetKDim(linear_solver, 30);
+      HYPRE_FlexGMRESSetMaxIter(linear_solver, 1000); /* max iterations */
+      HYPRE_FlexGMRESSetTol(linear_solver, 1e-7); /* conv. tolerance */
+      HYPRE_FlexGMRESSetPrintLevel(linear_solver, 2); /* print solve info */
+      HYPRE_FlexGMRESSetLogging(linear_solver, 0); /* needed to get run info later */
+      /* Now set up the AMG preconditioner and specify any parameters */
+      HYPRE_BoomerAMGCreate(&precond);
+      HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* print amg solution info */
+      HYPRE_BoomerAMGSetCoarsenType(precond, 6);
+      HYPRE_BoomerAMGSetOldDefault(precond);
+      HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Sym G.S./Jacobi hybrid */
+      HYPRE_BoomerAMGSetNumSweeps(precond, 1);
+      HYPRE_BoomerAMGSetTol(precond, 0.0); /* conv. tolerance zero */
+      HYPRE_BoomerAMGSetMaxIter(precond, 1); /* do only one iteration! */
+      /* Set the FlexGMRES preconditioner */
+      HYPRE_FlexGMRESSetPrecond(linear_solver, (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
+                          (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup, precond);
+   }
+   else {
+      printf ( "Use default linear solver.\n" );
+   }
+
+   //创建特征值求解器: 0 AMG, 1 PCG, 2 GMRES
+   GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(parcsr_A, parcsr_B, linear_solver, solver_id, nev, argc, argv);   
    //一些参数的设置
    hypre_solver->para->ev_tol = 1e-11;
    hypre_solver->para->dirichlet_boundary = 0;
@@ -199,13 +282,31 @@ int main(int argc, char* argv[])
 
    //求解特征值问题
    GCGE_SOLVER_Solve(hypre_solver);  
-
    GCGE_SOLVER_Free_All(&hypre_solver);
 
-   //释放矩阵空间
+   if (solver_id == 0)
+   {
+      HYPRE_BoomerAMGDestroy(linear_solver);
+   }
+   else if (solver_id == 1)
+   {
+      HYPRE_ParCSRPCGDestroy(linear_solver);
+      HYPRE_BoomerAMGDestroy(precond);
+   }
+   else if (solver_id == 2)
+   {
+      HYPRE_ParCSRFlexGMRESDestroy(linear_solver);
+      HYPRE_BoomerAMGDestroy(precond);
+   }
+   else {
+
+   }
+
    hypre_TFree(exact_eigenvalues);
+   //释放矩阵空间
    HYPRE_IJMatrixDestroy(A);
    HYPRE_IJMatrixDestroy(B);
+   HYPRE_IJVectorDestroy(x);
 
    /* Finalize MPI*/
    MPI_Finalize();
