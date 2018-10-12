@@ -26,6 +26,9 @@
 
 #include "gcge_workspace.h"
 #include "gcge_matvec.h"
+#if GCGE_USE_MPI
+#include <mpi.h>
+#endif
 
 //计算 work_space = V^T * A * W
 void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, GCGE_INT end_V, GCGE_DOUBLE *subspace_mat, GCGE_OPS *ops, void **workspace);
@@ -39,4 +42,5 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
 
 //对特征值和特征向量进行排序
 void GCGE_SortEigenpairs(GCGE_DOUBLE *eval, GCGE_DOUBLE *evec, GCGE_INT nev, GCGE_INT ldv, GCGE_DOUBLE *work);
+GCGE_DOUBLE GCGE_ModuleMaxDouble(GCGE_DOUBLE *a, GCGE_INT n);
 #endif

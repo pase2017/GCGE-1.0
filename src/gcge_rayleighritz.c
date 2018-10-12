@@ -208,11 +208,28 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
             &m, eval, subspace_evec, &ldm, 
             isuppz, dwork_space, &lwork,
             subspace_itmp, &liwork, ifail, &info);
+    if(para->use_mpi_bcast)
+    {
+#if GCGE_USE_MPI
+        MPI_Bcast(subspace_evec, m*ldm, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+#endif
+    }
+    /*
     GCGE_INT i, j, k;
+    for(i=il-1; i<iu; i++)
+    {
+        if(GCGE_ModuleMaxDouble(subspace_evec+i*ldm, ldm) < 0.0)
+        {
+            for(j=0; j<ldm; j++)
+            {
+                subspace_evec[i*ldm+j] *= -1.0;
+            }
+        }
+    }
+    */
     /* 为了保证不同进程间特征向量的方向一致，
      * 取每个特征向量的最后一个非零元素为正数(若不是，则这个特征向量乘以-1)
      * 一般做法是把每一行的绝对值最大值的位置变成正数
-     */
     GCGE_DOUBLE negative_zero_tol = -1e-10;
     for(i=0; i< iu; i++)
     {
@@ -233,6 +250,7 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
             }
         }
     }
+     */
     //用lapack_syev计算得到的特征值是按从小到大排列,
     //如果用A内积，需要把特征值取倒数后再按从小到大排列
     //由于后面需要用到的只有前dim_x个特征值，所以只把前dim_x个拿到前面来
@@ -268,4 +286,17 @@ void GCGE_SortEigenpairs(GCGE_DOUBLE *eval, GCGE_DOUBLE *evec, GCGE_INT nev,
     }
 }
 
+/*
+GCGE_DOUBLE GCGE_ModuleMaxDouble(GCGE_DOUBLE *a, GCGE_INT n)
+{
+    GCGE_INT i = 0;
+    GCGE_DOUBLE max = a[0];
+    for(i=1; i<n; i++)
+    {
+        if(fabs(max+ 1e-16) < fabs(a[i]))
+            max = a[i];
+    }
+    return max;
+}
 
+*/
