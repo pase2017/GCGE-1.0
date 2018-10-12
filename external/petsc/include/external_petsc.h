@@ -30,5 +30,6 @@
 
 void PETSC_ReadMatrixBinary(Mat *A, const char *filename);
 void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T);
+void PETSC_VecLocalInnerProd(Vec x, Vec y, double *value);
 
 #endif

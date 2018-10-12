@@ -57,4 +57,19 @@ void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T)
     ierr = KSPSetFromOptions(*ksp);
 }
 
+void PETSC_VecLocalInnerProd(Vec x, Vec y, double *value)
+{
+    PetscErrorCode     ierr;
+    const PetscScalar *local_x;
+    const PetscScalar *local_y;
+    PetscInt           low, high, length, one = 1;
+    ierr = VecGetOwnershipRange(x, &low, &high);
+    length = high-low;
+    ierr = VecGetArrayRead(x,&local_x);
+    ierr = VecGetArrayRead(y,&local_y);
+    PetscStackCallBLAS("BLASdot",*value = BLASdot_(&length,local_y,&one,local_x,&one));
+    ierr = VecRestoreArrayRead(x,&local_x);
+    ierr = VecRestoreArrayRead(y,&local_y);
+}
+
 #endif

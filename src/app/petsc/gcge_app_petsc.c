@@ -93,6 +93,11 @@ void GCGE_PETSC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
 	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, xTy);
 }
 
+void GCGE_PETSC_VecLocalInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+{
+    PETSC_VecLocalInnerProd((Vec)x, (Vec)y, xTy);
+}
+
 void GCGE_PETSC_LinearSolver(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)
 {
     PetscErrorCode ierr;
@@ -110,7 +115,7 @@ void GCGE_PETSC_SetOps(GCGE_OPS *ops)
     ops->MatDotVec         = GCGE_PETSC_MatDotVec;
     ops->VecAxpby          = GCGE_PETSC_VecAxpby;
     ops->VecInnerProd      = GCGE_PETSC_VecInnerProd;
-    ops->VecLocalInnerProd = GCGE_PETSC_VecInnerProd;
+    ops->VecLocalInnerProd = GCGE_PETSC_VecLocalInnerProd;
 
     ops->FreeMultiVec           = GCGE_PETSC_FreeMultiVec;
     ops->BuildMultiVecByMat     = GCGE_PETSC_BuildMultiVecByMat;
@@ -124,6 +129,7 @@ void GCGE_SOLVER_SetPETSCOps(GCGE_SOLVER *solver)
 
 //下面是一个对PETSC 的GCG_Solver的初始化
 //用户只提供要求解特征值问题的矩阵A,B,线性解法器等都用默认值
+//如果用户想在命令行提供特征值个数，需要将num_eigenvalues赋值为-1
 GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc, char* argv[])
 {
     //第一步: 定义相应的ops,para以及workspace
@@ -157,6 +163,7 @@ GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc,
     GCGE_SOLVER_SetEigenvectors(petsc_solver, (void**)evec);
     //setup and solve
     GCGE_SOLVER_Setup(petsc_solver);
+    GCGE_PrintParaInfo(petsc_solver->para);
     GCGE_Printf("Set up finish!\n");
     return petsc_solver;
 }
