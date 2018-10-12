@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
    /*----------------------- Laplace精确特征值 ---------------------*/
    /* Preliminaries: want at least one processor per row */
    int n = 10;
-   int nev = 10;
+   int nev = 1;
    if (n*n < num_procs) n = sqrt(num_procs) + 1;
    int N = n*n; /* global number of rows */
    double h = 1.0/(n+1); /* mesh size*/
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
    HYPRE_IJVectorGetObject(x, (void **) &par_x);
    /* 创建矩阵 end */
 
-   int solver_id = 3;
+   int solver_id = 1;
    HYPRE_Solver linear_solver,  precond;
    if (solver_id == 0)
    {

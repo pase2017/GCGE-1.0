@@ -201,14 +201,17 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(HYPRE_ParCSRMatrix A
     //将线性解法器设为KSPSolve
     if (ls_id == 0)
     {
+       printf ( "linear solver is AMG\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_AMGSolve;
     }
     else if (ls_id == 1)
     {
+       printf ( "linear solver is PCG\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_PCGSolve;
     }
     else if (ls_id == 2)
     {
+       printf ( "linear solver is GMRES\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_GMRESSolve;
     }
     else {
