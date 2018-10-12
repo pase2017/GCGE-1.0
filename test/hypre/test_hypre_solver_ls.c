@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
    srand((unsigned)time(NULL));
    /*----------------------- Laplace精确特征值 ---------------------*/
    /* Preliminaries: want at least one processor per row */
-   int n = 10;
-   int nev = 1;
+   int n = 500;
+   int nev = 10;
    if (n*n < num_procs) n = sqrt(num_procs) + 1;
    int N = n*n; /* global number of rows */
    double h = 1.0/(n+1); /* mesh size*/
@@ -266,6 +266,8 @@ int main(int argc, char* argv[])
       /* Set the FlexGMRES preconditioner */
       HYPRE_FlexGMRESSetPrecond(linear_solver, (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
                           (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup, precond);
+      /* Now setup and solve! */
+      HYPRE_ParCSRFlexGMRESSetup(linear_solver, parcsr_A, par_x, par_x);
    }
    else {
       printf ( "Use default linear solver.\n" );
@@ -274,7 +276,7 @@ int main(int argc, char* argv[])
    //创建特征值求解器: 0 AMG, 1 PCG, 2 GMRES
    GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(parcsr_A, parcsr_B, linear_solver, solver_id, nev, argc, argv);   
    //一些参数的设置
-   hypre_solver->para->ev_tol = 1e-11;
+   hypre_solver->para->ev_tol = 1e-8;
    hypre_solver->para->dirichlet_boundary = 0;
    hypre_solver->para->cg_max_it = 20;
    hypre_solver->para->ev_max_it = 150;
