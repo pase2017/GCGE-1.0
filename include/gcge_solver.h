@@ -39,7 +39,7 @@ typedef struct GCGE_SOLVER_ {
 }GCGE_SOLVER;
 
 
-GCGE_INT GCGE_SOLVER_Create(GCGE_SOLVER **solver, GCGE_INT argc, char* argv[]);
+void GCGE_SOLVER_Create(GCGE_SOLVER **solver);
 void GCGE_SOLVER_Free(GCGE_SOLVER **solver);
 void GCGE_SOLVER_Free_All(GCGE_SOLVER **solver);
 

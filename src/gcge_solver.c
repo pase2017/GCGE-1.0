@@ -22,19 +22,19 @@
 #include "gcge_solver.h"
 
 
-GCGE_INT GCGE_SOLVER_Create(GCGE_SOLVER **solver, GCGE_INT argc, char* argv[])
+void GCGE_SOLVER_Create(GCGE_SOLVER **solver)
 {
     *solver = (GCGE_SOLVER*)malloc(sizeof(GCGE_SOLVER));
     GCGE_PARA_Create(&(*solver)->para);
     GCGE_OPS_Create(&(*solver)->ops);
-    GCGE_INT error = GCGE_PARA_SetFromCommandLine((*solver)->para, argc, argv);
+    //GCGE_INT error = GCGE_PARA_SetFromCommandLine((*solver)->para, argc, argv);
     /* TODO should set NULL and Setup to modify */
     GCGE_WORKSPACE_Create(&(*solver)->workspace);
     (*solver)->A = NULL;
     (*solver)->B = NULL;
     (*solver)->eval = NULL;
     (*solver)->evec = NULL;
-    return error;
+    //return error;
 }
 void GCGE_SOLVER_Free(GCGE_SOLVER **solver)
 {

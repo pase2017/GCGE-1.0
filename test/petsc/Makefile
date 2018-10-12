@@ -9,12 +9,16 @@ OBJS2 = test_print.o
 OBJS3 = test_ksp_linear_solver.o
 OBJS4 = test_petsc_solver_ksp.o
 OBJS5 = test_petsc_solver_ksp_given_by_user.o
+OBJS6 = test_dsyevx.o
+OBJS7 = test_solver.o
 
 EXE1  = $(GCGEBIN)/test_petsc_solver.exe 
 EXE2  = $(GCGEBIN)/test_print.exe 
 EXE3  = $(GCGEBIN)/test_ksp_linear_solver.exe 
 EXE4  = $(GCGEBIN)/test_ksp_linear_solver_ksp.exe 
 EXE5  = $(GCGEBIN)/test_petsc_solver_ksp_given_by_user.exe 
+EXE6  = $(GCGEBIN)/test_dsyevx.exe 
+EXE7  = $(GCGEBIN)/test_solver.exe 
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
 LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) \
@@ -35,6 +39,8 @@ exe2:       $(EXE2)
 exe3:       $(EXE3)
 exe4:       $(EXE4)
 exe5:       $(EXE5)
+exe6:       $(EXE6)
+exe7:       $(EXE7)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -58,7 +64,7 @@ info:
 	@echo "Libraries   are located in lib/"
 	@echo " "
 
-run-solver:
+run-petsc-solver:
 	mpirun -np 8 $(EXE1)
 	
 run-print:
@@ -71,7 +77,13 @@ run-solver-ksp:
 	mpirun -np 2 $(EXE4)
 
 run-solver-ksp-user:
-	mpirun -np 2 $(EXE5)
+	mpirun -np 8 $(EXE5)
+	
+run-dsyevx:
+	mpirun -np 2 $(EXE6)
+	
+run-solver:
+	mpirun -np 2 $(EXE7)
 	
 ############################################################
 .f.o:
@@ -110,6 +122,18 @@ $(EXE4): $(OBJS4)
 	@echo ''
 
 $(EXE5): $(OBJS5)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE6): $(OBJS6)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE7): $(OBJS7)
 	@echo ''
 	@echo 'Creating executable bin/xx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)

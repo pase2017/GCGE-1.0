@@ -136,14 +136,10 @@ GCGE_SOLVER* GCGE_PETSC_Solver_Init(Mat A, Mat B, int num_eigenvalues, int argc,
 
     //创建一个solver变量
     GCGE_SOLVER *petsc_solver;
-    GCGE_INT help = GCGE_SOLVER_Create(&petsc_solver, argc, argv);
-    if(help)
-    {
-        GCGE_SOLVER_Free(&petsc_solver);
-        exit(0);
-    }
+    GCGE_SOLVER_Create(&petsc_solver);
     if(num_eigenvalues != -1)
         petsc_solver->para->nev = num_eigenvalues;
+    GCGE_INT error = GCGE_PARA_SetFromCommandLine(petsc_solver->para, argc, argv);
     //设置初始值
     int nev = petsc_solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double)); 
@@ -195,4 +191,11 @@ GCGE_SOLVER* GCGE_PETSC_Solver_Init_KSPGivenByUser(Mat A, Mat B, KSP ksp, int nu
     //将线性解法器设为KSPSolve
     petsc_solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
     return petsc_solver;
+}
+
+void GCGE_SOLVER_SetPETSCOpsLinearSolver(GCGE_SOLVER *solver, KSP ksp)
+{
+    GCGE_SOLVER_SetOpsLinearSolverWorkspace(solver, (void*)ksp);
+    //将线性解法器设为KSPSolve
+    solver->ops->LinearSolver = GCGE_PETSC_LinearSolver;
 }

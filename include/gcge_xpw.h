@@ -20,6 +20,7 @@
 
 
 #include "gcge_type.h"
+#include "gcge_utilities.h"
 
 #include "gcge_para.h"
 #include "gcge_ops.h"

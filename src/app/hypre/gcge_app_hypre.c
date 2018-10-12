@@ -116,7 +116,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
 
     //创建一个solver变量
     GCGE_SOLVER *hypre_solver;
-    GCGE_INT help = GCGE_SOLVER_Create(&hypre_solver, argc, argv);
+    GCGE_INT help = GCGE_SOLVER_Create(&hypre_solver);
     if(help)
     {
         GCGE_SOLVER_Free(&hypre_solver);
@@ -125,6 +125,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
     if(num_eigenvalues != -1)
         hypre_solver->para->nev = num_eigenvalues;
     //设置初始值
+    GCGE_INT error = GCGE_PARA_SetFromCommandLine(hypre_solver->para, argc, argv);
     int nev = hypre_solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double)); 
     hypre_solver->eval = eval;

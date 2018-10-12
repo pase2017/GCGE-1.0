@@ -95,15 +95,11 @@ GCGE_SOLVER* GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, i
 
     //创建一个solver变量
     GCGE_SOLVER *csr_solver;
-    GCGE_INT help = GCGE_SOLVER_Create(&csr_solver, argc, argv);
-    if(help)
-    {
-        GCGE_SOLVER_Free(&csr_solver);
-        exit(0);
-    }
+    GCGE_SOLVER_Create(&csr_solver);
     if(num_eigenvalues != -1)
         csr_solver->para->nev = num_eigenvalues;
     //设置初始值
+    GCGE_INT error = GCGE_PARA_SetFromCommandLine(csr_solver->para, argc, argv);
     int nev = csr_solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double)); 
     csr_solver->eval = eval;
@@ -114,7 +110,6 @@ GCGE_SOLVER* GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, i
     {
         CSR_BuildVecByMat(A, evec+i);
     }
-    csr_solver->evec = (void**)evec;
 
     GCGE_SOLVER_SetMatA(csr_solver, A);
     if(B != NULL)
