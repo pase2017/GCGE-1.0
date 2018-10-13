@@ -8,12 +8,15 @@ CLINKER = $(MPICC)
 OBJS1 = test_matvec.o
 OBJS2 = test_hypre_solver.o
 OBJS3 = test_hypre_solver_ls.o
+OBJS4 = test_gcge_lobpcg.o
 
 EXE1  = $(GCGEBIN)/test_matvec.exe 
 EXE2  = $(GCGEBIN)/test_hypre_solver.exe
 EXE3  = $(GCGEBIN)/test_hypre_solver_ls.exe
+EXE4  = $(GCGEBIN)/test_gcge_lobpcg.exe
 
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC)
+# use DHAVE_CONFIG_H and DHYPRE_TIMING to use hypre_time
+INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC) -DHAVE_CONFIG_H -DHYPRE_TIMING
 LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFORTRAN) -lm
 
 ############################################################
@@ -22,7 +25,7 @@ LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFOR
 
 all:	    help
 
-exe:         $(EXE1) $(EXE2) $(EXE3)
+exe:         $(EXE1) $(EXE2) $(EXE3) $(EXE4)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -55,6 +58,9 @@ run-hypre-solver:
 run-hypre-solver-ls:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE3)
 
+run-gcge-lobpcg:
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE4)
+
 ############################################################
 .f.o:
 	@echo '$(F77) -c $(FFLAGS) ' $*.f
@@ -83,5 +89,11 @@ $(EXE3): $(OBJS3)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE4): $(OBJS4) laplace.o 
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@echo ''
 ############################################################

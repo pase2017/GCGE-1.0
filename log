@@ -1,0 +1,15 @@
+hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对误差初始是1.0e-06
+
+下面是lobpcg的收敛准则
+175   notConverged = 0;
+176   for ( i = 0; i < n; i++ ) {
+177     if ( utilities_FortranMatrixValue( resNorms,  i + 1,  1 ) >
+178          utilities_FortranMatrixValue( lambda,  i + 1,  1 )*rtol + atol
+179          + DBL_EPSILON ) {
+180       activeMask[i] = 1;
+181       notConverged++; 
+182     }
+183     else 
+184       activeMask[i] = 0;
+185   }
+

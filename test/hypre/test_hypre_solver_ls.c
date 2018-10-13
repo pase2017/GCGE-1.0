@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
    srand((unsigned)time(NULL));
    /*----------------------- Laplace精确特征值 ---------------------*/
    /* Preliminaries: want at least one processor per row */
-   int n = 500;
+   int n = 10;
    int nev = 10;
    if (n*n < num_procs) n = sqrt(num_procs) + 1;
    int N = n*n; /* global number of rows */

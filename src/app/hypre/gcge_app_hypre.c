@@ -88,7 +88,6 @@ void GCGE_HYPRE_PrintMultiVec(void **x, GCGE_INT n)
       hypre_ParVectorPrint((HYPRE_ParVector)x[i],  file_name);
    }
 }
-
 void GCGE_HYPRE_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
@@ -215,7 +214,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(HYPRE_ParCSRMatrix A
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_GMRESSolve;
     }
     else {
-       printf ( "Error for linear solver ID, user default CG for linear solver\n" );
+       printf ( "Use default CG for linear solver\n" );
     }
     return hypre_solver;
 }
