@@ -136,27 +136,34 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
         // B != NULL，那么 rhs = lambda * B * x_current
         if(B == NULL)
         {
-	  ops->VecAxpby(1.0, x_current, 0.0, rhs);
+            ops->VecAxpby(1.0, x_current, 0.0, rhs);
         }
         else
         {
-	  ops->MatDotVec(B, x_current, rhs);
+            ops->MatDotVec(B, x_current, rhs);
         }
         //对lambda的用途：
         //赋初值
         if(fabs(eval[x_current_idx]) <= 1.0)
         {
-	  ops->VecAxpby(0.0, rhs, eval[x_current_idx], rhs);
-	  ops->VecAxpby(1.0, x_current, 0.0, w_current);	  
-	}
-	else
-	{
-	  ops->VecAxpby(1.0/eval[x_current_idx], x_current, 0.0, w_current);	  
-	}                
+            ops->VecAxpby(0.0, rhs, eval[x_current_idx], rhs);
+            ops->VecAxpby(1.0, x_current, 0.0, w_current);	  
+        }
+        else
+        {
+            ops->VecAxpby(1.0/eval[x_current_idx], x_current, 0.0, w_current);	  
+        }                
         //CG迭代求解 A * W = lambda * B * X          
         //V_tmp一定要从 1 开始设置 CG迭代中的 r 和 p
-        GCGE_CG(A, rhs, w_current, ops, para, V_tmp);
-	//再把x_current 和 w_current 返回回去
+        if(ops->LinearSolver)
+        {
+            ops->LinearSolver(A, rhs, w_current, ops);
+        }
+        else
+        {
+            GCGE_CG(A, rhs, w_current, ops, para, workspace);
+        }
+        //再把x_current 和 w_current 返回回去
         ops->RestoreVecForMultiVec(V, x_current_idx, &x_current);
         ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
     }//for(idx=0; idx<w_length; idx++)

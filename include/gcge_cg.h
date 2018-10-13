@@ -37,5 +37,5 @@
  * @param orth_para
  * @param workspace
  */
-void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, void **V_tmp);
+void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 #endif
