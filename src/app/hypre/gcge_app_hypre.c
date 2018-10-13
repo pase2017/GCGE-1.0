@@ -88,7 +88,6 @@ void GCGE_HYPRE_PrintMultiVec(void **x, GCGE_INT n)
       hypre_ParVectorPrint((HYPRE_ParVector)x[i],  file_name);
    }
 }
-
 void GCGE_HYPRE_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
@@ -148,5 +147,75 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
     //setup and solve
     GCGE_SOLVER_Setup(hypre_solver);
     printf("Set up finish!\n");
+    return hypre_solver;
+}
+
+
+/**
+ * @brief 设置hypre的线性解法器，这里由于hypre没能对解法器进行一个封装，所以必须一个个写，
+ *        需要在ops中加入一个成员函数，或者在GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser中新增一个形式参数，
+ *        表征用了那个线性解法器，比如，id == 0 表示pcg，id == 1 表示amg, id == 2 表示gemrs
+ *        而且对于precond也的setup也会有问题
+ *        需要讨论
+ *        我认为最佳方案是在GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser中加入新的参数
+ *
+ * @param Matrix
+ * @param b
+ * @param x
+ * @param ops
+ */
+void GCGE_HYPRE_GMRESSolve(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)
+{
+   HYPRE_ParCSRFlexGMRESSolve((HYPRE_Solver)(ops->linear_solver_workspace), (HYPRE_ParCSRMatrix)(Matrix), (HYPRE_ParVector)b, (HYPRE_ParVector)x);
+}
+void GCGE_HYPRE_PCGSolve(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)
+{
+   HYPRE_ParCSRPCGSolve((HYPRE_Solver)(ops->linear_solver_workspace), (HYPRE_ParCSRMatrix)(Matrix), (HYPRE_ParVector)b, (HYPRE_ParVector)x);
+}
+void GCGE_HYPRE_AMGSolve(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)
+{
+   HYPRE_BoomerAMGSolve((HYPRE_Solver)(ops->linear_solver_workspace), (HYPRE_ParCSRMatrix)(Matrix), (HYPRE_ParVector)b, (HYPRE_ParVector)x);
+}
+
+/**
+ * @brief 
+ *
+ * @param A
+ * @param B
+ * @param linear_solver
+ * @param ls_id               表示所用的线性解法器编号，0 AMG, 1 PCG, 2 GMRES
+ * @param num_eigenvalues
+ * @param argc
+ * @param argv[]
+ *
+ * @return 
+ */
+GCGE_SOLVER* GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
+      HYPRE_Solver linear_solver, int ls_id, int num_eigenvalues, int argc, char* argv[])
+{
+    //首先用矩阵A,B创建hypre_solver
+    GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init(A, B, num_eigenvalues, argc, argv);
+    //用户已创建好ksp,直接赋给hypre_solver
+    /* 这里也可以直接访问成员函数 */
+    GCGE_SOLVER_SetOpsLinearSolverWorkspace(hypre_solver, (void*)linear_solver);
+    //将线性解法器设为KSPSolve
+    if (ls_id == 0)
+    {
+       printf ( "linear solver is AMG\n" );
+       hypre_solver->ops->LinearSolver = GCGE_HYPRE_AMGSolve;
+    }
+    else if (ls_id == 1)
+    {
+       printf ( "linear solver is PCG\n" );
+       hypre_solver->ops->LinearSolver = GCGE_HYPRE_PCGSolve;
+    }
+    else if (ls_id == 2)
+    {
+       printf ( "linear solver is GMRES\n" );
+       hypre_solver->ops->LinearSolver = GCGE_HYPRE_GMRESSolve;
+    }
+    else {
+       printf ( "Use default CG for linear solver\n" );
+    }
     return hypre_solver;
 }
