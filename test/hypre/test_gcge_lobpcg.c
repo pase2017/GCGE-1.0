@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
    /* 创建矩阵 end */
 
    /* 创建线性解法器 start */
-   int solver_id = 3;
+   int solver_id = 0;
    HYPRE_Solver linear_solver,  precond;
    if (solver_id == 0)
    {
@@ -160,6 +160,7 @@ int main(int argc, char* argv[])
    hypre_solver->para->print_part_time = 0;
    hypre_solver->para->print_eval = 0;
    hypre_solver->para->print_para = 0;
+   printf ( "print orth zero\n" );
 
 
    int global_time_index;
