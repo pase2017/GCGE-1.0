@@ -1,3 +1,6 @@
+
+2018.10.14 liyu
+
 hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对误差初始是1.0e-06
 
 下面是lobpcg的收敛准则
