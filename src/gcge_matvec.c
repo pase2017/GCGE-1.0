@@ -23,22 +23,6 @@
 
 #include "gcge_matvec.h"
 
-//计算U = V * x
-//由一组基向量组V与子空间向量x相乘得到一个长向量U
-//V是用来计算基底向量组(GCGE_Vec),U是计算得到的向量(GCGE_Vec)
-//void GCGE_SumSeveralVecs(void **V, GCGE_DOUBLE *x, void *U, GCGE_INT n_vec, 
-void GCGE_VecsLinearCombination(void **V, GCGE_DOUBLE *x, void *U, GCGE_INT n_vec, GCGE_OPS *ops)
-{
-    GCGE_INT i;
-    //U = 0
-    ops->VecAxpby(0.0, U, 0.0, U);
-    for( i=0; i<n_vec; i++ )
-    {
-        //U += x[i] * V[i]
-        ops->VecAxpby(x[i], V[i], 1.0, U);
-    }
-}
-
 //计算a^T*Matrix*b,两个向量的内积
 //a,b表示要计算内积的两个向量(GCGE_Vec)，
 //Matrix表示计算内积用到的矩阵(GCGE_MATRIX),
