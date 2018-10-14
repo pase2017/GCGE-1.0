@@ -1,5 +1,12 @@
-
 2018.10.14 liyu
+
+在csr的test中，test_orth_ops.c是对于正交化成为ops的一个成员函数进行的尝试，可以考虑以后在kona中利用这种做法。
+另外，test_orth_blas.c是对double型向量组进行正交化的函数，已通过blas进行加速，形式参数与test_orth_ops中的正交化函数类似。
+之后在GCGE中应该内置blas库，进行编译，而且都利用宏BLASname(...), LAPACKname(...)进行调用，以防调用机器已有库时出现名字不统一
+尤其是调用利用基于特定机器的blas lapack库
+eigsol.c是对GCG核心函数的一个整理，整个代码流程和函数形式参数设定是最合理的。而且也是可以写到ops中的形式。
+
+2018.10.12 liyu
 
 hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对误差初始是1.0e-06
 
