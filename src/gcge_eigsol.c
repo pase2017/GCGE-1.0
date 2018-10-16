@@ -78,11 +78,13 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     GCGE_INT    max_dim_x = workspace->max_dim_x; //max_dim_x表示判断特征值重数的最大取值空间
     GCGE_INT    num_init_evec = para->given_init_evec; //初始给定的特征向量的个数
     void        **V       = workspace->V;  //V表示大规模的工作空间，V=[X,P,W]
-    void        **RitzVec = workspace->RitzVec; //RitzVec在计算中临时存储Ritz向量（大规模近似特征向量）
+    //void        **RitzVec = workspace->RitzVec; //RitzVec在计算中临时存储Ritz向量（大规模近似特征向量）
     GCGE_DOUBLE *subspace_matrix = workspace->subspace_matrix; //subspace_matrix表示Rayleigh-Ritz过程中的子空间矩阵
     GCGE_DOUBLE *subspace_evec   = workspace->subspace_evec;   //subspace_evec表示Rayleigh-Ritz过程中的子空间向量
     void        *Orth_mat; //Orth_mat正交化时计算内积所用的矩阵: B 或者 A，通常是B
     void        *RayleighRitz_mat; //RayleighRitz_mat计算子空间矩阵时所用矩阵: A或者B,通常用A
+
+    workspace->evec = evec;
 
     GCGE_STATISTIC_PARA *stat_para = para->stat_para;
     //t1,t2用于统计时间
@@ -224,7 +226,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
+    GCGE_ComputeX(V, subspace_evec, evec, nev, workspace->dim_xpw, ops, workspace);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
     stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -237,7 +239,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
+    GCGE_CheckConvergence(A, B, workspace->eval, evec, ops, para, workspace);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
     stat_para->part_time_one_iter->conv_time = t2-t1;
@@ -248,13 +250,13 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //Ritz向量放到V中作为下次迭代中基向量的一部分,即为[X,P,W]中的X
     mv_s[0] = 0;
     mv_s[1] = 0;
-    mv_e[0] = workspace->dim_x;
-    mv_e[1] = workspace->dim_x;
+    mv_e[0] = nev;
+    mv_e[1] = nev;
     //基底向量组V已经没用，将RitzVec中的X向量与V进行指针交换，V中存储新的基向量
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    ops->MultiVecSwap(V, RitzVec, mv_s, mv_e, ops);
+    ops->MultiVecSwap(V, evec, mv_s, mv_e, ops);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
     stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -293,7 +295,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     stat_para->part_time_total->w_orth_time += t2-t1;
 #endif
     //这里dim_xp表示计算子空间矩阵时大规模操作的起始位置(即rrls_start=0)
-    workspace->dim_xp = 0;
+    workspace->dim_xp = nev;
+    //workspace->dim_xp = 0;
     //计算子空间矩阵subspace_matrix = V^T*A*V
     //这里修改了workspace->subspace_matrix,没有修改参数
 #if GET_PART_TIME
@@ -322,7 +325,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
+    GCGE_ComputeX(V, subspace_evec, evec, nev, workspace->dim_xpw, ops, workspace);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
     stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -336,7 +339,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
+    GCGE_CheckConvergence(A, B, workspace->eval, evec, ops, para, workspace);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
     stat_para->part_time_one_iter->conv_time = t2-t1;
@@ -357,15 +360,15 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //Ritz向量放到V中作为下次迭代中基向量的一部分
         mv_s[0] = 0;
         mv_s[1] = 0;
-        mv_e[0] = workspace->dim_x;
-        mv_e[1] = workspace->dim_x;
+        mv_e[0] = nev;
+        mv_e[1] = nev;
         //计算完P之后，基向量组V就没用了,将X放到V中,操作方法为：
         //交换V的前dim_x(x_end)列与X(RitzVec)的前dim_x(x_end)列的指针
         //把V中与X相对应的向量组更新
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
-        ops->MultiVecSwap(V, RitzVec, mv_s, mv_e, ops);
+        ops->MultiVecSwap(V, evec, mv_s, mv_e, ops);
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -395,8 +398,10 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
-        GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
-                workspace->V_tmp, workspace->subspace_dtmp);
+        //GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+        //        workspace->V_tmp, workspace->subspace_dtmp);
+        GCGE_BOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+                workspace);
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->w_orth_time = t2-t1;
@@ -435,7 +440,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
-        GCGE_ComputeX(V, subspace_evec, RitzVec, ops, workspace);
+        GCGE_ComputeX(V, subspace_evec, evec, nev, workspace->dim_xpw, ops, workspace);
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -448,7 +453,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
-        GCGE_CheckConvergence(A, B, workspace->eval, RitzVec, ops, para, workspace);
+        GCGE_CheckConvergence(A, B, workspace->eval, evec, ops, para, workspace);
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->conv_time = t2-t1;
@@ -462,11 +467,13 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //把计算得到的近似特征对拷贝给eval,evec输出
     memcpy(eval, workspace->eval, nev*sizeof(GCGE_DOUBLE));
 
+#if 0
     mv_s[0] = 0;
     mv_e[0] = nev;
     mv_s[1] = 0;
     mv_e[1] = nev;
     ops->MultiVecAxpby(1.0, RitzVec, 0.0, evec, mv_s, mv_e, ops);
+#endif
     GCGE_PrintFinalInfo(eval, para);
 
 }

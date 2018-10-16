@@ -45,4 +45,6 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
 
 void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
+void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+                      void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 #endif
