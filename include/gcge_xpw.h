@@ -43,7 +43,8 @@
  * @param workspace
  */
 
-void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **RitzVec, 
+void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **X, 
+        GCGE_INT size_X, GCGE_INT size_V,
         GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
 
 void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval, 

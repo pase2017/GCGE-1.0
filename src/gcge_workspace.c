@@ -60,8 +60,21 @@ void GCGE_WORKSPACE_Create(GCGE_WORKSPACE **workspace)
 void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *ops, void *A)
 {
     GCGE_INT   i,    nev = para->nev,
+               block_size = para->block_size,
                max_dim_x_tmp = (nev*1.25 < nev+8) ? (nev*1.25) : (nev+8),
                max_dim_x = (max_dim_x_tmp > nev + 3)? max_dim_x_tmp : (nev+3);
+
+    GCGE_INT   V_size = max_dim_x + 2 * block_size;
+    GCGE_INT   V_tmp_size = max_dim_x - nev + block_size;
+    GCGE_INT   CG_p_size = block_size;
+    workspace->V_size = V_size;
+    workspace->V_tmp_size = V_tmp_size;
+    workspace->CG_p_size = CG_p_size;
+
+    //V,V_tmp,RitzVec是向量工作空间
+    ops->BuildMultiVecByMat(A, &(workspace->V), V_size, ops);
+    ops->BuildMultiVecByMat(A, &(workspace->V_tmp), V_tmp_size, ops);
+    ops->BuildMultiVecByMat(A, &(workspace->CG_p), CG_p_size, ops);
 
     //对GCGE算法中用到的一些参数进行初始化
     workspace->max_dim_x = max_dim_x;
@@ -77,7 +90,7 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
     //小规模的临时工作空间
     //GCGE_INT lwork1 = 26*max_dim_xpw;
     //GCGE_INT lwork2 = 1+6*max_dim_xpw+2*max_dim_xpw*max_dim_xpw;
-    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+300*max_dim_xpw, sizeof(GCGE_DOUBLE));
+    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+330*max_dim_xpw, sizeof(GCGE_DOUBLE));
     //+(lwork1>lwork2)?lwork1:lwork2, sizeof(GCGE_DOUBLE));
     workspace->subspace_itmp = (GCGE_INT*)calloc(12*max_dim_xpw, sizeof(GCGE_INT));
     //存储子空间矩阵的特征向量
@@ -93,14 +106,12 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
         workspace->unlock[i] = i;
     }
     //正交化时用到的临时GCGE_INT*型空间,用于临时存储非0的编号
-    workspace->orth_ind = (GCGE_INT*)calloc(max_dim_xpw, sizeof(GCGE_INT));
+    //workspace->orth_ind = (GCGE_INT*)calloc(max_dim_xpw, sizeof(GCGE_INT));
 
-    //V,V_tmp,RitzVec是向量工作空间
-    ops->BuildMultiVecByMat(A, &(workspace->V), max_dim_xpw, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->V_tmp), (max_dim_xpw>4)? max_dim_xpw: 4, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->RitzVec), max_dim_x, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->CG_p), para->block_size, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->CG_r), para->block_size, ops);
+    //if(ops->DenseMatCreate)
+    //{
+    //   ops->DenseMatCreate(&(workspace->dense_matrix), max_dim_xpw, max_dim_xpw);
+    //}
 
     //GCGE_STATISTIC_Para用于统计各部分时间
 }
@@ -137,25 +148,25 @@ void GCGE_WORKSPACE_Free(GCGE_WORKSPACE **workspace, GCGE_PARA *para, GCGE_OPS *
         free((*workspace)->subspace_itmp);
         (*workspace)->subspace_itmp = NULL;
     }
-    if((*workspace)->orth_ind)
-    {
-        free((*workspace)->orth_ind);
-        (*workspace)->orth_ind = NULL;
-    }
+    //if((*workspace)->orth_ind)
+    //{
+    //    free((*workspace)->orth_ind);
+    //    (*workspace)->orth_ind = NULL;
+    //}
     
     GCGE_INT max_dim_x = (*workspace)->max_dim_x;
     GCGE_INT max_dim_xpw = max_dim_x + 2 * para->block_size;
     if((*workspace)->V)
     {
-        ops->FreeMultiVec(&((*workspace)->V), max_dim_xpw, ops);
-        ops->FreeMultiVec(&((*workspace)->V_tmp), (max_dim_xpw>4)?max_dim_xpw:4, ops);
-        ops->FreeMultiVec(&((*workspace)->RitzVec), max_dim_x, ops);
-        ops->FreeMultiVec(&((*workspace)->CG_p), para->block_size, ops);
-        ops->FreeMultiVec(&((*workspace)->CG_r), para->block_size, ops);
-        if(ops->DenseMatCreate)
-        {
-            ops->DenseMatDestroy(&((*workspace)->dense_matrix));
-        }
+        ops->FreeMultiVec(&((*workspace)->V), (*workspace)->V_size, ops);
+        ops->FreeMultiVec(&((*workspace)->V_tmp), (*workspace)->V_tmp_size, ops);
+        //ops->FreeMultiVec(&((*workspace)->RitzVec), max_dim_x, ops);
+        ops->FreeMultiVec(&((*workspace)->CG_p), (*workspace)->CG_p_size,  ops);
+        //ops->FreeMultiVec(&((*workspace)->CG_r), para->block_size, ops);
+        //if(ops->DenseMatCreate)
+        //{
+        //    ops->DenseMatDestroy(&((*workspace)->dense_matrix));
+        //}
     }
 
     free((*workspace)); (*workspace) = NULL;

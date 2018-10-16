@@ -154,7 +154,7 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
         }
     }
     GCGE_ComputeSubspaceMatrixVTAW(V, A, dim_xp, ldm, subspace_matrix+dim_xp*ldm, 
-	  ops, workspace->V_tmp);
+	  ops, workspace->evec);
 }
 
 /* brief: 计算subspace_matrix的特征对
