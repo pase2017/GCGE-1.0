@@ -66,5 +66,8 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
     1) gcge_cg.c gcge_cg.h中添加了GCGE_BCG
     2) gcge_xpw.c 中 GCGE_ComputeW 做了修改, 改成多个W向量统一计算的格式
 
-2016.10.17 zhangning
+2018.10.17 zhangning
 添加了SLEPc的调用接口, 包括 external/slepc, include/app/gcge_app_slepc.h, src/app/slepc, test/slepc
+
+2018.10.18 zhangning
+修改了gcge_rayleighritz.c中的GCGE_ComputeSubspaceMatrix,也修改了gcge_workspace.c中的subspace_dtmp的空间分配
