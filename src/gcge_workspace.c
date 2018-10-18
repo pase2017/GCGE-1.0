@@ -84,15 +84,15 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
     workspace->conv_bs   = 0;
     workspace->unconv_bs = (nev < para->block_size) ? nev : para->block_size;
 
-    GCGE_INT max_dim_xpw = max_dim_x + 2 * para->block_size;
+    GCGE_INT max_dim_xpw = max_dim_x + 2 * block_size;
     //近似特征值
     workspace->eval      = (GCGE_DOUBLE*)calloc(max_dim_xpw, sizeof(GCGE_DOUBLE));
     //小规模的临时工作空间
     //GCGE_INT lwork1 = 26*max_dim_xpw;
     //GCGE_INT lwork2 = 1+6*max_dim_xpw+2*max_dim_xpw*max_dim_xpw;
-    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+330*max_dim_xpw, sizeof(GCGE_DOUBLE));
+    workspace->subspace_dtmp = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw+40*max_dim_xpw, sizeof(GCGE_DOUBLE));
     //+(lwork1>lwork2)?lwork1:lwork2, sizeof(GCGE_DOUBLE));
-    workspace->subspace_itmp = (GCGE_INT*)calloc(12*max_dim_xpw, sizeof(GCGE_INT));
+    workspace->subspace_itmp = (GCGE_INT*)calloc(100*max_dim_xpw, sizeof(GCGE_INT));
     //存储子空间矩阵的特征向量
     workspace->subspace_evec = (GCGE_DOUBLE*)calloc(max_dim_xpw*max_dim_xpw, sizeof(GCGE_DOUBLE));
     //用于存储子空间矩阵
