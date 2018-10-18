@@ -121,7 +121,6 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
     	    //AA_last: 上一次迭代的AA矩阵的行数
         GCGE_INT    lde = workspace->last_dim_xpw; 
         GCGE_DOUBLE alpha = 1.0, beta = 0.0;
-        GCGE_DOUBLE *AP = subspace_dtmp+dim_xp*dim_xp;
         // 这里只是取了一个临时空间用于存储下式
         // AP表示 AA_last *  XX  PX 的起始位置, 
         //                   XP  PP
@@ -131,27 +130,18 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
         // 需要的参数有 AA_last 的行数 lde，XX PX 的总列数 dim_xp
         //DenseMatDotDenseMat的三个矩阵中是否有可覆盖的可能（为了减少内存开销）
         ops->DenseSymMatDotDenseMat("L", "U", &lde, &dim_xp, &alpha, subspace_matrix, 
-                &lde, workspace->subspace_evec, &lde, &beta, AP, &lde);
+                &lde, workspace->subspace_evec, &lde, &beta, subspace_dtmp, &lde);
         //dgemm 计算下式
         //  XAX  XAP  = XX  PX ^T * AP
         //  PAX  PAP    XP  PP    
         //              XW  PW    
         // 需要的参数有 左矩阵的行数 lde, 右矩阵的列数 dim_xp, 
         // 左矩阵的列数(右行) lde (这里需要添加几个参数命名 TODO)
-        ops->DenseMatDotDenseMat("T", "N", &dim_xp, &dim_xp, &lde, &alpha, 
-                workspace->subspace_evec, &lde, AP, 
-                &lde, &beta, subspace_dtmp, &dim_xp);
-
-        //将 subspace_dtmp拷贝到subspace_matrix的左上角
-        // 需要的参数有：sub_mat的leading dimension: ldm, 
-        //               sub_dtmp要拷贝的行数 dim_xp 和列数 dim_xp
-        //(这里需要添加几个参数命名 TODO)
         memset(subspace_matrix, 0.0, ldm*ldm*sizeof(GCGE_DOUBLE));
-        for( i=0; i<dim_xp; i++ )
-        {
-            memcpy(subspace_matrix+i*ldm, subspace_dtmp+i*dim_xp, 
-                    dim_xp*sizeof(GCGE_DOUBLE));
-        }
+        ops->DenseMatDotDenseMat("T", "N", &dim_xp, &dim_xp, &lde, &alpha, 
+                workspace->subspace_evec, &lde, subspace_dtmp, 
+                &lde, &beta, subspace_matrix, &ldm);
+
     }
     GCGE_ComputeSubspaceMatrixVTAW(V, A, dim_xp, ldm, subspace_matrix+dim_xp*ldm, 
 	  ops, workspace->evec);
