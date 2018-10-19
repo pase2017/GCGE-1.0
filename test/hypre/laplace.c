@@ -131,8 +131,8 @@ HYPRE_Int CreateLaplaceEigenProblem(MPI_Comm comm, HYPRE_Int dim,
       {
 	 nnz = 1;
 	 cols[0] = i;
-//	 values[0] = h2;
-	 values[0] = 1.0;
+//  	 values[0] = h2;
+  	 values[0] = 1.0;
 	 /* Set the values for row i */
 	 HYPRE_IJMatrixSetValues(*B, 1, &nnz, &i, cols, values);
       }

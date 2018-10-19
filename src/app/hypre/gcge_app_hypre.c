@@ -78,6 +78,13 @@ void GCGE_HYPRE_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
 {
    HYPRE_ParVectorInnerProd((HYPRE_ParVector)x,  (HYPRE_ParVector)y,  xTy);
 }
+
+void GCGE_HYPRE_LocalVecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+{
+   hypre_Vector *x_local = hypre_ParVectorLocalVector((HYPRE_ParVector)x);
+   hypre_Vector *y_local = hypre_ParVectorLocalVector((HYPRE_ParVector)y);
+   *xTy = hypre_SeqVectorInnerProd(x_local, y_local);
+}
 void GCGE_HYPRE_PrintMultiVec(void **x, GCGE_INT n)
 {
    char file_name[16];
@@ -99,7 +106,8 @@ void GCGE_HYPRE_SetOps(GCGE_OPS *ops)
     ops->MatDotVec         = GCGE_HYPRE_MatDotVec;
     ops->VecAxpby          = GCGE_HYPRE_VecAxpby;
     ops->VecInnerProd      = GCGE_HYPRE_VecInnerProd;
-    ops->VecLocalInnerProd = GCGE_HYPRE_VecInnerProd;
+    ops->VecLocalInnerProd = GCGE_HYPRE_LocalVecInnerProd;
+//    ops->VecLocalInnerProd = GCGE_HYPRE_VecInnerProd;
     ops->PrintMultiVec     = GCGE_HYPRE_PrintMultiVec;
 }
 
@@ -141,7 +149,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
     GCGE_SOLVER_SetEigenvectors(hypre_solver, (void**)evec);
     //setup and solve
     GCGE_SOLVER_Setup(hypre_solver);
-    printf("Set up finish!\n");
+//    printf("Set up finish!\n");
     return hypre_solver;
 }
 
@@ -196,21 +204,21 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(HYPRE_ParCSRMatrix A
     //将线性解法器设为KSPSolve
     if (ls_id == 0)
     {
-       printf ( "linear solver is AMG\n" );
+//       printf ( "linear solver is AMG\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_AMGSolve;
     }
     else if (ls_id == 1)
     {
-       printf ( "linear solver is PCG\n" );
+//       printf ( "linear solver is PCG\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_PCGSolve;
     }
     else if (ls_id == 2)
     {
-       printf ( "linear solver is GMRES\n" );
+//       printf ( "linear solver is GMRES\n" );
        hypre_solver->ops->LinearSolver = GCGE_HYPRE_GMRESSolve;
     }
     else {
-       printf ( "Use default CG for linear solver\n" );
+//       printf ( "Use default CG for linear solver\n" );
     }
     return hypre_solver;
 }

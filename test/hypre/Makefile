@@ -9,11 +9,13 @@ OBJS1 = test_matvec.o
 OBJS2 = test_hypre_solver.o
 OBJS3 = test_hypre_solver_ls.o
 OBJS4 = test_gcge_lobpcg.o
+OBJS5 = test_bcg.o
 
 EXE1  = $(GCGEBIN)/test_matvec.exe 
 EXE2  = $(GCGEBIN)/test_hypre_solver.exe
 EXE3  = $(GCGEBIN)/test_hypre_solver_ls.exe
 EXE4  = $(GCGEBIN)/test_gcge_lobpcg.exe
+EXE5  = $(GCGEBIN)/test_bcg.exe
 
 # use DHAVE_CONFIG_H and DHYPRE_TIMING to use hypre_time
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC) -DHAVE_CONFIG_H -DHYPRE_TIMING
@@ -25,7 +27,7 @@ LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFOR
 
 all:	    help
 
-exe:         $(EXE1) $(EXE2) $(EXE3) $(EXE4)
+exe:         $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) 
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -60,6 +62,9 @@ run-hypre-solver-ls:
 
 run-gcge-lobpcg:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE4)
+
+run-bcg:
+	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE5)
 
 ############################################################
 .f.o:
@@ -96,4 +101,11 @@ $(EXE4): $(OBJS4) laplace.o
 	@echo 'Creating executable bin/xxx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@echo ''
+
+$(EXE5): $(OBJS5) laplace.o 
+	@echo ''
+	@echo 'Creating executable bin/xxx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo ''
+
 ############################################################

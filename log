@@ -71,3 +71,18 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
 
 2018.10.18 zhangning
 修改了gcge_rayleighritz.c中的GCGE_ComputeSubspaceMatrix,也修改了gcge_workspace.c中的subspace_dtmp的空间分配
+
+2018.10.19 liyu
+在求解特征值的程序中设置workspace->evec = solver->evec是不合适的，因为在BCG中还要调用workspace->evec
+也就是说，BCG不能单独被调用，而且BCG的形式参数也很不好，并不是一个一般性的接口。
+另外，即使用了hypre_seqvecinnerprod做为局部内积，好像BCG无论是原来的全局内积还是局部内积，都会收敛，很奇怪！
+后来发现这样确实是对的，从理论上讲。
+
+test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
+之所以lobpcg不精确求解残量方程，首先是它的正交化过程不能处理线性相关，且精度不能太高。
+而GCGE精确求解线性方程可能会使得整个迭代次数减少，进而减少W正交化的时间。
+
+所以，外部求解器起始就是一个预条件子，无论是否提供外部求解器，都会进行BCG, 这是性价比最高的调用方式
+
+
+

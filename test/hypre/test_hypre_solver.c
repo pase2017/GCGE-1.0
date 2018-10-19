@@ -193,9 +193,9 @@ int main(int argc, char* argv[])
    //一些参数的设置
    hypre_solver->para->ev_tol = 1e-11;
    hypre_solver->para->dirichlet_boundary = 0;
-   hypre_solver->para->cg_max_it = 20;
-   hypre_solver->para->ev_max_it = 150;
-   hypre_solver->para->cg_type  = 2;
+//   hypre_solver->para->cg_max_it = 20;
+//   hypre_solver->para->ev_max_it = 150;
+//   hypre_solver->para->cg_type  = 2;
 
    //求解特征值问题
    GCGE_SOLVER_Solve(hypre_solver);  

@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
    HYPRE_ParCSRMatrix parcsr_A, parcsr_B;
    HYPRE_ParVector    par_x,    par_b;
 
-   srand((unsigned)time(NULL));
+//   srand((unsigned)time(NULL));
    /*----------------------- Laplace精确特征值 ---------------------*/
    /* Preliminaries: want at least one processor per row */
    int n = 33;
@@ -112,82 +112,93 @@ int main(int argc, char* argv[])
    HYPRE_IJVectorGetObject(b, (void **) &par_b);
    /* 创建矩阵 end */
 
-   /* 创建线性解法器 start */
-   int solver_id = 0;
-   HYPRE_Solver linear_solver,  precond;
-   if (solver_id == 0)
-   {
-      HYPRE_BoomerAMGCreate(&linear_solver);
-      /* Set some parameters */
-      HYPRE_BoomerAMGSetPrintLevel(linear_solver,  1); /* print solve info + parameters */
-      HYPRE_BoomerAMGSetNumSweeps(linear_solver,   2); /* Sweeeps on each level */
-      HYPRE_BoomerAMGSetTol(linear_solver,       0.0); /* conv. tolerance */
-      HYPRE_BoomerAMGSetMaxIter(linear_solver,     1); /* max iteration */
-      HYPRE_BoomerAMGSetup(linear_solver, parcsr_A, par_b, par_x);
-   }
-   else if (solver_id == 1)
-   {
-      /* pcg+amg */
-      /*  Create solver */
-      HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD,  &linear_solver);
-      /*  Set some parameters */
-      HYPRE_PCGSetMaxIter(linear_solver,    10); /*  max iterations */
-      HYPRE_PCGSetTol(linear_solver,      1e-7); /*  conv. tolerance */
-      HYPRE_PCGSetTwoNorm(linear_solver,     1); /*  use the two norm as the stopping criteria */
-      HYPRE_PCGSetPrintLevel(linear_solver,  0); /*  print solve info */
-      HYPRE_PCGSetLogging(linear_solver,     0); /*  needed to get run info later */
-      /*  Now set up the AMG preconditioner and specify any parameters */
-      HYPRE_BoomerAMGCreate(&precond);
-      /* Set some parameters */
-      HYPRE_BoomerAMGSetPrintLevel(precond,  1); /* print solve info + parameters */
-      HYPRE_BoomerAMGSetNumSweeps(precond,   2); /* Sweeeps on each level */
-      HYPRE_BoomerAMGSetTol(precond,       0.0); /* conv. tolerance */
-      HYPRE_BoomerAMGSetMaxIter(precond,     1); /* max iteration */
-      /*  Set the PCG preconditioner */
-      HYPRE_PCGSetPrecond(linear_solver,  (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve, 
-	    (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,  precond);
-      /*  Now setup and solve! */
-      HYPRE_ParCSRPCGSetup(linear_solver, parcsr_A, par_b, par_x);
-   }
-   /* 创建线性解法器 end */
+   /* 创建特征值求解器 */
+   GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init(
+	 parcsr_A, parcsr_B, nev, argc, argv);   
 
-   /* 创建特征值求解器 solver_id: 0 AMG, 1 PCG, 2 GMRES */
-   GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser(
-	 parcsr_A, parcsr_B, linear_solver, solver_id, nev, argc, argv);   
    /* 一些参数的设置 */
-   hypre_solver->para->ev_max_it = 100;
-   hypre_solver->para->ev_tol    = 1e-13;
-   hypre_solver->para->orth_para->criterion_tol = DBL_EPSILON;
-   hypre_solver->para->orth_para->orth_zero_tol = DBL_EPSILON;
-   hypre_solver->para->orth_para->max_reorth_time = 100;
    hypre_solver->para->dirichlet_boundary = 0;
-   hypre_solver->para->print_part_time = 0;
-   hypre_solver->para->print_eval = 0;
-   hypre_solver->para->print_para = 0;
-
-   int global_time_index;
-   global_time_index = hypre_InitializeTiming("GCGE Solver");
-   hypre_BeginTiming(global_time_index);
+   hypre_solver->para->ev_tol             = 1e-2;
+   hypre_solver->para->cg_rate            = 0.0;
+   hypre_solver->para->cg_max_it          = 20;
 
    /* 求解特征值问题 */
-   GCGE_SOLVER_Solve(hypre_solver);  
+//   GCGE_SOLVER_Solve(hypre_solver);  
+
+
+   /* It should be modified */
+   hypre_solver->workspace->evec = hypre_solver->evec;
+
+   HYPRE_Real      *eval;
+   GCGE_SOLVER_GetEigenvalues (hypre_solver, &eval);
+
+
+   int seed = 314;
+   int i;
+
+   void **RHS = hypre_solver->workspace->V;
+   void **X   = hypre_solver->workspace->V+nev;
+   void **rhs = hypre_solver->workspace->V+2*nev;
+
+   for (i = 0; i < nev; ++i)
+   {
+      HYPRE_ParVectorSetRandomValues((HYPRE_ParVector)(RHS[i]), seed);
+      HYPRE_ParVectorSetRandomValues((HYPRE_ParVector)(X[i]), seed);
+      seed += rand();
+      HYPRE_ParVectorCopy((HYPRE_ParVector)(RHS[i]), (HYPRE_ParVector)(rhs[i]));
+   }
+
+   int global_time_index;
+   global_time_index = hypre_InitializeTiming("GCGE BCG");
+   hypre_BeginTiming(global_time_index);
+   HYPRE_Solver precond;
+   HYPRE_BoomerAMGCreate(&precond);
+   /* Set some parameters */
+   HYPRE_BoomerAMGSetPrintLevel(precond,  2); /* print solve info + parameters */
+   HYPRE_BoomerAMGSetNumSweeps(precond,   1); /* Sweeeps on each level */
+   HYPRE_BoomerAMGSetTol(precond,       0.0); /* conv. tolerance */
+   HYPRE_BoomerAMGSetMaxIter(precond,    10); /* max iteration */
+   HYPRE_BoomerAMGSetup(precond, parcsr_A, par_b, par_x);
+
+   for (i = 0; i < nev; ++i)
+   {
+      HYPRE_BoomerAMGSolve(precond, parcsr_A, (HYPRE_ParVector)RHS[i], (HYPRE_ParVector)X[i]);
+      HYPRE_ParVectorCopy((HYPRE_ParVector)(rhs[i]), (HYPRE_ParVector)(RHS[i]));
+   }
+
+   GCGE_BCG((void *)parcsr_A, RHS, X, 0, nev, 
+	 hypre_solver->ops, hypre_solver->para, hypre_solver->workspace);
+
 
    hypre_EndTiming(global_time_index);
    hypre_PrintTiming("Solve phase times", MPI_COMM_WORLD);
    hypre_FinalizeTiming(global_time_index);
    hypre_ClearTiming();
 
+
+   for (i = 0; i < nev; ++i)
+   {
+      hypre_solver->ops->VecInnerProd(X[i], X[i], eval+i);
+      hypre_printf ( "%d: InnerProd = %e\n", i, eval[i] );
+      hypre_solver->ops->VecLocalInnerProd(X[i], X[i], eval+i);
+      hypre_printf ( "%d %d: LocalInnerProd = %e\n", i, myid, eval[i] );
+   }
+
+   double norm_rhs;
+   for (i = 0; i < nev; ++i)
+   {
+      HYPRE_ParVectorInnerProd( (HYPRE_ParVector)rhs[i], (HYPRE_ParVector)rhs[i], &norm_rhs);
+      norm_rhs = sqrt(norm_rhs);
+      HYPRE_ParCSRMatrixMatvec(1.0, parcsr_A, (HYPRE_ParVector)X[i], -1.0, (HYPRE_ParVector)rhs[i] );
+      HYPRE_ParVectorInnerProd( (HYPRE_ParVector)rhs[i], (HYPRE_ParVector)rhs[i], eval+i);
+//      hypre_printf ( "%d: residual = %e, relative residual = %e\n", i, sqrt(eval[i]), sqrt(eval[i])/norm_rhs );
+      hypre_printf ( "%d: residual = %e\n", i, sqrt(eval[i]) );
+   }
+
+
    /* 释放所有空间 */
+   HYPRE_BoomerAMGDestroy(precond);
    GCGE_SOLVER_Free_All(&hypre_solver);
-   if (solver_id == 0)
-   {
-      HYPRE_BoomerAMGDestroy(linear_solver);
-   }
-   else if (solver_id == 1)
-   {
-      HYPRE_ParCSRPCGDestroy(linear_solver);
-      HYPRE_BoomerAMGDestroy(precond);
-   }
    DestroyLaplaceEigenProblem(exact_eigenvalues, A, B, x, b);
 
    /* Finalize MPI*/
