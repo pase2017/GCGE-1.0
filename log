@@ -89,11 +89,14 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
    之前用到的这个函数，两个向量组都是从第0个开始用，所以对之前的使用没有影响
    1) 修改了gcge_ops.h中对于ops->MultiVecLinearComb的注释
    2) 修改了gcge_ops.c中的GCGE_Default_MultiVecLinearComb
+-------------------------------------
+!!!!!!!! 2有问题，先不要使用最新的GCGE_CBOrthogonal函数，只是添加了这个函数，对其余的函数没有影响
 2. 在gcge_orthogonal.c中添加了GCGE_CBOrthogonal函数，表示Classical Block Orthogonal,消息发送次数少，但会损失正交性
    使用A_5矩阵进行测试（1089*1089），1e-6可以达到, 1e-8无法达到
    可以在精度要求不高时，提高求解效率. 使用时可以根据需要修改重正交化次数
    1) 修改了gcge_orthogonal.c
    2) 修改了gcge_orthogonal.h
+-------------------------------------
 3. 修改了GCGE_ComputeSubspaceMatrix中子空间计算的部分
    1) 修改了gcge_rayleighritz.c
 
