@@ -151,14 +151,15 @@ void GCGE_Default_MultiVecLinearComb(void **x, void **y, GCGE_INT *start, GCGE_I
 	//取出x的相应的列
         ops->GetVecFromMultiVec(x, start[0], &xs);
 	//ys = a(0,idy)*xs + 0.0*ys
-        ops->VecAxpby(a[idx_y*lda+start[0]], xs, 0.0, ys);
+        //ops->VecAxpby(a[idx_y*lda+start[0]], xs, 0.0, ys);
+        ops->VecAxpby(a[(idx_y-start[1])*lda], xs, 0.0, ys);
 	//把xs返回给x(:,start[0])
         ops->RestoreVecForMultiVec(x, start[0], &xs);
         //下面进行迭代
         for(idx_x = start[0]+1; idx_x<end[0]; idx_x++)
         {
             ops->GetVecFromMultiVec(x, idx_x, &xs);
-            ops->VecAxpby(a[idx_y*lda+idx_x], xs, 1.0, ys);
+            ops->VecAxpby(a[(idx_y-start[1])*lda+idx_x-start[0]], xs, 1.0, ys);
             ops->RestoreVecForMultiVec(x, idx_x, &xs);
         }//end for idy
         //返回ys

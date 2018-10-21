@@ -66,7 +66,7 @@ typedef struct GCGE_OPS_ {
                                      GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops);
     void (*MultiVecAxpbyColumn)     (GCGE_DOUBLE a, void **x, GCGE_INT col_x, GCGE_DOUBLE b, 
                                      void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops);
-    /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i][j] */
+    /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i-sx][j-sy] */
     void (*MultiVecLinearComb)      (void **x, void **y, GCGE_INT *start, GCGE_INT *end,
                                      GCGE_DOUBLE *a, GCGE_INT lda, 
                                      void *dmat, GCGE_INT lddmat, struct GCGE_OPS_ *ops);
