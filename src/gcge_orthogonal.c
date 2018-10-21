@@ -372,7 +372,6 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     GCGE_INT    i = 0, j = 0;
     //end[0]: 表示需要正交化向量的最终位置
     //先计算 evec = B*V（：，1：nev），可以在正交化的过程中一直存着
-    //printf("nev= %d, dim_xp = %d, start=%d, end=%d\n",nev, dim_xp, start,*(end));
     for(j=0;j<nev;j++)
     {
         ops->GetVecFromMultiVec(V, j, &vec_current);
@@ -409,7 +408,6 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     //默认做两次正交化，为了增加数值稳定性
     for(i=0; i < 2; ++i)
     {   
-        //printf("i=%d\n",i);
         w_length = *end - start;
         for(current = 0; current < nev; ++current)
         {
@@ -424,16 +422,16 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             //lda = w_length, 表示矩阵的行数，第一个向量组的列数
             ops->MultiVecInnerProd(V,evec, d_tmp, "ns", mv_s, mv_e, w_length, ops);      
             //减去相应的分量
-            ops->GetVecFromMultiVec(V, current, &vec_current);
             for(j=start;j<*(end);j++)
             {
+                ops->GetVecFromMultiVec(V, current, &vec_current);
                 ops->GetVecFromMultiVec(V, j, &vec_tmp);
                 //vec_tmp = vec_tmp - d_tmp[j-start]*vec_current
                 //printf("j=%d, xty = %e\n",j, d_tmp[j-start]);
                 ops->VecAxpby(-d_tmp[j-start], vec_current, 1.0, vec_tmp);
                 ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+                ops->RestoreVecForMultiVec(V, current, &vec_current);
             }
-            ops->RestoreVecForMultiVec(V, current, &vec_current);
         }//end for(current = 0; current < nev; ++current)
 
         for(current = nev; current < dim_xp; ++current)
@@ -449,15 +447,15 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             //统一做内积
             ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, w_length, ops);      
             //减去相应的分量
-            ops->GetVecFromMultiVec(V, current, &vec_current);
             for(j=start;j<*(end);j++)
             {
+                ops->GetVecFromMultiVec(V, current, &vec_current);
                 ops->GetVecFromMultiVec(V, j, &vec_tmp);
                 //vec_tmp = vec_tmp - d_tmp[j-start] *vec_current 
                 ops->VecAxpby(-d_tmp[j-start], vec_current, 1.0, vec_tmp);
                 ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+                ops->RestoreVecForMultiVec(V, current, &vec_current);
             }
-            ops->RestoreVecForMultiVec(V, current, &vec_current);
         }//end for for(current = nev; current < dim_xp; ++current)
 
         //现在对W本身进行正交化 
@@ -495,14 +493,16 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 ops->GetVecFromMultiVec(V, current, &vec_current);
                 //vec_current = 1/norm_value * vec_current
                 ops->VecAxpby(0.0, vec_current, 1.0/norm_value, vec_current);	
+                ops->RestoreVecForMultiVec(V, current, &vec_current);
                 for(j=current+1;j<*(end);j++)
                 {
+                    ops->GetVecFromMultiVec(V, current, &vec_current);
                     ops->GetVecFromMultiVec(V, j, &vec_tmp);
                     //vec_tmp = vec_tmp - d_tmp[j-current]/norm_value *vec_current
                     ops->VecAxpby(-d_tmp[j-current]/norm_value, vec_current, 1.0, vec_tmp);
                     ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+                    ops->RestoreVecForMultiVec(V, current, &vec_current);
                 }//end for(j=current+1;j<*(end);j++)
-                ops->RestoreVecForMultiVec(V, current, &vec_current);
             }
             else
             {
@@ -643,4 +643,204 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
         }//end if (vout > orth_para->orth_zero_tol)
     }//end for current to the end
 }//end for this subprogram
+
+//对V的某些列进行正交化，start: 表示开始的位置，end[0]表示需要正交化向量的最终位置(也返回这个最终位置)，
+//矩阵B表示进行内积计算的矩阵，orth_para: 定义正交化方式的参数
+//evec, V_tmp: 用来存储正交化过程中 [B*X, B*P] 的临时向量, 
+//d_tmp: 用来存储待正交化的向量与之前已经正交化的一个向量的内积 
+/** 
+ *  V:         input,        要正交化的向量组
+ *  start:     input,        要正交化的向量组在V中的起始位置
+ *  end:       input|output, 要正交化的向量组在V中的终止位置
+ *  B:         input,        正交化矩阵, 可以是NULL
+ *  ops:       input,        操作
+ *  para:      input,        参数
+ *  workspace: input,        工作空间
+ *
+ *  块正交化过程：
+ *  
+ *  V = [V1, V2, V3], V中有三个部分, 其中V1,V2部分已经正交, 
+ *  V1中有 size_V1(这里是nev) 个向量, V2中有 size_V2(这里是dim_xp-nev) 个向量
+ *  V3中有 size_V3(这里是w_length=end-start) 个向量
+ *
+ *  临时存储空间使用workspace中的 evec(nev个), V_tmp(dim_xp-nev个), CG_p(1个)
+ *
+ *  下面的过程进行两次(相当于做一次重正交化)
+ *  1. 去掉 V3 中 V1,V2 方向的分量
+ *     V3 = V3 - [V1,V2] * ([V1,V2]^T * B * V3)
+ *   > 计算 V_tmp = B * V3 
+ *          V_tmp: w_length 列
+ *   > 计算 subspace_dtmp = [V1,V2]^T * V_tmp
+ *          subspace_dtmp: GCGE_DOUBLE *数组
+ *            size_V1+size_V2 行, 即dim_xp行,w_length 列
+ *   > 计算 V_tmp = [V1,V2] * subspace_dtmp
+ *          V_tmp: w_length 列
+ *   > 计算 V3 = V3 - V_tmp
+ *
+ *  2. V3 自身做正交化 
+ *   > 计算 M = V3^T * B *V3
+ *   > 计算 M C = C Theta
+ *   > 计算 y_i = 1/sqrt(Theta_i) * y_i
+ *   > 计算 V3 = V3 * Y
+ *
+ */
+//Classical Block Orthogonalization
+void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+                      void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+    GCGE_ORTH_PARA *orth_para = para->orth_para; 
+    GCGE_INT        current = 0; //表示for循环中当前正在进行正交化的向量编号
+    GCGE_INT        w_length = (*end) - start; //表示W向量的个数
+    GCGE_INT        reorth_count = 0; //统计(重)正交化次数
+    GCGE_INT        mv_s[2] = { 0, 0 }; //使用向量组的初始位置
+    GCGE_INT        mv_e[2] = { 0, 0 }; //使用向量组的终止位置
+
+    GCGE_INT        dim_x = workspace->dim_x;
+    GCGE_INT        dim_xp = workspace->dim_xp;
+    GCGE_INT        nev = para->nev;
+
+    GCGE_DOUBLE     norm_value = 0.0;  //存储当前向量的范数
+    GCGE_DOUBLE    *d_tmp = workspace->subspace_dtmp;
+    void           *vec_current; //当前正在进行正交化的向量
+    void           *vec_tmp;
+    void          **CG_p = workspace->CG_p;
+    void          **evec = workspace->evec;
+    void          **V_tmp = workspace->V_tmp;
+    GCGE_INT        i = 0, j = 0;
+
+    //求解特征值问题所用参数
+    GCGE_DOUBLE     vl = 0.0;
+    GCGE_DOUBLE     vu = 0.0;
+    GCGE_DOUBLE     abstol = 0.0;
+    GCGE_DOUBLE    *tmp_evec = workspace->subspace_evec;
+    GCGE_DOUBLE    *tmp_eval = tmp_evec + w_length*w_length;
+    GCGE_DOUBLE    *dwork_space = d_tmp + w_length*w_length;
+    GCGE_INT        il = 1;
+    GCGE_INT        iu = w_length;
+    GCGE_INT        m = iu-il+1;
+    GCGE_INT        lwork = 8*w_length;
+    GCGE_INT        liwork = 5*w_length;
+    GCGE_INT       *subspace_itmp = workspace->subspace_itmp;
+    GCGE_INT       *isuppz = subspace_itmp + 10*w_length; 
+    GCGE_INT       *ifail = subspace_itmp + 5*w_length; 
+    GCGE_INT        info = 0;
+
+    GCGE_INT        tmp_eval_nonzero_start = 0; //用于做线性组合的小规模特征向量的起始位置
+
+    //开始进行正交化
+    //默认做两次正交化，为了增加数值稳定性
+    for(i=0; i < 2; ++i)
+    {   
+        w_length = *end - start;
+
+        //计算 V_tmp = B * V3 
+        for(j=0;j<w_length;j++)
+        {
+            ops->GetVecFromMultiVec(V, j+start, &vec_current);
+            ops->GetVecFromMultiVec(V_tmp, j, &vec_tmp);
+            if(B == NULL)
+            {
+                ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	  	
+            }
+            else
+            {
+                ops->MatDotVec(B, vec_current, vec_tmp);	  	
+            }
+            ops->RestoreVecForMultiVec(V_tmp, j, &vec_tmp);
+            ops->RestoreVecForMultiVec(V, j+start, &vec_current);
+        }//end for(j=0;j<w_length;j++)
+
+        //计算 subspace_dtmp = [V1,V2]^T * V_tmp
+        mv_s[0] = 0;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, start, ops);    
+        //计算 V_tmp = [V1,V2] * subspace_dtmp
+        mv_s[0] = 0;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, d_tmp, start, NULL, -1, ops);
+
+        //计算 V3 = V3 - V_tmp
+        mv_s[0] = 0;
+        mv_e[0] = w_length;
+        mv_s[1] = start;
+        mv_e[1] = *end;
+        ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
+    }
+
+    //现在对W本身进行正交化 
+    for(i=0; i < 2; ++i)
+    {   
+        //计算 M = V3^T * B *V3
+        //计算 V_tmp = B * V3 
+        for(j=0;j<w_length;j++)
+        {
+            ops->GetVecFromMultiVec(V, j+start, &vec_current);
+            ops->GetVecFromMultiVec(V_tmp, j, &vec_tmp);
+            if(B == NULL)
+            {
+                ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	  	
+            }
+            else
+            {
+                ops->MatDotVec(B, vec_current, vec_tmp);	  	
+            }
+            ops->RestoreVecForMultiVec(V_tmp, j, &vec_tmp);
+            ops->RestoreVecForMultiVec(V, j+start, &vec_current);
+        }//end for(j=0;j<w_length;j++)
+
+        //计算 subspace_dtmp = V3^T * V_tmp
+        mv_s[0] = start;
+        mv_e[0] = *end;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, w_length, ops);    
+
+        //计算 M C = C Theta
+        iu = w_length;
+        m = iu - il + 1;
+        ops->DenseMatEigenSolver("V", "I", "U", &w_length, d_tmp, 
+                &w_length, &vl, &vu, &il, &iu, &abstol, 
+                &m, tmp_eval, tmp_evec, &w_length, 
+                isuppz, dwork_space, &lwork,
+                subspace_itmp, &liwork, ifail, &info);
+
+        //计算 y_i = 1/sqrt(Theta_i) * y_i
+        tmp_eval_nonzero_start = 0;
+        for(j=0; j<w_length; j++)
+        {
+            if(tmp_eval[j] < orth_para->orth_zero_tol)
+            {
+                //表明这个位置是0，那非0的要从下一个开始
+                tmp_eval_nonzero_start = j+1;
+            }
+            else
+            {
+                GCGE_VecScaleSubspace(1.0/sqrt(tmp_eval[j]), tmp_evec+j*w_length, w_length);
+            }
+        }
+
+        //w_length为新的非零向量个数
+        w_length = w_length - tmp_eval_nonzero_start;
+
+        //计算 V3 = V3 * Y
+        //计算 V_tmp = [V1,V2] * subspace_dtmp
+        mv_s[0] = start;
+        mv_e[0] = *end;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, 
+           tmp_evec+tmp_eval_nonzero_start*w_length, w_length, NULL, -1, ops);
+        *end = start + w_length;
+        //计算 V3 = V_tmp
+        mv_s[0] = start;
+        mv_e[0] = *end;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecSwap(V, V_tmp, mv_s, mv_e, ops);
+    }//end for(i=0; i <2; ++i)
+}//end for the block orthogonalization
 
