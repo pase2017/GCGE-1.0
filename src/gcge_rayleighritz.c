@@ -95,6 +95,15 @@ void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, GCGE_IN
  *        PAX  PAP    XP  PP                 XP  PP
  *                    XW  PW                 XW  PW
  *
+ *      进行优化计算如下：
+ *
+ *        XAX = \Lambda
+ *        XAP = 0
+ *        PAX = 0
+ *        PAP = PX ^T * AA_last *  PX
+ *              PP                 PP
+ *              PW                 PW
+ *
  *   2. 大规模操作，计算 XAW , 需要 submat, ldm, W_start, W_length,
  *                       PAW        V_tmp(临时存储A*W)
  *                       WAW
@@ -104,43 +113,53 @@ void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, GCGE_IN
 void GCGE_ComputeSubspaceMatrix(void *A, void **V, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
-     //ldm: laplack的风格名字：表示subspace_matrix的维数
+    //ldm: laplack的风格名字：表示subspace_matrix的维数
     GCGE_INT    i, dim_xp = workspace->dim_xp, ldm = workspace->dim_xpw;
     GCGE_DOUBLE *subspace_dtmp   = workspace->subspace_dtmp; 
-    /*subspace_dtmp表示下式左端矩阵的起始位置
-     *  XAX  XAP  = XX  PX ^T * AA_last *  XX  PX
-     *  PAX  PAP    XP  PP                 XP  PP
-     *              XW  PW                 XW  PW 
-     */
     GCGE_DOUBLE *subspace_matrix = workspace->subspace_matrix;
     GCGE_DOUBLE *subspace_evec   = workspace->subspace_evec;
-    /* TODO */
     if(dim_xp != 0)
     {
-    	    //lde表示AA_last的行数(leading dimension of subspace_evec)
-    	    //AA_last: 上一次迭代的AA矩阵的行数
-        GCGE_INT    lde = workspace->last_dim_xpw; 
-        GCGE_DOUBLE alpha = 1.0, beta = 0.0;
-        // 这里只是取了一个临时空间用于存储下式
-        // AP表示 AA_last *  XX  PX 的起始位置, 
-        //                   XP  PP
-        //                   XW  PW
-        // AA_last此时存储在subspace_matrix中
-        // dsymm 计算AP,因为AA_last是对称矩阵，所以使用dsymm计算对称矩阵乘矩阵
-        // 需要的参数有 AA_last 的行数 lde，XX PX 的总列数 dim_xp
-        //DenseMatDotDenseMat的三个矩阵中是否有可覆盖的可能（为了减少内存开销）
-        ops->DenseSymMatDotDenseMat("L", "U", &lde, &dim_xp, &alpha, subspace_matrix, 
-                &lde, workspace->subspace_evec, &lde, &beta, subspace_dtmp, &lde);
-        //dgemm 计算下式
-        //  XAX  XAP  = XX  PX ^T * AP
-        //  PAX  PAP    XP  PP    
-        //              XW  PW    
-        // 需要的参数有 左矩阵的行数 lde, 右矩阵的列数 dim_xp, 
-        // 左矩阵的列数(右行) lde (这里需要添加几个参数命名 TODO)
+        GCGE_INT    lde   = workspace->last_dim_xpw; //lde表示subspace_evec的行数
+        GCGE_INT    dim_x = workspace->dim_x; //dim_x为当前X向量的个数
+        GCGE_INT    dim_p = dim_xp - dim_x; //dim_p为当前P向量的个数
+        GCGE_DOUBLE alpha = 1.0;
+        GCGE_DOUBLE beta  = 0.0;
+        GCGE_DOUBLE *pp   = subspace_evec+dim_x*lde; //pp为subspace_evec中P的线性组合系数
+        GCGE_DOUBLE *AApp = subspace_dtmp; //AApp为子空间矩阵AA乘以P的线性组合系数pp
+        GCGE_DOUBLE *PTAP = subspace_matrix+dim_x*ldm+dim_x; //PTAP为子空间矩阵P^TAP的相应部分
+        /*  PTAP 表示下式中 PAP 的起始位置
+         *
+         *  XAX  XAP  XAW     XX  PX  WX ^T              XX  PX  WX
+         *  PAX  PAP  PAW  =  XP  PP  WP    * AA_last *  XP  PP  WP
+         *  WAX  WAP  WAW     XW  PW  WW                 XW  PW  WW
+         *
+         *  AApp 表示下式的起始位置
+         *
+         *                   PX
+         *  AApp = AA_last * PP
+         *                   PW
+         *
+         *  pp 表示下式的起始位置
+         *
+         *       PX
+         *  pp = PP
+         *       PW
+         */
+        //调用 BLAS-3 的 dsymm 计算 AApp = subspace_matrix * pp
+        ops->DenseSymMatDotDenseMat("L", "U", &lde, &dim_p, &alpha, subspace_matrix, 
+                &lde, pp, &lde, &beta, AApp, &lde);
+        //将subspace_matrix赋值为0
         memset(subspace_matrix, 0.0, ldm*ldm*sizeof(GCGE_DOUBLE));
-        ops->DenseMatDotDenseMat("T", "N", &dim_xp, &dim_xp, &lde, &alpha, 
-                workspace->subspace_evec, &lde, subspace_dtmp, 
-                &lde, &beta, subspace_matrix, &ldm);
+        //调用 BLAS-3 的 dgemm 计算 PTAP = pp^T * AApp
+        ops->DenseMatDotDenseMat("T", "N", &dim_p, &dim_p, &lde, &alpha, 
+                pp, &lde, subspace_dtmp, 
+                &lde, &beta, PTAP, &ldm);
+        //将XTAX部分赋值为特征值对角阵
+        for(i=0; i<dim_x; i++)
+        {
+            subspace_matrix[i*ldm+i] = workspace->eval[i];
+        }
 
     }
     GCGE_ComputeSubspaceMatrixVTAW(V, A, dim_xp, ldm, subspace_matrix+dim_xp*ldm, 
