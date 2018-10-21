@@ -154,7 +154,7 @@ void GCGE_SLEPC_MultiVecLinearComb(void **x, void **y,
     for(i=start[1]; i<end[1]; i++)
     {
         //默认输入的矩阵a是要从第一个元素开始用的,所以q的位置要+start[0]
-        memcpy(q+i*nrows+start[0], a+i*lda, lda*sizeof(GCGE_DOUBLE));
+        memcpy(q+i*nrows+start[0], a+(i-start[1])*lda, lda*sizeof(GCGE_DOUBLE));
     }
     ierr = MatDenseRestoreArray(dense_mat, &q);
     ierr = BVMult((BV)y, 1.0, 0.0, (BV)x, dense_mat);
@@ -206,7 +206,7 @@ void GCGE_SLEPC_MultiVecAxpby(GCGE_DOUBLE a, void **x, GCGE_DOUBLE
     ierr = BVSetActiveColumns((BV)x, start[0], end[0]);
     ierr = BVSetActiveColumns((BV)y, start[1], end[1]);
     //If matrix Q is NULL, then an AXPY operation Y = beta*Y + alpha*X is done
-    ierr = BVMult((BV)y, 1.0, 0.0, (BV)x, NULL);
+    ierr = BVMult((BV)y, a, b, (BV)x, NULL);
 }
 
 //把V_1和V_2的相应的列组交换: 即： V_1(:,start[0]:end[0])与V_2(:,start[1]:end[1])相互交换
