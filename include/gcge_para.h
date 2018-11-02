@@ -48,7 +48,8 @@ typedef struct GCGE_PARA_ {
     //GCGE_INT    unconv_bs;       //本次迭代中需要计算 P W 的个数
 
      //正交化用到的参数
-    char*       orth_type;          //确定是用Ａ正交还是Ｂ正交,1 : A_ORTH, 2 : B_ORTH
+    char*       orth_type;          //确定是用Ａ正交还是Ｂ正交,A : A_ORTH, B : B_ORTH
+    char*       w_orth_type;        //W正交化时使用哪种正交化方式, gs:原始的修正Gram-Schmidt,bgs:稳定的块Gram-Schmidt,cbgs:高效但不稳定的块Gram-Schmidt
     GCGE_ORTH_PARA *orth_para;      //控制求解过程中正交化的参数集合
 
     GCGE_DOUBLE multi_tol;          //default:0.2,判断特征值重数（或距离较近）的阈值

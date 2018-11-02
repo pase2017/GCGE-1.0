@@ -39,6 +39,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交
+    (*para)->w_orth_type     = "bgs"; //使用稳定的块正交化方法
 
      //正交化参数
     (*para)->orth_para = (GCGE_ORTH_PARA *)malloc(sizeof(GCGE_PARA));
@@ -144,6 +145,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->orth_type = argv[arg_index++];
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_w_orth_type")) 
+        {
+            arg_index++;
+            para->w_orth_type = argv[arg_index++];
+        }
         else if(0 == strcmp(argv[arg_index], "-gcge_orth_zero_tol")) 
         {
             arg_index++;
@@ -232,6 +238,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_ev_tol          <d>  : convergence tolerance                      (default: 1e-4)\n");
        GCGE_Printf("  -gcge_conv_type       <c>  : use reletive or abosolute residual         (default: R)\n");
        GCGE_Printf("  -gcge_orth_type       <c>  : use A norm or B norm orthogonal            (default: B)\n");
+       GCGE_Printf("  -gcge_w_orth_type     <c>  : use which kind of orthogonalization        (default: bgs)\n");
        GCGE_Printf("  -gcge_orth_zero_tol   <d>  : zero tolerance in orthogonal               (default: 1e-16)\n");
        GCGE_Printf("  -gcge_reorth_tol      <d>  : reorthgonal tolerance                      (default: 0.75)\n");
        GCGE_Printf("  -gcge_max_reorth_time <i>  : maximun reorthogonal times                 (default: 3)\n");
@@ -492,6 +499,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  print_result    : %d, (print the final result or not              )\n", para->print_result   );
        GCGE_Printf("  conv_type       : %s, (use reletive or abosolute residual         )\n", para->conv_type      );
        GCGE_Printf("  orth_type       : %s, (use A norm or B norm orthogonal            )\n", para->orth_type      );
+       GCGE_Printf("  w_orth_type     : %s, (use which kind of orthogonalization        )\n", para->w_orth_type    );
        GCGE_Printf("  ev_tol          : %e, (convergence tolerance                      )\n", para->ev_tol         );
        GCGE_Printf("  orth_zero_tol   : %e, (zero tolerance in orthogonal               )\n", para->orth_para->orth_zero_tol  );
        GCGE_Printf("  reorth_tol      : %e, (reorthgonal tolerance                      )\n", para->orth_para->reorth_tol     );

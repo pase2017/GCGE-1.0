@@ -774,9 +774,9 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
     }
 
-    //现在对W本身进行正交化 
-    //精度要求高时，max_reorth_time至少为3，才能使计算结果不出错，只是精度无法继续提高
-    for(i=0; i < orth_para->max_reorth_time; ++i)
+    //现在对W本身进行正交化,因为这种正交化方式只适用于精度要求低的情况
+    //所以这里暂时不做重正交化
+    for(i=0; i < 1; ++i)
     {   
         //计算 M = V3^T * B *V3
         //计算 V_tmp = B * V3 

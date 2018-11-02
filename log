@@ -101,3 +101,12 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
 3. 修改了GCGE_ComputeSubspaceMatrix中子空间计算的部分
    1) 修改了gcge_rayleighritz.c
 
+2018.11.02
+1. 添加了正交化方式的选择
+   1) 修改了gcge_para.h
+      在GCGE_PARA中添加了w_orth_type, 用于选择使用哪种大规模正交化方式
+   2) 修改了gcge_para.c
+      添加了w_orth_type的默认值, 以及该参数的命令行参数设置方式
+   3) 修改了gcge_eigsol.c
+      添加了while循环中W正交化时对正交化方式的选择判断
+2. 修改了GCGE_CBOrthogonal的W自身正交化时的重正交化次数(由para->max_reorth_time改为1)

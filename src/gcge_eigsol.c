@@ -398,10 +398,21 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
-        //GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
-        //        workspace->V_tmp, workspace->subspace_dtmp);
-        GCGE_BOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+        if(strcmp(para->w_orth_type, "bgs") == 0)
+        {
+            GCGE_BOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace);
+        }
+        else if(strcmp(para->w_orth_type, "cbgs") == 0)
+        {
+            GCGE_CBOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+                workspace);
+        }
+        else
+        {
+            GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+                workspace->V_tmp, workspace->subspace_dtmp);
+        }
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->w_orth_time = t2-t1;
