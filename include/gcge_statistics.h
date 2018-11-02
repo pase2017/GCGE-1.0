@@ -22,6 +22,7 @@
 
 typedef struct GCGE_PART_TIME_ {
     GCGE_DOUBLE x_axpy_time;
+    GCGE_DOUBLE x_orth_time; 
     GCGE_DOUBLE p_axpy_time;
     GCGE_DOUBLE p_orth_time;
     GCGE_DOUBLE w_line_time; /* linear solver */

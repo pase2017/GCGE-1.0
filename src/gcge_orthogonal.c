@@ -578,6 +578,72 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
  * @param V_tmp 长度1
  * @param d_tmp 长度×end
  */
+void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
+      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
+{
+    GCGE_INT    current = 0; //当前进行正交化操作的向量编号
+    GCGE_INT    reorth_count = 0;
+    GCGE_DOUBLE vin = 0.0;
+    GCGE_DOUBLE vout = 0.0;
+    GCGE_DOUBLE ratio = 1.0;
+    GCGE_INT    idx = 0;
+    GCGE_DOUBLE ip = 1.0; //inner product
+    for(current = start; current < (*end); ++current)
+    {
+        // 计算当前向量的范数
+        vout = GCGE_VecNormSubspace(V+current*ldV, nrows);
+        if(current != 0)
+        {
+            reorth_count = 0;
+            do{
+                vin = vout;
+                for(idx = 0; idx < current; idx++)
+                {
+                    //修正的Gram-Schmidt正交化方法
+                    //计算ip = (v_idx, v_current)
+                    ip = GCGE_VecDotVecSubspace(V+idx*ldV, V+current*ldV, nrows);
+                    //计算v_current = v_current - ip * v_idx
+                    GCGE_VecAXPBYSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
+                }
+                // 计算当前向量的范数
+                vout = GCGE_VecNormSubspace(V+current*ldV, nrows);
+
+                ratio = vout/vin;
+
+                reorth_count++;
+
+            }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time)
+	            && (vout > orth_para->orth_zero_tol));
+        }
+
+        if(vout > orth_para->orth_zero_tol)
+        {
+            //如果v_current不为0，就做归一化
+            GCGE_VecScaleSubspace(1.0/vout, V+current*ldV, nrows);
+        }//做完归一化的情况，下面考虑是 0 向量的情况
+        else 
+        {
+            //如果v_current为0，就把最后一个向量拷贝到当前向量的位置
+            //如果本向量就是最后一个向量，那就不拷贝(考虑如果是最后一个直接跳出)
+            //同时(*end)--,把总向量的个数减1
+            //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+            if(current != *end-1)
+            {
+                   //下面这个函数的方式应该是copy（from ,to， OK！
+                GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+            }//end if (current != *end-1)
+            (*end)--;
+            current--;
+            //如果这个时候需要输出提醒信息，就输出
+            if(orth_para->print_orth_zero == 1)
+            {
+                printf("In OrthogonalSubspace, there is a zero vector!, "
+                        "current = %d, start = %d, end = %d\n", current, start, *end);
+            }//end if (orth_para->print_orth_zero == 1)
+        }//end if (vout > orth_para->orth_zero_tol)
+    }//end for current to the end
+}//end for this subprogram
+#if 0
 void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
 {
@@ -643,6 +709,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
         }//end if (vout > orth_para->orth_zero_tol)
     }//end for current to the end
 }//end for this subprogram
+#endif
 
 //对V的某些列进行正交化，start: 表示开始的位置，end[0]表示需要正交化向量的最终位置(也返回这个最终位置)，
 //矩阵B表示进行内积计算的矩阵，orth_para: 定义正交化方式的参数

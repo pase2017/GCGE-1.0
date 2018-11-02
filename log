@@ -110,3 +110,26 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
    3) 修改了gcge_eigsol.c
       添加了while循环中W正交化时对正交化方式的选择判断
 2. 修改了GCGE_CBOrthogonal的W自身正交化时的重正交化次数(由para->max_reorth_time改为1)
+
+2018.11.02-2
+1. 修改了求解子空间特征值的函数GCGE_ComputeSubspaceEigenpairs
+   1) 修改了gcge_rayleighritz.c
+      修改了函数GCGE_ComputeSubspaceEigenpairs(如果要关闭本次修改,只需要把这个子函数中rr_eigen_start赋值为0)
+   2) 修改了gcge_orthotonal.c
+      GCGE_ComputeSubspaceEigenpairs需要使用GCGE_OrthogonalSubspace,需要子空间正交化中添加一个参数
+      在GCGE_OrthogonalSubspace中添加了一个形式参数, 算法过程中对使用到这个形式参数的地方做了修改
+   3) 修改了gcge_orthotonal.h
+      在GCGE_OrthogonalSubspace中添加了一个形式参数
+   4) 修改了gcge_xpw.c
+      GCGE_ComputeP中用到了GCGE_OrthogonalSubspace, 因为形式参数改变，对这里做了修改
+   5) GCGE_ComputeSubspaceEigenpairs中有计算子空间特征值和子空间正交化两部分，因此对时间统计做了调整
+      (1) 修改了 gcge_statistics.h
+          在GCGE_PART_TIME中添加了x_orth_time 
+      (2) 修改了 gcge_statistics.c
+          添加了 x_orth_time 初始化为 0.0
+      (3) 修改了 gcge_rayleighritz.c
+          添加了rr_eigen_time和x_orth_time的时间统计
+      (4) 修改了 gcge_eigsol.c
+          删除了对rr_eigen_time的时间统计
+
+

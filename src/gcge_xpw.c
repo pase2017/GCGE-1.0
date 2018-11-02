@@ -306,7 +306,7 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     //现在得到了与[X,P]相对应的coeff矩阵的初始向量
     //对coef的p_start到p_end列进行正交化，会修改p_end
     p_end = p_start + p_ncols;
-    GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, para->orth_para);
+    GCGE_OrthogonalSubspace(coef, ldc, ldc, p_start, &p_end, NULL, -1, para->orth_para);
     p_ncols = p_end - p_start;
 
 #if GET_PART_TIME

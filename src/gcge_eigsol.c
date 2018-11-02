@@ -209,16 +209,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     stat_para->part_time_total->rr_mat_time += t2-t1;
 #endif
     //计算子空间矩阵的特征对
-#if GET_PART_TIME
-    t1 = GCGE_GetTime();
-#endif
     GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
             ops, para, workspace);
-#if GET_PART_TIME
-    t2 = GCGE_GetTime();
-    stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
-    stat_para->part_time_total->rr_eigen_time += t2-t1;
-#endif
     //基向量 V 线性组合得到dim_x(x_end)个向量 X(RitzVec), 线性组合系数为 subspace_evec
     //RitzVec = V * subspace_evec
     //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
@@ -309,16 +301,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     stat_para->part_time_total->rr_mat_time += t2-t1;
 #endif
     //计算子空间矩阵的特征对
-#if GET_PART_TIME
-    t1 = GCGE_GetTime();
-#endif
     GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
             ops, para, workspace);
-#if GET_PART_TIME
-    t2 = GCGE_GetTime();
-    stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
-    stat_para->part_time_total->rr_eigen_time += t2-t1;
-#endif
     //基向量 V 线性组合得到dim_x个向量 X(RitzVec), 线性组合系数为 subspace_evec
     //RitzVec = V * subspace_evec
     //由于线性组合计算时不能覆盖基向量组V，所以需要一个工作空间RitzVec
@@ -430,16 +414,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         stat_para->part_time_total->rr_mat_time += t2-t1;
 #endif
         //计算子空间矩阵的特征对
-#if GET_PART_TIME
-        t1 = GCGE_GetTime();
-#endif
         GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
                 ops, para, workspace);
-#if GET_PART_TIME
-        t2 = GCGE_GetTime();
-        stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
-        stat_para->part_time_total->rr_eigen_time += t2-t1;
-#endif
         workspace->last_dim_x = workspace->dim_x;
         //检查特征值重数,确定新的dim_x(即x_end)
         //这里是用什么方法进行检测的？？？
