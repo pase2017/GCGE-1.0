@@ -57,11 +57,16 @@ void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **X,
     GCGE_INT dim_x = size_X;
     GCGE_INT start[2];
     GCGE_INT end[2];
-    start[0] = 0;
+
+    //使用V(:,start_x:dim_v)线性组合得到X(:,start_x:dim_x)
+    //线性组合系数从start行start列开始
+    GCGE_INT start_x = workspace->num_soft_locked_in_last_iter;
+    start[0] = start_x;
     end[0]   = dim_v;
-    start[1] = 0;
+    start[1] = start_x;
     end[1]   = dim_x;
-    ops->MultiVecLinearComb(V, X, start, end, subspace_evec, dim_v, NULL, 0, ops);
+    ops->MultiVecLinearComb(V, X, start, end, subspace_evec+start_x*dim_v+start_x,
+            dim_v, NULL, 0, ops);
 #if 0 
     GCGE_DOUBLE t2 = GCGE_GetTime();
     //统计计算Rtiz向量时间
@@ -305,9 +310,40 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     }
     //现在得到了与[X,P]相对应的coeff矩阵的初始向量
     //对coef的p_start到p_end列进行正交化，会修改p_end
+    /* 对稠密矩阵 C 表示连续的已收敛的locked部分
+     * 此时子空间特征向量矩阵有下面的形式
+     *
+     *  CC  XC  PC
+     *  CN  XN  PN
+     *  CP  XP  PP
+     *  CW  XW  PW
+     *
+     * XC 表示 XX 中 未收敛的特征向量的连续的已收敛的locked部分
+     * PC 表示 PX 中 连续的已收敛的locked部分
+     * XN 表示 [XX^T,XP^T,XW^T]^T 中 
+     *         未收敛的特征向量的第一个未收敛的及之后的部分
+     * PN 表示 PX 中 第一个未收敛的及之后的部分
+     * CC,CN,CP,CW表示 [XX^T,XP^T,XW^T]^T 中已收敛的特征向量的部分
+     *
+     * 对其中的
+     *
+     *  XN  PN
+     *  XP  PP
+     *  XW  PW
+     *
+     * 部分进行正交化
+     *
+     */
+    // orth_start_row 表示从稠密矩阵的哪一行开始正交化,即PN的起始行号
+    GCGE_INT orth_start = workspace->num_soft_locked_in_last_iter;
+    // orth_length 表示 进行正交化的行数
+    GCGE_INT orth_length = ldc - orth_start;
+    p_start -= orth_start;
     p_end = p_start + p_ncols;
-    GCGE_OrthogonalSubspace(coef, ldc, ldc, p_start, &p_end, NULL, -1, para->orth_para);
+    GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 
+            orth_length, p_start, &p_end, NULL, -1, para->orth_para);
     p_ncols = p_end - p_start;
+    p_end += orth_start;
 
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
@@ -320,11 +356,14 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     GCGE_INT p_end_in_V_tmp = 0;
     p_end_in_V_tmp = p_end - nev;
 
-    mv_s[0] = 0;
-    mv_s[1] = 0;
+    //线性组合的基底向量为V(:,orth_start:ldc)
+    mv_s[0] = orth_start;
     mv_e[0] = ldc;
+    mv_s[1] = 0;
     mv_e[1] = p_end_in_V_tmp;
-    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, coef+nev*ldc, ldc, NULL, -1, ops);
+    //线性组合的系数从第orth_start行开始
+    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, coef+nev*ldc+orth_start, 
+            ldc, NULL, -1, ops);
 
     //把V_tmp与V中P的部分进行指针交换
     //把V_tmp与V中X看作重特征值的部分特征向量的部分进行指针交换

@@ -132,4 +132,18 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       (4) 修改了 gcge_eigsol.c
           删除了对rr_eigen_time的时间统计
 
+2018.11.02-3
+1. 修改了线性组合用到的基底向量和计算得到的向量
+   1) 修改了gcge_workspace.h
+      添加了 num_soft_locked_in_last_iter 这个参数
+   2) 修改了gcge_workspace.c
+      添加了 num_soft_locked_in_last_iter 这个参数的初始化
+   3) 修改了gcge_eigsol.c
+      在GCGE_CheckConvergence中添加了更新 num_soft_locked_in_last_iter 的方式
+      在GCGE_EigenSolver中修改了 MultiVecSwap 的向量起始位置
+   4) 修改了gcge_xpw.c
+      在GCGE_ComputeX中修改了线性组合的基向量V与结果向量X的起始位置, 以及线性组合系数的起始位置
+      在GCGE_ComputeP中修改了子空间正交化的起始位置与矩阵长度, 线性组合时基向量V的起始位置, 以及线性组合系数的起始位置
+   5) 修改了gcge_app_slepc.c
+      修改了子函数GCGE_SLEPC_MultiVecLinearComb中线性组合系数的长度
 

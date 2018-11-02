@@ -154,7 +154,7 @@ void GCGE_SLEPC_MultiVecLinearComb(void **x, void **y,
     for(i=start[1]; i<end[1]; i++)
     {
         //默认输入的矩阵a是要从第一个元素开始用的,所以q的位置要+start[0]
-        memcpy(q+i*nrows+start[0], a+(i-start[1])*lda, lda*sizeof(GCGE_DOUBLE));
+        memcpy(q+i*nrows+start[0], a+(i-start[1])*lda, (end[0]-start[0])*sizeof(GCGE_DOUBLE));
     }
     ierr = MatDenseRestoreArray(dense_mat, &q);
     ierr = BVMult((BV)y, 1.0, 0.0, (BV)x, dense_mat);

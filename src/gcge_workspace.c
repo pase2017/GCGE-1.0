@@ -34,6 +34,7 @@ void GCGE_WORKSPACE_Create(GCGE_WORKSPACE **workspace)
     (*workspace)->dim_xpw   = 0;
     (*workspace)->conv_bs   = 0;
     (*workspace)->unconv_bs = 0;
+    (*workspace)->num_soft_locked_in_last_iter = 0; 
 
     //近似特征值
     (*workspace)->eval          = NULL;
@@ -82,6 +83,7 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
     workspace->dim_xp    = 0;
     workspace->dim_xpw   = nev;
     workspace->conv_bs   = 0;
+    workspace->num_soft_locked_in_last_iter = 0; 
     workspace->unconv_bs = (nev < para->block_size) ? nev : para->block_size;
 
     GCGE_INT max_dim_xpw = max_dim_x + 2 * block_size;

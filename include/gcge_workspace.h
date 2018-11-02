@@ -49,6 +49,7 @@ typedef struct GCGE_WORKSPACE_ {
 
     GCGE_INT    conv_bs; //全部收敛的批次的特征值个数
     GCGE_INT    unconv_bs; //本批次中未收敛的特征值个数
+    GCGE_INT    num_soft_locked_in_last_iter; //上次迭代中已收敛的特征值个数
 
     //子空间操作用到的工作空间
     void        *dense_matrix; //稠密子空间矩阵

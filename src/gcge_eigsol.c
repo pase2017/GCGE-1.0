@@ -240,8 +240,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     GCGE_PrintIterationInfo(workspace->eval, para);
     //printf("after: sum_res=%e\n",para->sum_res);
     //Ritz向量放到V中作为下次迭代中基向量的一部分,即为[X,P,W]中的X
-    mv_s[0] = 0;
-    mv_s[1] = 0;
+    mv_s[0] = workspace->num_soft_locked_in_last_iter;
+    mv_s[1] = workspace->num_soft_locked_in_last_iter;
     mv_e[0] = nev;
     mv_e[1] = nev;
     //基底向量组V已经没用，将RitzVec中的X向量与V进行指针交换，V中存储新的基向量
@@ -342,8 +342,8 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //会修改dim_xp即p_end
         GCGE_ComputeP(subspace_evec, V, ops, para, workspace);
         //Ritz向量放到V中作为下次迭代中基向量的一部分
-        mv_s[0] = 0;
-        mv_s[1] = 0;
+        mv_s[0] = workspace->num_soft_locked_in_last_iter;
+        mv_s[1] = workspace->num_soft_locked_in_last_iter;
         mv_e[0] = nev;
         mv_e[1] = nev;
         //计算完P之后，基向量组V就没用了,将X放到V中,操作方法为：
@@ -494,6 +494,8 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
                 *res = para->res;
     char        *conv_type = para->conv_type;
     void        *tmp1, *tmp2, *ev;
+    workspace->num_soft_locked_in_last_iter = unlock[0];
+    //workspace->num_soft_locked_in_last_iter = 0;
     ops->GetVecFromMultiVec(workspace->V_tmp, 0, &tmp1);
     ops->GetVecFromMultiVec(workspace->V_tmp, 1, &tmp2);
     for( j=0; j<num_unlock; j++ )
