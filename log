@@ -1,11 +1,3 @@
-2018.10.14 liyu
-
-在csr的test中，test_orth_ops.c是对于正交化成为ops的一个成员函数进行的尝试，可以考虑以后在kona中利用这种做法。
-另外，test_orth_blas.c是对double型向量组进行正交化的函数，已通过blas进行加速，形式参数与test_orth_ops中的正交化函数类似。
-之后在GCGE中应该内置blas库，进行编译，而且都利用宏BLASname(...), LAPACKname(...)进行调用，以防调用机器已有库时出现名字不统一
-尤其是调用利用基于特定机器的blas lapack库
-eigsol.c是对GCG核心函数的一个整理，整个代码流程和函数形式参数设定是最合理的。而且也是可以写到ops中的形式。
-
 2018.10.12 liyu
 
 hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对误差初始是1.0e-06
@@ -22,6 +14,15 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
 183     else 
 184       activeMask[i] = 0;
 185   }
+
+
+2018.10.14 liyu
+
+在csr的test中, test_orth_ops.c是对于正交化成为ops的一个成员函数进行的尝试, 可以考虑以后在kona中利用这种做法. 
+另外, test_orth_blas.c是对double型向量组进行正交化的函数, 已通过blas进行加速, 形式参数与test_orth_ops中的正交化函数类似. 
+之后在GCGE中应该内置blas库, 进行编译, 而且都利用宏BLASname(...), LAPACKname(...)进行调用, 以防调用机器已有库时出现名字不统一
+尤其是调用利用基于特定机器的blas lapack库
+eigsol.c是对GCG核心函数的一个整理, 整个代码流程和函数形式参数设定是最合理的. 而且也是可以写到ops中的形式. 
 
 2018.10.15 zhangning
 
@@ -40,28 +41,28 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
     GCGE_INT   V_tmp_size = max_dim_x - nev + block_size;
     GCGE_INT   CG_p_size = block_size;
 
-工作空间不再需要RitzVec，因此涉及到RitzVec的子函数都要修改
+工作空间不再需要RitzVec, 因此涉及到RitzVec的子函数都要修改
 
 用到RitzVec的子函数: 
-1. gcge_xpw.h与gcge_xpw.c中 ComputeX，修改形式参数为
+1. gcge_xpw.h与gcge_xpw.c中 ComputeX, 修改形式参数为
     void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **X, 
         GCGE_INT size_X, GCGE_INT size_V,
         GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
    gcge_eigsol.c中调用方式修改为
     GCGE_ComputeX(V, subspace_evec, evec, nev, workspace->dim_xpw, ops, workspace);
-2. gcge_eigsol.c中MultiVecSwap，RitzVec替换为evec，交换的位置由dim_x改为nev,
+2. gcge_eigsol.c中MultiVecSwap, RitzVec替换为evec, 交换的位置由dim_x改为nev,
     且计算结束后不再需要将RitzVec交换给evec
 3. gcge_eigsol.c中调用CheckConvergence时给的参数由RitzVec替换为evec
-4. gcge_cg.c中CG迭代的临时空间用到了workspace->RitzVec，改为使用workspace->evec
+4. gcge_cg.c中CG迭代的临时空间用到了workspace->RitzVec, 改为使用workspace->evec
 5. gcge_xpw.c中ComputeP时要把X重特征值的部分一起算,在线性组合与指针交换的地方修改向量个数
-6. gcge_eigsol.c中span[X,W]中计算子空间矩阵前，先令dim_xp=0(第298行)
+6. gcge_eigsol.c中span[X,W]中计算子空间矩阵前, 先令dim_xp=0(第298行)
 7. gcge_rayleighritz.c中计算子空间矩阵时,调用下面这个函数时,最后一个参数由workspace->V_tmp改为
     workspace->evec,因为第一次迭代中需要nev大小的向量空间
     void GCGE_ComputeSubspaceMatrixVTAW(void **V, void *A, GCGE_INT start_W, 
             GCGE_INT end_V, GCGE_DOUBLE *subspace_mat, GCGE_OPS *ops, void **workspace)
 
 2018.10.16 zhangning
-1. 在gcge_orthogonal.c中添加了GCGE_BOrthogonal，并将gcge_eigsol.c中对原GCGE_Orthogonal的调用形参做了修改(by hhxie)
+1. 在gcge_orthogonal.c中添加了GCGE_BOrthogonal, 并将gcge_eigsol.c中对原GCGE_Orthogonal的调用形参做了修改(by hhxie)
 2. 在gcge_cg.c中添加了块cg迭代(by hhxie)
     1) gcge_cg.c gcge_cg.h中添加了GCGE_BCG
     2) gcge_xpw.c 中 GCGE_ComputeW 做了修改, 改成多个W向量统一计算的格式
@@ -73,35 +74,35 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
 修改了gcge_rayleighritz.c中的GCGE_ComputeSubspaceMatrix,也修改了gcge_workspace.c中的subspace_dtmp的空间分配
 
 2018.10.19 liyu
-在求解特征值的程序中设置workspace->evec = solver->evec是不合适的，因为在BCG中还要调用workspace->evec
-也就是说，BCG不能单独被调用，而且BCG的形式参数也很不好，并不是一个一般性的接口。
-另外，即使用了hypre_seqvecinnerprod做为局部内积，好像BCG无论是原来的全局内积还是局部内积，都会收敛，很奇怪！
-后来发现这样确实是对的，从理论上讲。
+在求解特征值的程序中设置workspace->evec = solver->evec是不合适的, 因为在BCG中还要调用workspace->evec
+也就是说, BCG不能单独被调用, 而且BCG的形式参数也很不好, 并不是一个一般性的接口. 
+另外, 即使用了hypre_seqvecinnerprod做为局部内积, 好像BCG无论是原来的全局内积还是局部内积, 都会收敛, 很奇怪！
+后来发现这样确实是对的, 从理论上讲. 
 
-test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
-之所以lobpcg不精确求解残量方程，首先是它的正交化过程不能处理线性相关，且精度不能太高。
-而GCGE精确求解线性方程可能会使得整个迭代次数减少，进而减少W正交化的时间。
+test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子. 
+之所以lobpcg不精确求解残量方程, 首先是它的正交化过程不能处理线性相关, 且精度不能太高. 
+而GCGE精确求解线性方程可能会使得整个迭代次数减少, 进而减少W正交化的时间. 
 
-所以，外部求解器起始就是一个预条件子，无论是否提供外部求解器，都会进行BCG, 这是性价比最高的调用方式
+所以, 外部求解器起始就是一个预条件子, 无论是否提供外部求解器, 都会进行BCG, 这是性价比最高的调用方式
 
-2018.10.21
-1. 添加GCGE_CBOrthogonal时发现，ops->MultiVecLinearComb这个函数，线性组合的系数应该是从系数矩阵的第0个元素开始取才合理
-   之前用到的这个函数，两个向量组都是从第0个开始用，所以对之前的使用没有影响
+2018.10.21 zhangning
+1. 添加GCGE_CBOrthogonal时发现, ops->MultiVecLinearComb这个函数, 线性组合的系数应该是从系数矩阵的第0个元素开始取才合理
+   之前用到的这个函数, 两个向量组都是从第0个开始用, 所以对之前的使用没有影响
    1) 修改了gcge_ops.h中对于ops->MultiVecLinearComb的注释
    2) 修改了gcge_ops.c中的GCGE_Default_MultiVecLinearComb
    3) 修改了gcge_app_slepc.c中的GCGE_SLEPC_MultiVecLinearComb
-2. 修改了gcge_app_slepc.c中的GCGE_SLEPC_MultiVecAxpby(之前只将其作为copy函数，GCGE_CBOrthogonal调用时会出问题)
+2. 修改了gcge_app_slepc.c中的GCGE_SLEPC_MultiVecAxpby(之前只将其作为copy函数, GCGE_CBOrthogonal调用时会出问题)
    1) 修改了gcge_app_slepc.c
-3. 在gcge_orthogonal.c中添加了GCGE_CBOrthogonal函数，表示Classical Block Orthogonal,消息发送次数少，但会损失正交性
-   可以在精度要求不高时，提高求解效率. 使用时可以根据需要修改重正交化次数
-   在精度较高时，W与XP正交化后，W自身的内积会小于1e-16，小于机器精度，此时调用lapack求解特征值问题会报错,
-   因此这里添加了判断，如果内积均小于机器精度(这里用orth_zero_tol)，那就认为W均为0，这样计算不会出错，但精度无法继续下降
+3. 在gcge_orthogonal.c中添加了GCGE_CBOrthogonal函数, 表示Classical Block Orthogonal,消息发送次数少, 但会损失正交性
+   可以在精度要求不高时, 提高求解效率. 使用时可以根据需要修改重正交化次数
+   在精度较高时, W与XP正交化后, W自身的内积会小于1e-16, 小于机器精度, 此时调用lapack求解特征值问题会报错,
+   因此这里添加了判断, 如果内积均小于机器精度(这里用orth_zero_tol), 那就认为W均为0, 这样计算不会出错, 但精度无法继续下降
    1) 修改了gcge_orthogonal.c
    2) 修改了gcge_orthogonal.h
 3. 修改了GCGE_ComputeSubspaceMatrix中子空间计算的部分
    1) 修改了gcge_rayleighritz.c
 
-2018.11.02
+2018.11.02 zhangning
 1. 添加了正交化方式的选择
    1) 修改了gcge_para.h
       在GCGE_PARA中添加了w_orth_type, 用于选择使用哪种大规模正交化方式
@@ -111,7 +112,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       添加了while循环中W正交化时对正交化方式的选择判断
 2. 修改了GCGE_CBOrthogonal的W自身正交化时的重正交化次数(由para->max_reorth_time改为1)
 
-2018.11.02-2
+2018.11.02-2  zhangning
 1. 修改了求解子空间特征值的函数GCGE_ComputeSubspaceEigenpairs
    1) 修改了gcge_rayleighritz.c
       修改了函数GCGE_ComputeSubspaceEigenpairs(如果要关闭本次修改,只需要把这个子函数中rr_eigen_start赋值为0)
@@ -121,8 +122,8 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
    3) 修改了gcge_orthotonal.h
       在GCGE_OrthogonalSubspace中添加了一个形式参数
    4) 修改了gcge_xpw.c
-      GCGE_ComputeP中用到了GCGE_OrthogonalSubspace, 因为形式参数改变，对这里做了修改
-   5) GCGE_ComputeSubspaceEigenpairs中有计算子空间特征值和子空间正交化两部分，因此对时间统计做了调整
+      GCGE_ComputeP中用到了GCGE_OrthogonalSubspace, 因为形式参数改变, 对这里做了修改
+   5) GCGE_ComputeSubspaceEigenpairs中有计算子空间特征值和子空间正交化两部分, 因此对时间统计做了调整
       (1) 修改了 gcge_statistics.h
           在GCGE_PART_TIME中添加了x_orth_time 
       (2) 修改了 gcge_statistics.c
@@ -132,7 +133,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       (4) 修改了 gcge_eigsol.c
           删除了对rr_eigen_time的时间统计
 
-2018.11.02-3
+2018.11.02-3  zhangning
 1. 修改了线性组合用到的基底向量和计算得到的向量
    1) 修改了gcge_workspace.h
       添加了 num_soft_locked_in_last_iter 这个参数
@@ -146,6 +147,87 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       在GCGE_ComputeP中修改了子空间正交化的起始位置与矩阵长度, 线性组合时基向量V的起始位置, 以及线性组合系数的起始位置
    5) 修改了gcge_app_slepc.c
       修改了子函数GCGE_SLEPC_MultiVecLinearComb中线性组合系数的长度
+
+2018.11.03-1 liyu
+1. HYPRE在github上有multivector的结构和较为完整的操作支持, 准备对hypre再写一个接口, 称为mvhypre, 正如slepc一样
+2. hypre中mv对线性解法器的支持不够, 如果mvhypre提供外部解法器时, 依然做循环求解. 
+
+2018.11.03-2 liyu
+关于HYPRE的文件结构, 以krylov文件夹中的pcg为例:
+1. pcg.c pcg.h 是对pcg的实现, 它是矩阵向量FREE的实现, 通过pcg_data和pcg_functions管理数据与操作
+   函数中的命名规则是hypre_xxx
+   pcg.h保证pcg.c可以编译
+2. HYPRE_pcg.c是对pcg.c中各类被外部调用函数的封装, 形式参数已经不是void*
+   函数中的命名规则是HYPRE_xxx
+3. krylov.h保证HYPRE_pcg.c可以编译即可.
+4. krylov/中有直接生成.a文件, 所以可以直接链接它而非全部HYPRE的库文件
+
+也就是说, krylov文件夹中所实现的完全是"空对空". 
+HYPRE自己是在parcsr_ls(并行csr矩阵的linear solver)中再次通过
+HYPRE_parcsr_pcg.c利用parcsr_mv中的矩阵向量结构和操作真正实现krylov中各种数据结构和操作
+HYPRE_parcsr_ls.h是可以被外部调用的头文件, 包含所有线性解法器
+_hypre_parcsr_ls.h是非常内部的头文件
+
+
+我们再看HYPRE的文件结构
+# 配置安装用, 生成的.a.h在hypre/中用以被外部程序调用
+cmbuild
+config
+hypre
+# 文档, 例子和测试程序
+docs
+examples
+test
+# 重写的blas和lapck, 命名规则为hypre_xxx
+blas
+lapack
+# 工具箱, 管理内存等
+utilities
+# 底层各类矩阵向量结构
+seq_mv
+matrix_matrix
+multivector
+parcsr_block_mv
+# 高级矩阵向量结构封装
+IJ_mv  
+FEI_mv
+# 线性解法器(空对空)
+krylov
+# 各类矩阵向量结构, 直接有对应的线性解法器接口(当前版本)
+parcsr_mv
+struct_mv
+sstruct_mv
+distributed_matrix
+# 对应的线性解法器接口
+parcsr_ls  (krylov和AMG)
+struct_ls
+sstruct_ls
+distributed_ls
+
+
+文件命名规则
+xxx一般是当前文件夹的名字
+_hypre_xxx.h非常内部的头文件，会包含HYPRE下其它文件夹下的头文件
+HYPRE_xxx.h一般会被_hypre_xxx.h包含(include), 更高一层的头文件, 可被外部程序(include)
+
+函数命名规则
+hypre_是内部调用, HYPRE_是外部调用
+
+
+2018.11.03-3 liyu
+如果需要利用multivector中的多向量结构进行线性方程组的求解, 那么只需要重写一下
+parcsr_ls/HYPRE_parcsr_pcg.c可以起名为multivector_ls/HYPRE_multivector_pcg.c
+也就是说, 非常容易实现块的各类krylov线性解法器
+注意的是lobpcg的实现稍微有点不一样, 它是通过multivector中的interpreter实现的
+
+
+2018.11.03-4 liyu
+关于AMG的multivector实现
+1. AMG是依赖于矩阵结构的所以只能出现在parcsr_ls中, 如果要将它改成multivector的情形, 只能重写parcsr_ls中的amg部分
+   还有一种方式就是直接将矩阵的分层矩阵和插值矩阵拿出来, 然后利用multivector的操作调用krylov进而实现multivector_amg
+2. 换一种思路, 如果循环多向量中的每个单向量, 然后调用AMG且迭代次数很小, 然后再回到已经容易实现的multivector_krylov
+   这种方法的思想预条件子的构造总是要涉及到矩阵的具体结构, 而且预条件问题本就是不用迭代很多次.
+   不算预条件子生成时间的话, 求解预条件矩阵对应的线性方程组应该不是计算的主要时间. 
 
 2018.11.03-1 zhangning
 1. 修改了gcge_cg.c
