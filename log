@@ -1,11 +1,3 @@
-2018.10.14 liyu
-
-在csr的test中，test_orth_ops.c是对于正交化成为ops的一个成员函数进行的尝试，可以考虑以后在kona中利用这种做法。
-另外，test_orth_blas.c是对double型向量组进行正交化的函数，已通过blas进行加速，形式参数与test_orth_ops中的正交化函数类似。
-之后在GCGE中应该内置blas库，进行编译，而且都利用宏BLASname(...), LAPACKname(...)进行调用，以防调用机器已有库时出现名字不统一
-尤其是调用利用基于特定机器的blas lapack库
-eigsol.c是对GCG核心函数的一个整理，整个代码流程和函数形式参数设定是最合理的。而且也是可以写到ops中的形式。
-
 2018.10.12 liyu
 
 hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对误差初始是1.0e-06
@@ -22,6 +14,15 @@ hypre lobpcg中 HYPRE_lobpcg.c中对于tol有初始设置相对误差和绝对�
 183     else 
 184       activeMask[i] = 0;
 185   }
+
+
+2018.10.14 liyu
+
+在csr的test中，test_orth_ops.c是对于正交化成为ops的一个成员函数进行的尝试，可以考虑以后在kona中利用这种做法。
+另外，test_orth_blas.c是对double型向量组进行正交化的函数，已通过blas进行加速，形式参数与test_orth_ops中的正交化函数类似。
+之后在GCGE中应该内置blas库，进行编译，而且都利用宏BLASname(...), LAPACKname(...)进行调用，以防调用机器已有库时出现名字不统一
+尤其是调用利用基于特定机器的blas lapack库
+eigsol.c是对GCG核心函数的一个整理，整个代码流程和函数形式参数设定是最合理的。而且也是可以写到ops中的形式。
 
 2018.10.15 zhangning
 
@@ -84,7 +85,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
 
 所以，外部求解器起始就是一个预条件子，无论是否提供外部求解器，都会进行BCG, 这是性价比最高的调用方式
 
-2018.10.21
+2018.10.21 zhangning
 1. 添加GCGE_CBOrthogonal时发现，ops->MultiVecLinearComb这个函数，线性组合的系数应该是从系数矩阵的第0个元素开始取才合理
    之前用到的这个函数，两个向量组都是从第0个开始用，所以对之前的使用没有影响
    1) 修改了gcge_ops.h中对于ops->MultiVecLinearComb的注释
@@ -101,7 +102,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
 3. 修改了GCGE_ComputeSubspaceMatrix中子空间计算的部分
    1) 修改了gcge_rayleighritz.c
 
-2018.11.02
+2018.11.02 zhangning
 1. 添加了正交化方式的选择
    1) 修改了gcge_para.h
       在GCGE_PARA中添加了w_orth_type, 用于选择使用哪种大规模正交化方式
@@ -111,7 +112,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       添加了while循环中W正交化时对正交化方式的选择判断
 2. 修改了GCGE_CBOrthogonal的W自身正交化时的重正交化次数(由para->max_reorth_time改为1)
 
-2018.11.02-2
+2018.11.02-2  zhangning
 1. 修改了求解子空间特征值的函数GCGE_ComputeSubspaceEigenpairs
    1) 修改了gcge_rayleighritz.c
       修改了函数GCGE_ComputeSubspaceEigenpairs(如果要关闭本次修改,只需要把这个子函数中rr_eigen_start赋值为0)
@@ -132,7 +133,7 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
       (4) 修改了 gcge_eigsol.c
           删除了对rr_eigen_time的时间统计
 
-2018.11.02-3
+2018.11.02-3  zhangning
 1. 修改了线性组合用到的基底向量和计算得到的向量
    1) 修改了gcge_workspace.h
       添加了 num_soft_locked_in_last_iter 这个参数
@@ -147,3 +148,6 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
    5) 修改了gcge_app_slepc.c
       修改了子函数GCGE_SLEPC_MultiVecLinearComb中线性组合系数的长度
 
+2018.11.03 liyu
+1. HYPRE在github上有multivec的结构和较为完整的操作支持，准备对hypre再写一个接口，称为mvhypre，正如slepc一样
+2. hypre中mv对线性解法器的支持不够，如果mvhypre提供外部解法器时，依然做循环求解。
