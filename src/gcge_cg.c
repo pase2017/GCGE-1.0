@@ -154,17 +154,17 @@ void GCGE_BCG(void *Matrix, void **RHS, void**V, GCGE_INT x_start, GCGE_INT x_le
 
     for(idx=0; idx<x_length; idx++)
     {
-      ops->GetVecFromMultiVec(CG_X, x_start+idx, &x);   //取出初始值 x
-      ops->GetVecFromMultiVec(CG_R, idx, &b);   //取出右端项 b
+      ops->GetVecFromMultiVec(CG_X, x_start+idx, &x);   //取出初始值 x      
       ops->GetVecFromMultiVec(CG_W, idx, &r); //取出暂存残差r的变量
       ops->MatDotVec(Matrix,x,r); //r = A*x
-        // b = b- r;
+      ops->RestoreVecForMultiVec(CG_X, x_start+idx, &x);
+      // b = b- r;
+      ops->GetVecFromMultiVec(CG_R, idx, &b);   //取出右端项 b
       ops->VecAxpby(-1.0, r, 1.0, b);  
-      ops->VecLocalInnerProd(b, b, rho2+idx);    //用残量的模来判断误差
-    
+      ops->VecLocalInnerProd(b, b, rho2+idx);    //用残量的模来判断误差    
       ops->RestoreVecForMultiVec(CG_R, idx, &b); //把b相应的位置设为残差
       ops->RestoreVecForMultiVec(CG_W, idx, &r); //把r返回
-      ops->RestoreVecForMultiVec(CG_X, x_start+idx, &x);
+      
       unlock[idx] = idx;
       num_unlock ++;
      }//算完初始的残差向量和残差
@@ -248,21 +248,25 @@ void GCGE_BCG(void *Matrix, void **RHS, void**V, GCGE_INT x_start, GCGE_INT x_le
        alpha = rho2[idx]/ptw[idx];
        //compute the new solution x = alpha * p + x
        ops->GetVecFromMultiVec(CG_P, idx, &p);   //取出 p
-       ops->GetVecFromMultiVec(CG_R, idx, &r);   //取出 r
-       ops->GetVecFromMultiVec(CG_W, idx, &w);   //取出 w
+
        ops->GetVecFromMultiVec(CG_X, x_start+idx, &x); //取出初始值 x 
        //  x = alpha*p +x 
        ops->VecAxpby(alpha, p, 1.0, x);
+       ops->RestoreVecForMultiVec(CG_P, idx, &p); 
+       ops->RestoreVecForMultiVec(CG_X, x_start+idx, &x);
+       
+       
+       ops->GetVecFromMultiVec(CG_R, idx, &r);   //取出 r
+       ops->GetVecFromMultiVec(CG_W, idx, &w);   //取出 w
        //r = -alpha*w + r
        ops->VecAxpby(-alpha, w, 1.0, r);
        //set rho1 as rho2
        rho1[idx] = rho2[idx];
        //计算新的r的局部内积
-       ops->VecLocalInnerProd(r, r, rho2+idx);
-       ops->RestoreVecForMultiVec(CG_P, idx, &p); 
+       ops->VecLocalInnerProd(r, r, rho2+idx);       
        ops->RestoreVecForMultiVec(CG_R, idx, &r); 
        ops->RestoreVecForMultiVec(CG_W, idx, &w);
-       ops->RestoreVecForMultiVec(CG_X, x_start+idx, &x);
+
      }//end for idx
      //统一进行数据传输  
 #if GCGE_USE_MPI
