@@ -148,6 +148,33 @@ test_bcg.c在HYPRE下测试了BCG, 同时利用AMG做预条件子。
    5) 修改了gcge_app_slepc.c
       修改了子函数GCGE_SLEPC_MultiVecLinearComb中线性组合系数的长度
 
-2018.11.03 liyu
-1. HYPRE在github上有multivec的结构和较为完整的操作支持，准备对hypre再写一个接口，称为mvhypre，正如slepc一样
+2018.11.03-1 liyu
+1. HYPRE在github上有multivector的结构和较为完整的操作支持，准备对hypre再写一个接口，称为mvhypre，正如slepc一样
 2. hypre中mv对线性解法器的支持不够，如果mvhypre提供外部解法器时，依然做循环求解。
+
+2018.11.03-2 liyu
+关于HYPRE的文件结构，以krylov文件夹中的pcg为例:
+1. pcg.c pcg.h 是对pcg的实现，它是矩阵向量FREE的实现，通过pcg_data和pcg_functions管理数据与操作
+   函数中的命名规则是hypre_xxx
+   pcg.h保证pcg.c可以编译
+2. HYPRE_pcg.c是对pcg.c中各类被外部调用函数的封装, 形式参数已经不是void*
+   函数中的命名规则是HYPRE_xxx
+3. krylov.h保证HYPRE_pcg.c可以编译即可.
+4. krylov/中有直接生成.a文件，所以可以直接链接它而非全部HYPRE的库文件
+
+也就是说, krylov文件夹中所实现的完全是"空对空"。
+HYPRE自己是在parcsr_ls（并行csr矩阵的linear solver）中再次通过
+HYPRE_parcsr_pcg.c利用parcsr_mv中的矩阵向量结构和操作真正实现krylov中各种数据结构和操作
+
+如果需要利用multivector中的多向量结构进行线性方程组的求解，那么只需要重写一下
+parcsr_ls/HYPRE_parcsr_pcg.c可以起名为multivector_ls/HYPRE_multivector_pcg.c
+也就是说，非常容易实现块的各类krylov线性解法器
+注意的是lobpcg的实现稍微有点不一样, 它是通过multivector中的interpreter实现的
+
+2018.11.03-3 liyu
+关于AMG的multivector实现
+1. AMG是依赖于矩阵结构的所以只能出现在parcsr_ls中, 如果要将它改成multivector的情形，只能重写parcsr_ls中的amg部分
+   还有一种方式就是直接将矩阵的分层矩阵和插值矩阵拿出来，然后利用multivector的操作调用krylov进而实现multivector_amg
+2. 换一种思路，如果循环多向量中的每个单向量，然后调用AMG且迭代次数很小，然后再回到已经容易实现的multivector_krylov
+   这种方法的思想预条件子的构造总是要涉及到矩阵的具体结构，而且预条件问题本就是不用迭代很多次.
+   不算预条件子生成时间的话，求解预条件矩阵对应的线性方程组应该不是计算的主要时间。
