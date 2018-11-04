@@ -13,20 +13,19 @@ libs:
 	@echo "        Making libraries               "
 	@cd $(GCGESRC);             $(MAKE) lib
 	@cd $(GCGESRC)/app/csr;     $(MAKE) lib
-	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
-	@cd $(EXTERNAL)/csr/src;    $(MAKE) lib
-#	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
-	@cd $(EXTERNAL)/petsc/src;  $(MAKE) lib
+	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
+#	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
 #	@cd $(GCGESRC)/app/pase;    $(MAKE) lib
 #	@cd $(GCGESRC)/app/slepc;   $(MAKE) lib
+	@cd $(EXTERNAL)/csr/src;    $(MAKE) lib
 
 libgcge:
 	@echo "======================================="
 	@echo "        Making library GCGE             "
 	@cd $(GCGEHOME)/src;         $(MAKE) lib
 
-test-csr: 
-	@cd $(GCGEHOME)/test/csr;    $(MAKE) exe run-solver
+#test-csr: 
+#	@cd $(GCGEHOME)/test/csr;    $(MAKE) exe run-solver
 
 #test-hypre: 
 #	@cd $(GCGEHOME)/test/hypre;  $(MAKE) exe run-ex1
@@ -43,13 +42,14 @@ test-csr:
 clean:
 	@cd $(GCGEHOME)/src; make clean; rm -rf *~
 	@cd $(GCGEHOME)/src/app/csr; make clean; rm -rf *~
-	@cd $(GCGEHOME)/src/app/petsc; make clean; rm -rf *~
 	@cd $(GCGEHOME)/src/app/hypre; make clean; rm -rf *~
-	@cd $(GCGEHOME)/external/csr/src; make clean; rm -rf *~
-	@cd $(GCGEHOME)/external/petsc/src; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/src/app/petsc; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/src/app/slepc; make clean; rm -rf *~
 	@cd $(GCGEHOME)/test/csr; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
-	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/external/csr/src; make clean; rm -rf *~
 
 
 cleanlibs: 
@@ -62,7 +62,7 @@ help:
 	@echo "   libs         - create all libraries"
 	@echo "   libgcge      - create GCGE library"
 	@echo " "
-	@echo "   test-csr     - test library GCGE      (only 1 test)"
+#	@echo "   test-csr     - test library GCGE      (only 1 test)"
 #	@echo "   test-hypre   - test library GCGEHypre (only 1 test)"
 #	@echo "   test-pase    - test library GCGEPASE  (only 1 test)"
 #	@echo "   test-petsc   - test library GCGEPetsC (only 1 test)"

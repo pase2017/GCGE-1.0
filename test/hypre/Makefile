@@ -2,8 +2,8 @@
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
-CC      = $(MPICC)
-CLINKER = $(MPICC)
+#CC      = $(MPICC)
+#CLINKER = $(MPICC)
 ############################################################
 OBJS1 = test_matvec.o
 OBJS2 = test_hypre_solver.o
