@@ -21,6 +21,7 @@
 
 #include "gcge_type.h"
 #include "gcge_statistics.h"
+#include "gcge_utilities.h"
 
 typedef struct GCGE_ORTH_PARA_ {
     //正交化用到的参数

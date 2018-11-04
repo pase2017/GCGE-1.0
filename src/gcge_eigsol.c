@@ -68,11 +68,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
      * 注释中小括号的内容为针对这个参数的解释 
      *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-    //统计GCGE求解时间
-    GCGE_DOUBLE ttotal1 = GCGE_GetTime();
-    /* TODO */
-    //GCGE_WORKSPACE_Create(solver);
-    //printf("Eigensolving!\n");
     GCGE_INT    nev       = para->nev;        //nev表示要求解的特征值个数，用户需在GCGE_SOLVER_Setup前给定
     GCGE_INT    ev_max_it = para->ev_max_it;  //ev_max_it表示GCGE算法的最大迭代次数
     GCGE_INT    max_dim_x = workspace->max_dim_x; //max_dim_x表示判断特征值重数的最大取值空间
@@ -147,7 +142,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #endif
 
             num_init_evec = workspace->dim_x;
-            printf("num_init_evec = %d\n",num_init_evec);
+            GCGE_Printf("num_init_evec = %d\n",num_init_evec);
         }while(num_init_evec < nev);
     }//end for Initialization for the eigenvectors   
 
