@@ -46,7 +46,8 @@ int main(int argc, char* argv[])
    HYPRE_ParCSRMatrix parcsr_A, parcsr_B;
    HYPRE_ParVector    par_x,    par_b;
 
-   srand((unsigned)time(NULL));
+  // srand((unsigned)time(NULL));
+   srand(775);
    /*----------------------- Laplace精确特征值 ---------------------*/
    /* Preliminaries: want at least one processor per row */
    int n = 33;
@@ -156,10 +157,12 @@ int main(int argc, char* argv[])
 	 parcsr_A, parcsr_B, linear_solver, solver_id, nev, argc, argv);   
    /* 一些参数的设置 */
    hypre_solver->para->ev_max_it = 100;
-   hypre_solver->para->ev_tol    = 1e-13;
+   hypre_solver->para->ev_tol    = 1e-8;
    hypre_solver->para->orth_para->criterion_tol = DBL_EPSILON;
    hypre_solver->para->orth_para->orth_zero_tol = DBL_EPSILON;
+/*
    hypre_solver->para->orth_para->max_reorth_time = 100;
+*/
    hypre_solver->para->dirichlet_boundary = 0;
    hypre_solver->para->print_part_time = 0;
    hypre_solver->para->print_eval = 0;
