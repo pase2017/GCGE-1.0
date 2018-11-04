@@ -186,6 +186,8 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
             ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
             ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
         }//end for idx_p      
+	//如果有外部求解器, 解完后继续用BCG求解. 如果不要用BCG, 可以将cg_max_it设为0
+        GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
     }
     else
     {
