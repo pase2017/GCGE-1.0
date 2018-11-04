@@ -16,8 +16,8 @@ LIBCSR       = $(EXTERNAL)/csr/lib/libcsr.a -lm
 PETSCINC     = $(EXTERNAL)/petsc/include
 LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
 
-SLEPCINC     = 
-LIBSLEPC     = 
+SLEPCINC     = $(EXTERNAL)/slepc/include
+LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
 
 HYPREINC     = $(EXTERNAL)/hypre/include
 LIBHYPRE     = $(EXTERNAL)/hypre/lib/libHYPRE.a

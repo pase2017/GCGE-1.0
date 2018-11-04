@@ -48,7 +48,6 @@ clean:
 	@cd $(GCGEHOME)/test/csr; make clean; rm -rf *~
 	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
 	@cd $(GCGEHOME)/external/csr/src; make clean; rm -rf *~
 
 
