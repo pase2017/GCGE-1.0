@@ -14,10 +14,11 @@ libs:
 	@cd $(GCGESRC);             $(MAKE) lib
 	@cd $(GCGESRC)/app/csr;     $(MAKE) lib
 	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
-#	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
-#	@cd $(GCGESRC)/app/pase;    $(MAKE) lib
-#	@cd $(GCGESRC)/app/slepc;   $(MAKE) lib
+	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
+	@cd $(GCGESRC)/app/slepc;   $(MAKE) lib
 	@cd $(EXTERNAL)/csr/src;    $(MAKE) lib
+	@cd $(EXTERNAL)/petsc/src;  $(MAKE) lib
+	@cd $(EXTERNAL)/slepc/src;  $(MAKE) lib
 
 libgcge:
 	@echo "======================================="
@@ -43,12 +44,14 @@ clean:
 	@cd $(GCGEHOME)/src; make clean; rm -rf *~
 	@cd $(GCGEHOME)/src/app/csr; make clean; rm -rf *~
 	@cd $(GCGEHOME)/src/app/hypre; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/src/app/petsc; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/src/app/slepc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/src/app/petsc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/src/app/slepc; make clean; rm -rf *~
 	@cd $(GCGEHOME)/test/csr; make clean; rm -rf *~
 	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
 	@cd $(GCGEHOME)/external/csr/src; make clean; rm -rf *~
+	@cd $(GCGEHOME)/external/petsc/src; make clean; rm -rf *~
+	@cd $(GCGEHOME)/external/slepc/src; make clean; rm -rf *~
 
 
 cleanlibs: 
