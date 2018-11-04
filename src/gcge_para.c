@@ -50,6 +50,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->orth_para->print_orth_zero = 0;
 
     (*para)->multi_tol       = 0.2;
+    (*para)->multi_tol_for_lock = 1e-6;
     (*para)->if_use_cg       = 1; //使用内置CG迭代计算W
     (*para)->cg_max_it       = 20;
     (*para)->cg_rate         = 1e-2;
@@ -175,6 +176,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->multi_tol = atof(argv[arg_index++]);
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_multi_tol_for_lock")) 
+        {
+            arg_index++;
+            para->multi_tol_for_lock = atof(argv[arg_index++]);
+        }
         else if(0 == strcmp(argv[arg_index], "-gcge_if_use_cg")) 
         {
             arg_index++;
@@ -244,6 +250,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_max_reorth_time <i>  : maximun reorthogonal times                 (default: 3)\n");
        GCGE_Printf("  -gcge_print_orth_zero <i>  : print the zero index in orthogonal or not  (default: 0)\n");
        GCGE_Printf("  -gcge_multi_tol       <d>  : tolerance for eigenvalue multiplicity      (default: 0.2)\n");
+       GCGE_Printf("  -gcge_multi_tol_for_lock <d>  : tolerance for eigenvalue multiplicity to lock (default: 1e-6)\n");
        GCGE_Printf("  -gcge_if_use_cg       <i>  : use the internal cg or not                 (default: 1)\n");
        GCGE_Printf("  -gcge_cg_max_it       <i>  : maximun numbers of cg iterations           (default: 20)\n");
        GCGE_Printf("  -gcge_cg_rate         <d>  : descent rate of residual in cg             (default: 1e-2)\n");
@@ -505,6 +512,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  reorth_tol      : %e, (reorthgonal tolerance                      )\n", para->orth_para->reorth_tol     );
        GCGE_Printf("  cg_rate         : %e, (descent rate of residual in cg             )\n", para->cg_rate        );
        GCGE_Printf("  multi_tol       : %f, (tolerance for eigenvalue multiplicity      )\n", para->multi_tol      );
+       GCGE_Printf("  multi_tol_for_lock : %f, (tolerance for eigenvalue multiplicity   )\n", para->multi_tol_for_lock);
        GCGE_Printf("\n");
     }
 }

@@ -256,9 +256,17 @@ parcsr_ls/HYPRE_parcsr_pcg.c可以起名为multivector_ls/HYPRE_multivector_pcg.
 lp64和ilp64只有在整型上有区别
 
 
-2019.11.04 zhangning
+2019.11.04-1 zhangning
 
 1. 编译时有warning, 在一些头文件中增加了一些#include "gcge_statistics.h"与#include "gcge_utilities.h"
 2. 修改了gcge_eigsol.c中的printf为GCGE_Printf, 因printf会在并行时打印多次
 3. 删除了gcge_para.c中打印信息时的一个\n换行符
+
+2019.11.04-2 zhangning
+
+1. 添加了RayleighRitz中对于特征值重数的判定(计算子空间特征值问题时, 只计算未收敛的第一个到max_dim_x, 
+   但如果未收敛的第一个特征值是重特征值, 可能会出问题)
+   1) 在 gcge_para.h, gcge_para.c 中添加了判断eval[unlock[0]]重数的参数 multi_tol_for_lock, 默认值为 1e-6
+   2) 原本在gcge_eigsol.c中更新的 num_soft_locked_in_last_iter, 改到 ComputeSubspaceEigenPairs 时更新
+   3) 在 gcge_rayleighritz.c 中 GCGE_ComputeSubspaceEigenpairs 函数中添加重数的判定
 

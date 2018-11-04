@@ -54,6 +54,7 @@ typedef struct GCGE_PARA_ {
     GCGE_ORTH_PARA *orth_para;      //控制求解过程中正交化的参数集合
 
     GCGE_DOUBLE multi_tol;          //default:0.2,判断特征值重数（或距离较近）的阈值
+    GCGE_DOUBLE multi_tol_for_lock; //default:1e-6,判断特征值重数的阈值
 
     //GCGE内置LinearSolver(CG)参数
     GCGE_INT    if_use_cg;          //是否使用内置CG

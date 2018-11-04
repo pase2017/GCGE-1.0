@@ -224,11 +224,23 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //abstol = 2*dlamch_("S");
     GCGE_INT    max_dim_x = workspace->max_dim_x;
     //计算subspace_matrix的前rr_eigen_start+1到iu个特征值
+    GCGE_INT    i = 0;
     GCGE_INT    rr_eigen_start = workspace->unlock[0];
+    GCGE_INT    il = rr_eigen_start; 
+    //从unlock[0]开始往前判断eval[unlock[0]]这个特征值的重数
+    for(i=rr_eigen_start-1; i>-1; i--)
+    {
+        if(fabs(eval[i] - eval[rr_eigen_start])/eval[rr_eigen_start] < para->multi_tol_for_lock)
+        {
+            il -= 1;
+        }
+    }
+    rr_eigen_start = il;
+    il += 1;
+    workspace->num_soft_locked_in_last_iter = rr_eigen_start;
     //rr_eigen_start = 0;
-    GCGE_INT    il = rr_eigen_start+1, 
-                iu = (max_dim_x < ldm) ? max_dim_x : ldm,
-                m = iu-il+1;
+    GCGE_INT    iu = (max_dim_x < ldm) ? max_dim_x : ldm;
+    GCGE_INT    m = iu-il+1;
     GCGE_INT    lwork = 8*ldm;
     GCGE_INT    liwork = 5*ldm;
     GCGE_INT    *subspace_itmp = workspace->subspace_itmp;
@@ -267,7 +279,6 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
 #endif
     if(rr_eigen_start > 0)
     {
-        GCGE_INT i = 0;
         //sub_end表示这里要进行正交化的x个数
         GCGE_INT sub_end = max_dim_x - rr_eigen_start;
 

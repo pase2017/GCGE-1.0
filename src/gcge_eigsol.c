@@ -489,7 +489,6 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
                 *res = para->res;
     char        *conv_type = para->conv_type;
     void        *tmp1, *tmp2, *ev;
-    workspace->num_soft_locked_in_last_iter = unlock[0];
     //workspace->num_soft_locked_in_last_iter = 0;
     ops->GetVecFromMultiVec(workspace->V_tmp, 0, &tmp1);
     ops->GetVecFromMultiVec(workspace->V_tmp, 1, &tmp2);
