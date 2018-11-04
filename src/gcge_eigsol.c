@@ -109,6 +109,13 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         Orth_mat = B;
         RayleighRitz_mat = A;
     }
+    //这几个参数用于计算矩阵A的Omega范数(如果收敛准则为"O")
+    double init_norm = 0.0;
+    double omega_F_norm = 0.0;
+    double A_Omega_F_norm = 0.0;
+    double A_Omega_norm = 0.0;
+    double F_norm = 0.0;
+    void  *omega_vec;
     //如果用户不给初值，这里给随机初值，用户需要提供给向量设随机值的函数
     if(num_init_evec < nev)
     {
@@ -117,6 +124,45 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
             //其中V是存储向量的对象， start：表示是从V中的start开始形成num_vecs个随机向量
             //V(:,start:start + num_vecs) 进行随机化
             ops->MultiVecSetRandomValue(evec, num_init_evec, nev - num_init_evec, ops);
+            if(strcmp(para->conv_type, "O") == 0)
+            {
+                if(num_init_evec == 0)
+                {
+                    omega_F_norm = 0.0;
+                    for(i=0; i<nev; i++)
+                    {
+                        ops->GetVecFromMultiVec(evec, i, &omega_vec);
+                        ops->VecInnerProd(omega_vec, omega_vec, &init_norm);
+                        ops->VecAxpby(0.0, omega_vec, 1.0/sqrt(init_norm), omega_vec);
+                        ops->RestoreVecForMultiVec(evec, i, &omega_vec);
+                    }
+                    for(i=0; i<nev; i++)
+                    {
+                        ops->GetVecFromMultiVec(evec, i, &omega_vec);
+                        ops->VecInnerProd(omega_vec, omega_vec, &init_norm);
+                        ops->RestoreVecForMultiVec(evec, i, &omega_vec);
+                        omega_F_norm += init_norm;
+                    }
+
+                    mv_s[0] = 0;
+                    mv_e[0] = nev;
+                    mv_s[1] = 0;
+                    mv_e[1] = nev;
+                    ops->MatDotMultiVec(A, evec, V, mv_s, mv_e, ops);
+                    //此时，Omega = V(:,0:nev-1), A*Omega = evec(:,0:nev-1)
+                    A_Omega_F_norm = 0.0;
+                    for(i=0; i<nev; i++)
+                    {
+                        ops->GetVecFromMultiVec(V, i, &omega_vec);
+                        ops->VecInnerProd(omega_vec, omega_vec, &F_norm);
+                        ops->RestoreVecForMultiVec(V, i, &omega_vec);
+                        A_Omega_F_norm += F_norm;
+                    }
+                    A_Omega_norm = sqrt(A_Omega_F_norm/omega_F_norm);
+                    //GCGE_Printf("A_Omega_norm: %e\n", A_Omega_norm);
+                    para->conv_omega_norm = A_Omega_norm;
+                }
+            }
 
             if(para->dirichlet_boundary == 1)
             {
@@ -457,6 +503,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     ops->MultiVecAxpby(1.0, RitzVec, 0.0, evec, mv_s, mv_e, ops);
 #endif
     GCGE_PrintFinalInfo(eval, para);
+    GCGE_PrintParaInfo(para);
 
 }
 
@@ -478,7 +525,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
-    /* TODO */
     GCGE_INT    i, j, k, *unlock = workspace->unlock,
                 unconv_bs = 0, max_conv_idx = 0,
                 max_ind = 0, min_ind = 0,
@@ -489,7 +535,6 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
                 *res = para->res;
     char        *conv_type = para->conv_type;
     void        *tmp1, *tmp2, *ev;
-    //workspace->num_soft_locked_in_last_iter = 0;
     ops->GetVecFromMultiVec(workspace->V_tmp, 0, &tmp1);
     ops->GetVecFromMultiVec(workspace->V_tmp, 1, &tmp2);
     for( j=0; j<num_unlock; j++ )
@@ -510,18 +555,20 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //tmp1是残差向量
         //GCGE_VecNorm：这个函数可以放到ops中去。
         res_norm  = GCGE_VecNorm(tmp1, ops);
-        //printf("eigenvalue = %5.15f,  i = %d,  res_norm = %5.15f\n", eval[i], i, res_norm);
         evec_norm = GCGE_VecNorm(ev, ops);
-        //printf("||evec[:,i]||=%5.15f\n",evec_norm);
-          //计算相对/绝对残差
-        if(strcmp(conv_type, "R"))
+        //计算相对/绝对残差
+        if(strcmp(conv_type, "R") == 0)
         {
-          residual  = res_norm/evec_norm;
+            residual  = res_norm/evec_norm/(1.0>fabs(eval[i])?1.0:fabs(eval[i]));
+        }
+        else if(strcmp(conv_type, "O") == 0)
+        {
+            //使用残差的Omega范数
+            residual = res_norm/evec_norm/(para->conv_omega_norm + fabs(eval[i]));
         }
         else
         {
-             //计算相对残差的时候需要再仔细考虑一下
-           residual  = res_norm/evec_norm/(1.0>fabs(eval[i])?1.0:fabs(eval[i]));
+            residual  = res_norm/evec_norm;
         }
         res[i] = residual;
         //统计最大、最小、总残差
@@ -546,22 +593,22 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         }//end if(j==0)
         //统计未收敛的特征对编号unlock及数量
         if(residual > ev_tol)
-          {
+        {
             unlock[unconv_bs] = i;
             unconv_bs += 1;
             //只比收敛的最后一个多算8个
             //在unlock数组中检查到上一次收敛位置往后8位
             //这里的 8 最好是在para中设置一下
-          if(j > max_conv_idx+8)
+            if(j > max_conv_idx+8)
             {
                 for(k=j+1; k<num_unlock; k++)
                 {
                     unlock[unconv_bs] = unlock[k];
                     unconv_bs += 1;
                 }
-             j = num_unlock+1; //直接退出 for j的循环
-          }//end  if(j > max_conv_idx+8)            
-          }
+                j = num_unlock+1; //直接退出 for j的循环
+            }//end  if(j > max_conv_idx+8)            
+        }
         else
         {
             max_conv_idx = j;

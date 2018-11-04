@@ -44,7 +44,8 @@ typedef struct GCGE_PARA_ {
 
      //检查收敛性用到的参数
     GCGE_DOUBLE ev_tol;            //判定特征值已收敛的阈值
-    char*       conv_type;         //判定收敛的方式,1:绝对残差, 2:相对残差
+    char*       conv_type;         //判定收敛的方式,A:绝对残差, R:相对残差, O:使用Omega范数
+    GCGE_DOUBLE conv_omega_norm;   //判定收敛时, 如果使用Omega范数, 那么Omega范数取多少
     GCGE_INT    num_unlock;        //nunlock表示未锁定的特征对个数(0<=nunlock<=nev)
     //GCGE_INT    unconv_bs;       //本次迭代中需要计算 P W 的个数
 

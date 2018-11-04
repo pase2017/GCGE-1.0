@@ -40,6 +40,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交
     (*para)->w_orth_type     = "bgs"; //使用稳定的块正交化方法
+    (*para)->conv_omega_norm = 0.0; //使用残差的Omega范数时，矩阵A的omega范数取多少
 
      //正交化参数
     (*para)->orth_para = (GCGE_ORTH_PARA *)malloc(sizeof(GCGE_PARA));
@@ -140,6 +141,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
         {
             arg_index++;
             para->conv_type = argv[arg_index++];
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_conv_omega_norm")) 
+        {
+            arg_index++;
+            para->conv_omega_norm = atof(argv[arg_index++]);
         }
         else if(0 == strcmp(argv[arg_index], "-gcge_orth_type")) 
         {
@@ -242,7 +248,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_if_lobpcg       <i>  : use lobpcg(1) or gcg(0)                    (default: 0)\n");
        GCGE_Printf("  -gcge_given_init_evec <i>  : giben initial eigenvectors or not          (default: 0)\n");
        GCGE_Printf("  -gcge_ev_tol          <d>  : convergence tolerance                      (default: 1e-4)\n");
-       GCGE_Printf("  -gcge_conv_type       <c>  : use reletive or abosolute residual         (default: R)\n");
+       GCGE_Printf("  -gcge_conv_type       <c>  : use reletive or abosolute or omega residual(default: R)\n");
        GCGE_Printf("  -gcge_orth_type       <c>  : use A norm or B norm orthogonal            (default: B)\n");
        GCGE_Printf("  -gcge_w_orth_type     <c>  : use which kind of orthogonalization        (default: bgs)\n");
        GCGE_Printf("  -gcge_orth_zero_tol   <d>  : zero tolerance in orthogonal               (default: 1e-16)\n");
@@ -313,6 +319,10 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
         if(strcmp(para->conv_type, "R") == 0)
         {
             conv_type = "relative_res";
+        }
+        else if(strcmp(para->conv_type, "O") == 0)
+        {
+            conv_type = "omega_res";
         }
         else
         {
@@ -418,6 +428,10 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     {
         GCGE_Printf("relative residual\n\n");
     }
+    else if(strcmp(para->conv_type, "O") == 0)
+    {
+        GCGE_Printf("omega residual\n\n");
+    }
     else
     {
         GCGE_Printf("abosolute residual\n\n");
@@ -491,28 +505,29 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("\n");
        GCGE_Printf("GCGE_PARA:\n");
        GCGE_Printf("\n");
-       GCGE_Printf("  nev             : %d, (number of eigenpairs you need              )\n", para->nev            );
-       GCGE_Printf("  ev_max_it       : %d, (maximum of gcg iterations                  )\n", para->ev_max_it      );
-       GCGE_Printf("  block_size      : %d, (number of eigenpairs computed in one patch )\n", para->block_size     );
-       GCGE_Printf("  given_init_evec : %d, (given initial eigenvectors or not          )\n", para->given_init_evec);
-       GCGE_Printf("  max_reorth_time : %d, (maximun reorthogonal times                 )\n", para->orth_para->max_reorth_time);
-       GCGE_Printf("  print_orth_zero : %d, (print the zero index in orthogonal or not  )\n", para->orth_para->print_orth_zero);
-       GCGE_Printf("  if_use_cg       : %d, (use the internal cg or not                 )\n", para->if_use_cg      );
-       GCGE_Printf("  cg_max_it       : %d, (maximun numbers of cg iterations           )\n", para->cg_max_it      );
-       GCGE_Printf("  print_cg_error  : %d, (print residual error in cg or not          )\n", para->print_cg_error );
-       GCGE_Printf("  print_eval      : %d, (print eigenvalue in each iteration or not  )\n", para->print_eval     );
-       GCGE_Printf("  print_part_time : %d, (print time of each part in gcg or not      )\n", para->print_part_time);
-       GCGE_Printf("  print_para      : %d, (print the parameters not                   )\n", para->print_para     );
-       GCGE_Printf("  print_result    : %d, (print the final result or not              )\n", para->print_result   );
-       GCGE_Printf("  conv_type       : %s, (use reletive or abosolute residual         )\n", para->conv_type      );
-       GCGE_Printf("  orth_type       : %s, (use A norm or B norm orthogonal            )\n", para->orth_type      );
-       GCGE_Printf("  w_orth_type     : %s, (use which kind of orthogonalization        )\n", para->w_orth_type    );
-       GCGE_Printf("  ev_tol          : %e, (convergence tolerance                      )\n", para->ev_tol         );
-       GCGE_Printf("  orth_zero_tol   : %e, (zero tolerance in orthogonal               )\n", para->orth_para->orth_zero_tol  );
-       GCGE_Printf("  reorth_tol      : %e, (reorthgonal tolerance                      )\n", para->orth_para->reorth_tol     );
-       GCGE_Printf("  cg_rate         : %e, (descent rate of residual in cg             )\n", para->cg_rate        );
-       GCGE_Printf("  multi_tol       : %f, (tolerance for eigenvalue multiplicity      )\n", para->multi_tol      );
-       GCGE_Printf("  multi_tol_for_lock : %f, (tolerance for eigenvalue multiplicity   )\n", para->multi_tol_for_lock);
+       GCGE_Printf("  nev                : %8d, (number of eigenpairs you need)\n", para->nev            );
+       GCGE_Printf("  ev_max_it          : %8d, (maximum of gcg iterations)\n", para->ev_max_it      );
+       GCGE_Printf("  block_size         : %8d, (number of eigenpairs computed in one patch)\n", para->block_size     );
+       GCGE_Printf("  given_init_evec    : %8d, (given initial eigenvectors or not)\n", para->given_init_evec);
+       GCGE_Printf("  max_reorth_time    : %8d, (maximun reorthogonal times)\n", para->orth_para->max_reorth_time);
+       GCGE_Printf("  print_orth_zero    : %8d, (print the zero index in orthogonal or not)\n", para->orth_para->print_orth_zero);
+       GCGE_Printf("  if_use_cg          : %8d, (use the internal cg or not)\n", para->if_use_cg      );
+       GCGE_Printf("  cg_max_it          : %8d, (maximun numbers of cg iterations)\n", para->cg_max_it      );
+       GCGE_Printf("  print_cg_error     : %8d, (print residual error in cg or not)\n", para->print_cg_error );
+       GCGE_Printf("  print_eval         : %8d, (print eigenvalue in each iteration or not)\n", para->print_eval     );
+       GCGE_Printf("  print_part_time    : %8d, (print time of each part in gcg or not)\n", para->print_part_time);
+       GCGE_Printf("  print_para         : %8d, (print the parameters not)\n", para->print_para     );
+       GCGE_Printf("  print_result       : %8d, (print the final result or not)\n", para->print_result   );
+       GCGE_Printf("  orth_type          : %8s, (use A norm or B norm orthogonal)\n", para->orth_type      );
+       GCGE_Printf("  w_orth_type        : %8s, (use which kind of orthogonalization)\n", para->w_orth_type    );
+       GCGE_Printf("  conv_type          : %8s, (use reletive or abosolute residual)\n", para->conv_type      );
+       GCGE_Printf("  conv_omega_norm    : %f, (the omega norm of matrix A)\n", para->conv_omega_norm);
+       GCGE_Printf("  ev_tol             : %3.2e, (convergence tolerance)\n", para->ev_tol         );
+       GCGE_Printf("  orth_zero_tol      : %3.2e, (zero tolerance in orthogonal)\n", para->orth_para->orth_zero_tol  );
+       GCGE_Printf("  reorth_tol         : %3.2e, (reorthgonal tolerance)\n", para->orth_para->reorth_tol     );
+       GCGE_Printf("  cg_rate            : %3.2e, (descent rate of residual in cg)\n", para->cg_rate        );
+       GCGE_Printf("  multi_tol          : %3.2e, (tolerance for eigenvalue multiplicity)\n", para->multi_tol      );
+       GCGE_Printf("  multi_tol_for_lock : %3.2e, (tolerance for eigenvalue multiplicity(forward))\n", para->multi_tol_for_lock);
        GCGE_Printf("\n");
     }
 }

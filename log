@@ -273,3 +273,11 @@ lp64和ilp64只有在整型上有区别
    特征对广播到各个进程
    1) 修改了 gcge_orthogonal.c, 因为用到了memcpy, 所以在gcge_orthogonal.h 中添加了#include<string.h>
    1) 修改了 gcge_rayleighritz.c, 因为用到了memcpy, 所以在gcge_rayleighritz.h 中添加了#include<string.h>
+3. 添加了 Omega范数 这种收敛准则, 这种收敛准则需要用到一个参数conv_omega_norm, 用于存储矩阵A的Omega范数
+   1) 修改了gcge_para.h
+      添加了conv_omega_norm, 并修改了conv_type的注释
+   2) 修改了gcge_para.c
+      添加了conv_type的默认值, 并修改了GCGE_PrintParaInfo
+   3) 修改了gcge_eigsol.c
+      为了使用Omega范数这种收敛准则, 首先用随机初值计算了这个范数, 然后在判断收敛性时使用了这个范数
+
