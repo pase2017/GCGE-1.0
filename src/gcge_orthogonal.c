@@ -843,6 +843,7 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
 
     //现在对W本身进行正交化,因为这种正交化方式只适用于精度要求低的情况
     //所以这里暂时不做重正交化
+    GCGE_INT rank = 0;
     for(i=0; i < 1; ++i)
     {   
         //计算 M = V3^T * B *V3
@@ -884,19 +885,31 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             //计算 M C = C Theta
             iu = w_length;
             m = iu - il + 1;
-            /*
-               printf("dtmp, w_length: %d\n", w_length);
-               for(j=0; j<w_length*w_length; j++)
-               {
-               printf("%e\t",d_tmp[j]);
-               }
-               printf("\n");
-               */
-            ops->DenseMatEigenSolver("V", "I", "U", &w_length, d_tmp, 
-                    &w_length, &vl, &vu, &il, &iu, &abstol, 
-                    &m, tmp_eval, tmp_evec, &w_length, 
-                    isuppz, dwork_space, &lwork,
-                    subspace_itmp, &liwork, ifail, &info);
+            if(para->use_mpi_bcast)
+            {
+#if GCGE_USE_MPI
+                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
+            }
+            //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
+            //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
+            //那么, 如果 rank==0, 就计算特征值问题, 否则不用计算, 等待广播
+            if(rank == 0)
+            {
+                ops->DenseMatEigenSolver("V", "I", "U", &w_length, d_tmp, 
+                        &w_length, &vl, &vu, &il, &iu, &abstol, 
+                        &m, tmp_eval, tmp_evec, &w_length, 
+                        isuppz, dwork_space, &lwork,
+                        subspace_itmp, &liwork, ifail, &info);
+            }
+            if(para->use_mpi_bcast)
+            {
+#if GCGE_USE_MPI
+                memcpy(tmp_evec+iu*w_length, tmp_eval, m*sizeof(GCGE_DOUBLE));
+                MPI_Bcast(tmp_evec, m*w_length+m, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                memcpy(tmp_eval, tmp_evec+iu*w_length, m*sizeof(GCGE_DOUBLE));
+#endif
+            }
 
             //计算 y_i = 1/sqrt(Theta_i) * y_i
             tmp_eval_nonzero_start = 0;

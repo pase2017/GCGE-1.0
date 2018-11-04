@@ -300,7 +300,7 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     GCGE_INT num_iter   = para->num_iter; 
     GCGE_INT num_unlock = para->num_unlock;
     GCGE_STATISTIC_PARA *stat_para = para->stat_para;
-    GCGE_Printf("num_unlock(%d)= %d; max_res(%d)= %e; min_res(%d)= %e;\n", 
+    GCGE_Printf("num_unlock(%3d) = %3d; max_res(%3d) = %e; min_res(%3d) = %e;\n", 
             num_iter, num_unlock, 
             num_iter, para->max_res,
             num_iter, para->min_res);

@@ -269,4 +269,7 @@ lp64和ilp64只有在整型上有区别
    1) 在 gcge_para.h, gcge_para.c 中添加了判断eval[unlock[0]]重数的参数 multi_tol_for_lock, 默认值为 1e-6
    2) 原本在gcge_eigsol.c中更新的 num_soft_locked_in_last_iter, 改到 ComputeSubspaceEigenPairs 时更新
    3) 在 gcge_rayleighritz.c 中 GCGE_ComputeSubspaceEigenpairs 函数中添加重数的判定
-
+2. 添加了 如果需要在求解特征值问题后对特征向量进行广播, 那就只计算 0 号进程的特征值问题, 然后将 0 号进程的
+   特征对广播到各个进程
+   1) 修改了 gcge_orthogonal.c, 因为用到了memcpy, 所以在gcge_orthogonal.h 中添加了#include<string.h>
+   1) 修改了 gcge_rayleighritz.c, 因为用到了memcpy, 所以在gcge_rayleighritz.h 中添加了#include<string.h>

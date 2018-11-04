@@ -142,7 +142,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #endif
 
             num_init_evec = workspace->dim_x;
-            GCGE_Printf("num_init_evec = %d\n",num_init_evec);
+            //GCGE_Printf("num_init_evec = %d\n",num_init_evec);
         }while(num_init_evec < nev);
     }//end for Initialization for the eigenvectors   
 

@@ -260,16 +260,32 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //isuppz: dsyevr(2*N的空间)
     //ifail: dsyevx(N的空间）
     //特征值与特征向量的存储位置都向后移rr_eigen_start
-    ops->DenseMatEigenSolver("V", "I", "U", &nrows, temp_matrix, &ncols, 
-            &vl, &vu, &il, &iu, &abstol, 
-            &m, eval+rr_eigen_start, subspace_evec+rr_eigen_start*ldm, &ldm, 
-            isuppz, dwork_space, &lwork,
-            subspace_itmp, &liwork, ifail, &info);
+    
+    GCGE_INT rank = 0;
     if(para->use_mpi_bcast)
     {
 #if GCGE_USE_MPI
-        MPI_Bcast(subspace_evec+rr_eigen_start*ldm, m*ldm, MPI_DOUBLE, 
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
+    }
+    //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
+    //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
+    //那么, 如果 rank==0, 就计算特征值问题, 否则不用计算, 等待广播
+    if(rank == 0)
+    {
+        ops->DenseMatEigenSolver("V", "I", "U", &nrows, temp_matrix, &ncols, 
+                &vl, &vu, &il, &iu, &abstol, 
+                &m, eval+rr_eigen_start, subspace_evec+rr_eigen_start*ldm, &ldm, 
+                isuppz, dwork_space, &lwork,
+                subspace_itmp, &liwork, ifail, &info);
+    }
+    if(para->use_mpi_bcast)
+    {
+#if GCGE_USE_MPI
+        memcpy(subspace_evec+iu*ldm, eval+rr_eigen_start, m*sizeof(GCGE_DOUBLE));
+        MPI_Bcast(subspace_evec+rr_eigen_start*ldm, m*ldm+m, MPI_DOUBLE, 
                 0, MPI_COMM_WORLD);
+        memcpy(eval+rr_eigen_start, subspace_evec+iu*ldm, m*sizeof(GCGE_DOUBLE));
 #endif
     }
 #if GET_PART_TIME

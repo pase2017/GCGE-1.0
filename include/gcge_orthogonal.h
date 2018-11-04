@@ -18,7 +18,7 @@
 #ifndef _GCGE_ORTHOGONAL_H_
 #define _GCGE_ORTHOGONAL_H_
 
-
+#include <string.h>
 #include "gcge_type.h"
 
 #include "gcge_para.h"
