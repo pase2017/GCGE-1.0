@@ -232,3 +232,28 @@ parcsr_ls/HYPRE_parcsr_pcg.c可以起名为multivector_ls/HYPRE_multivector_pcg.
 2018.11.03-1 zhangning
 1. 修改了gcge_cg.c
    修改了GCGE_BCG, 取出向量组的单向量时, 最多只能取两个(BV结构的要求)
+
+
+2018.11.04-1 liyu
+
+使用MKL包
+
+1. 首先运行(可添加在.bashrc)
+. /share/soft/intel_2018_update1/bin/compilervars.sh intel64
+   这样就配置好了icc ifort mpiicc mpiifort mkl
+   通过which icc检查是否正确
+2. 链接时除了需要链接对应的在xxx/mkl/lib/intel64下的库文件之外, 
+   链接的FLAG需要加入-mkl=cluster 详见Chapter 3
+3. 利用bsub提交程序的时候, 一定用mpiexec, 其它都是脚本
+
+1 mpirun=/share/soft/intel_2018_update1/compilers_and_libraries_2018.1.163/linux/mpi/intel64/bin/mpiexec.hydra
+2 for nprocs in 36 72 144 288 576 1152
+3 do
+4   bsub -J ex11 -q big -R "span[ptile=36]" -n $nprocs -e test.err -o test.out \
+5      "$mpirun -np $nprocs -ppn 36 ./ex11 -n 10000 -blockSize 10"
+6 done
+
+lp64和ilp64只有在整型上有区别
+
+
+
