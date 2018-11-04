@@ -358,6 +358,7 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
         GCGE_PART_TIME *part_time = stat_para->part_time_one_iter;
         iter_time += part_time->x_axpy_time;
         iter_time += part_time->p_axpy_time;
+        iter_time += part_time->x_orth_time;
         iter_time += part_time->p_orth_time;
         iter_time += part_time->w_line_time; 
         iter_time += part_time->w_orth_time;
@@ -368,6 +369,7 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
                 num_iter, iter_time);
         GCGE_Printf("\nDetail time and percentage in this iteration:\n"
                 "       x_axpy"
+                "       x_orth"
                 "       p_orth"
                 "       p_axpy"
                 "    w_lsolver"
@@ -375,8 +377,9 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
                 "     rr_eigen"
                 "       rr_mat"
                 "   check_conv\n"
-                " %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf\n",
+                " %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf\n",
                 part_time->x_axpy_time,
+                part_time->x_orth_time,
                 part_time->p_orth_time,
                 part_time->p_axpy_time,
                 part_time->w_line_time, 
@@ -390,8 +393,9 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
         }
         else
         {
-            GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
+            GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
                     100*(part_time->x_axpy_time)  /iter_time,
+                    100*(part_time->x_orth_time)  /iter_time,
                     100*(part_time->p_orth_time)  /iter_time,
                     100*(part_time->p_axpy_time)  /iter_time,
                     100*(part_time->w_line_time)  /iter_time,
@@ -414,6 +418,7 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     GCGE_PART_TIME *part_time = para->stat_para->part_time_total;
     GCGE_DOUBLE total_time = 0.0;
     total_time += part_time->x_axpy_time;
+    total_time += part_time->x_orth_time;
     total_time += part_time->p_axpy_time;
     total_time += part_time->p_orth_time;
     total_time += part_time->w_line_time; 
@@ -463,6 +468,7 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     }
     GCGE_Printf("\nDetail time in total gcg iteration:\n"
             "       x_axpy"
+            "       x_orth"
             "       p_orth"
             "       p_axpy"
             "    w_lsolver"
@@ -470,8 +476,9 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
             "     rr_eigen"
             "       rr_mat"
             "   check_conv\n"
-            " %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf\n",
+            " %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf\n",
             part_time->x_axpy_time,
+            part_time->x_orth_time,
             part_time->p_orth_time,
             part_time->p_axpy_time,
             part_time->w_line_time, 
@@ -485,8 +492,9 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     }
     else
     {
-        GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
+        GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
                 100*(part_time->x_axpy_time)  /total_time,
+                100*(part_time->x_orth_time)  /total_time,
                 100*(part_time->p_orth_time)  /total_time,
                 100*(part_time->p_axpy_time)  /total_time,
                 100*(part_time->w_line_time)  /total_time,
