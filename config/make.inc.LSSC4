@@ -17,11 +17,11 @@ LIBCSR       = $(EXTERNAL)/csr/lib/libcsr.a -lm
 PETSCINC     = $(EXTERNAL)/petsc/include
 LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
 
-SLEPCINC     = 
-LIBSLEPC     = 
+SLEPCINC     = $(EXTERNAL)/slepc/include
+LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
 
-HYPREINC     = /share/home/hhxie/liyu/hypre-2.11.2/src/hypre/include
-LIBHYPRE     = /share/home/hhxie/liyu/hypre-2.11.2/src/hypre/lib/libHYPRE.a
+HYPREINC     = /share/home/hhxie/hypre/hypre-2.11.1/src/hypre/include
+LIBHYPRE     = /share/home/hhxie/hypre/hypre-2.11.1/src/hypre/lib/libHYPRE.a
 
 EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
 EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE)
@@ -49,7 +49,7 @@ CLINKER      = $(CC)  -mkl=cluster
 CPPLINKER    = $(CPP) -mkl=cluster
 
 DEBUG        = -g
-FFLAGS       = -O2       $(DEBUG)
+FFLAGS       = -O2 -fPIC $(DEBUG)
 CFLAGS       = -O2 -fPIC $(DEBUG)
 CPPFLAGS     = -O2 -fPIC $(DEBUG)
 

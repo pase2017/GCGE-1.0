@@ -48,7 +48,7 @@ CLINKER      = $(CC)
 CPPLINKER    = $(CPP)
 
 DEBUG        = -g #-DMEMWATCH -DMW_STDIO
-FFLAGS       = -O2 $(DEBUG)
+FFLAGS       = -O2 -fPIC $(DEBUG)
 CFLAGS       = -O2 -fPIC $(DEBUG)
 CPPFLAGS     = -O2 -fPIC $(DEBUG)
 
