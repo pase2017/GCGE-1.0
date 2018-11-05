@@ -294,3 +294,5 @@ lp64和ilp64只有在整型上有区别
     以使用hypre的boomeramg作为预条件方法为例, 在PCSetUp时将petsc格式的预条件矩阵赋给hypre矩阵.
     将petsc格式的解向量与右端项赋给hypre向量.
 
+2019.11.05-1 liyu
+OPENMP要慎用
