@@ -284,4 +284,13 @@ lp64和ilp64只有在整型上有区别
 
 2019.11.04-3 zhangning
 1. 在ComputeW中, 如果提供了外部求解器, 那在外部求解器解完后再调用BCG求解, 如果不用BCG, 
-   就将cg_max_it设置为1即可
+   就将cg_max_it设置为0即可
+
+2019.11.05-1 zhangning
+使用petsc外部求解器并使用hypre的boomeramg求解预条件矩阵方程组的一些说明
+1. 如果使用外部线性求解器, 在GCGE_ComputeW中把每一个线性方程组的解向量和右端项取出, 
+    调用ops->LinearSolver求解, 再统一调用BCG迭代统一求解所有的线性方程组
+2. 调用ops->LinearSolver求解过程中, 以使用petsc的cg迭代为例, 每次cg迭代中, 都要解一次预条件矩阵线性方程组.
+    以使用hypre的boomeramg作为预条件方法为例, 在PCSetUp时将petsc格式的预条件矩阵赋给hypre矩阵.
+    将petsc格式的解向量与右端项赋给hypre向量.
+
