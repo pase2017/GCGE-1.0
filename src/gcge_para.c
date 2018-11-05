@@ -227,7 +227,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->print_result = atoi(argv[arg_index++]);
         }
-        else if (0 == strcmp(argv[arg_index], "-help"))
+        else if (0 == strcmp(argv[arg_index], "-gcge_help"))
         {
            print_usage = 1;
            break;
@@ -242,33 +242,35 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("\n");
        GCGE_Printf("Usage: %s [<options>]\n", argv[0]);
        GCGE_Printf("\n");
-       GCGE_Printf("  -gcge_nev             <i>  : number of eigenpairs you need              (default: 6)\n");
-       GCGE_Printf("  -gcge_ev_max_it       <i>  : maximum of gcg iterations                  (default: 30)\n");
-       GCGE_Printf("  -gcge_block_size      <i>  : number of eigenpairs computed in one patch (default: nev)\n");
-       GCGE_Printf("  -gcge_if_lobpcg       <i>  : use lobpcg(1) or gcg(0)                    (default: 0)\n");
-       GCGE_Printf("  -gcge_given_init_evec <i>  : giben initial eigenvectors or not          (default: 0)\n");
-       GCGE_Printf("  -gcge_ev_tol          <d>  : convergence tolerance                      (default: 1e-4)\n");
-       GCGE_Printf("  -gcge_conv_type       <c>  : use reletive or abosolute or omega residual(default: R)\n");
-       GCGE_Printf("  -gcge_orth_type       <c>  : use A norm or B norm orthogonal            (default: B)\n");
-       GCGE_Printf("  -gcge_w_orth_type     <c>  : use which kind of orthogonalization        (default: bgs)\n");
-       GCGE_Printf("  -gcge_orth_zero_tol   <d>  : zero tolerance in orthogonal               (default: 1e-16)\n");
-       GCGE_Printf("  -gcge_reorth_tol      <d>  : reorthgonal tolerance                      (default: 0.75)\n");
-       GCGE_Printf("  -gcge_max_reorth_time <i>  : maximun reorthogonal times                 (default: 3)\n");
-       GCGE_Printf("  -gcge_print_orth_zero <i>  : print the zero index in orthogonal or not  (default: 0)\n");
-       GCGE_Printf("  -gcge_multi_tol       <d>  : tolerance for eigenvalue multiplicity      (default: 0.2)\n");
-       GCGE_Printf("  -gcge_multi_tol_for_lock <d>  : tolerance for eigenvalue multiplicity to lock (default: 1e-6)\n");
-       GCGE_Printf("  -gcge_if_use_cg       <i>  : use the internal cg or not                 (default: 1)\n");
-       GCGE_Printf("  -gcge_cg_max_it       <i>  : maximun numbers of cg iterations           (default: 20)\n");
-       GCGE_Printf("  -gcge_cg_rate         <d>  : descent rate of residual in cg             (default: 1e-2)\n");
-       GCGE_Printf("  -gcge_print_cg_error  <i>  : print residual error in cg or not          (default: 0)\n");
-       GCGE_Printf("  -gcge_print_eval      <i>  : print eigenvalue in each iteration or not  (default: 1)\n");
-       GCGE_Printf("  -gcge_print_part_time <i>  : print time of each part in gcg or not      (default: 0)\n");
-       GCGE_Printf("  -gcge_print_para      <i>  : print the parameters not                   (default: 1)\n");
-       GCGE_Printf("  -gcge_print_result    <i>  : print the final result or not              (default: 1)\n");
+       GCGE_Printf("  -gcge_nev                <i>: number of eigenpairs you need                 (default: 6)\n");
+       GCGE_Printf("  -gcge_ev_max_it          <i>: maximum of gcg iterations                     (default: 30)\n");
+       GCGE_Printf("  -gcge_block_size         <i>: number of eigenpairs computed in one patch    (default: nev[<nev])\n");
+       GCGE_Printf("  -gcge_if_lobpcg          <i>: use lobpcg(1) or gcg(0)                       (default: 0)\n");
+       GCGE_Printf("  -gcge_given_init_evec    <i>: giben initial eigenvectors or not             (default: 0)\n");
+       GCGE_Printf("  -gcge_ev_tol             <d>: convergence tolerance                         (default: 1e-4)\n");
+       GCGE_Printf("  -gcge_conv_type          <c>: use reletive or abosolute or omega residual   (default: R[A|O])\n");
+       GCGE_Printf("  -gcge_orth_type          <c>: use A norm or B norm orthogonal               (default: B)\n");
+       GCGE_Printf("  -gcge_w_orth_type        <c>: use which kind of orthogonalization           (default: bgs[cbgs|gs])\n");
+       GCGE_Printf("  -gcge_orth_zero_tol      <d>: zero tolerance in orthogonal                  (default: 1e-16)\n");
+       GCGE_Printf("  -gcge_reorth_tol         <d>: reorthgonal tolerance                         (default: 0.75)\n");
+       GCGE_Printf("  -gcge_max_reorth_time    <i>: maximun reorthogonal times                    (default: 3)\n");
+       GCGE_Printf("  -gcge_print_orth_zero    <i>: print the zero index in orthogonal or not     (default: 0[1])\n");
+       GCGE_Printf("  -gcge_multi_tol          <d>: tolerance for eigenvalue multiplicity         (default: 0.2)\n");
+       GCGE_Printf("  -gcge_multi_tol_for_lock <d>: tolerance for eigenvalue multiplicity to lock (default: 1e-6)\n");
+       GCGE_Printf("  -gcge_cg_max_it          <i>: maximun numbers of cg iterations              (default: 20)\n");
+       GCGE_Printf("  -gcge_cg_rate            <d>: descent rate of residual in cg                (default: 1e-2)\n");
+       GCGE_Printf("  -gcge_print_cg_error     <i>: print residual error in cg or not             (default: 0[1])\n");
+       GCGE_Printf("  -gcge_print_eval         <i>: print eigenvalue in each iteration or not     (default: 1[0])\n");
+       GCGE_Printf("  -gcge_print_part_time    <i>: print time of each part in gcg or not         (default: 0[1])\n");
+       GCGE_Printf("  -gcge_print_para         <i>: print the parameters not                      (default: 1[0])\n");
+       GCGE_Printf("  -gcge_print_result       <i>: print the final result or not                 (default: 1[0])\n");
        GCGE_Printf("\n");
     }
     if (print_usage)
-       return 1;
+    {
+       //return 1;
+       exit(0);
+    }
     else 
        return 0;
 }
@@ -365,44 +367,49 @@ void GCGE_PrintIterationInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
         iter_time += part_time->rr_mat_time;
         iter_time += part_time->rr_eigen_time;
         iter_time += part_time->conv_time;
-        GCGE_Printf("\niteration: %d, time: %12.3lf\n",
+        GCGE_Printf("\niteration: %d, time: %12.2lf\n",
                 num_iter, iter_time);
         GCGE_Printf("\nDetail time and percentage in this iteration:\n"
-                "       x_axpy"
                 "       x_orth"
+                "       x_axpy"
                 "       p_orth"
                 "       p_axpy"
-                "    w_lsolver"
-                "       w_orth"
-                "     rr_eigen"
-                "       rr_mat"
                 "   check_conv\n"
-                " %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf  %11.3lf\n",
-                part_time->x_axpy_time,
+                " %11.2lf  %11.2lf  %11.2lf  %11.2lf  %11.2lf\n",
                 part_time->x_orth_time,
+                part_time->x_axpy_time,
                 part_time->p_orth_time,
                 part_time->p_axpy_time,
+                part_time->conv_time);
+        if(iter_time >= 1e-10)
+        {
+            GCGE_Printf(" %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%%\n", 
+                    100*(part_time->x_orth_time)  /iter_time,
+                    100*(part_time->x_axpy_time)  /iter_time,
+                    100*(part_time->p_orth_time)  /iter_time,
+                    100*(part_time->p_axpy_time)  /iter_time,
+                    100*(part_time->conv_time)    /iter_time);
+        }
+        GCGE_Printf("       w_lsol"
+                "       w_orth"
+                "       rr_eig"
+                "       rr_mat\n"
+                " %11.2lf  %11.2lf  %11.2lf  %11.2lf\n",
                 part_time->w_line_time, 
                 part_time->w_orth_time,
                 part_time->rr_eigen_time,
-                part_time->rr_mat_time,
-                part_time->conv_time);
+                part_time->rr_mat_time);
         if(iter_time < 1e-10)
         {
             GCGE_Printf("Total time in this iteration is less than 1e-10, the percentege is not presented.\n");
         }
         else
         {
-            GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
-                    100*(part_time->x_axpy_time)  /iter_time,
-                    100*(part_time->x_orth_time)  /iter_time,
-                    100*(part_time->p_orth_time)  /iter_time,
-                    100*(part_time->p_axpy_time)  /iter_time,
+            GCGE_Printf(" %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%%\n\n", 
                     100*(part_time->w_line_time)  /iter_time,
                     100*(part_time->w_orth_time)  /iter_time,
                     100*(part_time->rr_eigen_time)/iter_time,
-                    100*(part_time->rr_mat_time)  /iter_time,
-                    100*(part_time->conv_time)    /iter_time);
+                    100*(part_time->rr_mat_time)  /iter_time);
         }
     }
     fflush(stdout);
@@ -427,81 +434,104 @@ void GCGE_PrintFinalInfo(GCGE_DOUBLE *eval, GCGE_PARA *para)
     total_time += part_time->rr_eigen_time;
     total_time += part_time->conv_time;
 
-    GCGE_Printf("\nFinal eigenvalues and residual information:\n");
-    GCGE_Printf( "\n            eigenvalue           ");
-    if(strcmp(para->conv_type, "R") == 0)
+    if(para->print_result)
     {
-        GCGE_Printf("relative residual\n\n");
-    }
-    else if(strcmp(para->conv_type, "O") == 0)
-    {
-        GCGE_Printf("omega residual\n\n");
-    }
-    else
-    {
-        GCGE_Printf("abosolute residual\n\n");
-    }
-    for( i=0; i < nev; i++ )
-    {
-        GCGE_Printf("%5d  %20.15e  %20.15e ",
-                i+1, eval[i], res[i]);
-        if(res[i] < ev_tol)
+        GCGE_Printf("\nFinal eigenvalues and residual information:\n");
+        GCGE_Printf( "\n            eigenvalue           ");
+        if(strcmp(para->conv_type, "R") == 0)
         {
-            GCGE_Printf(" (converged)\n");
+            GCGE_Printf("relative residual\n\n");
+        }
+        else if(strcmp(para->conv_type, "O") == 0)
+        {
+            GCGE_Printf("omega residual\n\n");
         }
         else
         {
-            GCGE_Printf("\n");
+            GCGE_Printf("abosolute residual\n\n");
+        }
+        for( i=0; i < nev; i++ )
+        {
+            GCGE_Printf("%5d  %20.15e  %20.15e ",
+                    i+1, eval[i], res[i]);
+            if(res[i] < ev_tol)
+            {
+                GCGE_Printf(" (converged)\n");
+            }
+            else
+            {
+                GCGE_Printf("\n");
+            }
         }
     }
-    GCGE_Printf("\nTotal gcg iteration: %d, total time: %.3lf, ",
+    GCGE_Printf("\nTotal gcg iteration: %d, total time: %.2lf. ",
             para->num_iter, total_time);
     if(para->num_unlock == 0)
     {
-        GCGE_Printf("all converged!\n");
+        GCGE_Printf("All %d eigenpairs converged! ", para->nev);
     }
     else
     {
-        GCGE_Printf("%d converged, %d unconverged.\n",
+        GCGE_Printf("%d converged, %d unconverged. ",
                 para->nev - para->num_unlock,
                 para->num_unlock);
     }
+    GCGE_INT num_process = 1;
+#if GCGE_USE_MPI
+    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
+#endif
+    if(num_process == 1)
+        GCGE_Printf("Use 1 process. ");
+    else
+        GCGE_Printf("Use %d processes. ", num_process);
+    GCGE_Printf("block_size: %d", para->block_size);
     GCGE_Printf("\nDetail time in total gcg iteration:\n"
-            "       x_axpy"
+            "Section Name "
             "       x_orth"
+            "       x_axpy"
             "       p_orth"
             "       p_axpy"
-            "    w_lsolver"
-            "       w_orth"
-            "     rr_eigen"
-            "       rr_mat"
             "   check_conv\n"
-            " %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf %12.3lf\n",
-            part_time->x_axpy_time,
+            "Section Time "
+            " %12.2lf %12.2lf %12.2lf %12.2lf %12.2lf\n",
             part_time->x_orth_time,
+            part_time->x_axpy_time,
             part_time->p_orth_time,
             part_time->p_axpy_time,
+            part_time->conv_time);
+    if(total_time >= 1e-10)
+    {
+        GCGE_Printf("Section Ratio");
+        GCGE_Printf(" %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%%\n", 
+                100*(part_time->x_orth_time)  /total_time,
+                100*(part_time->x_axpy_time)  /total_time,
+                100*(part_time->p_orth_time)  /total_time,
+                100*(part_time->p_axpy_time)  /total_time,
+                100*(part_time->conv_time)    /total_time);
+    }
+    GCGE_Printf("Section Name "
+            "       w_lsol"
+            "       w_orth"
+            "       rr_eig"
+            "       rr_mat\n"
+            "Section Time "
+            " %12.2lf %12.2lf %12.2lf %12.2lf\n",
             part_time->w_line_time, 
             part_time->w_orth_time,
             part_time->rr_eigen_time,
-            part_time->rr_mat_time,
-            part_time->conv_time);
+            part_time->rr_mat_time);
     if(total_time < 1e-10)
     {
         GCGE_Printf("Total time is less than 1e-10, the percentege is not presented.\n");
     }
     else
     {
-        GCGE_Printf(" %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%% %11.3lf%%\n\n", 
-                100*(part_time->x_axpy_time)  /total_time,
-                100*(part_time->x_orth_time)  /total_time,
-                100*(part_time->p_orth_time)  /total_time,
-                100*(part_time->p_axpy_time)  /total_time,
+        GCGE_Printf("Section Ratio");
+        GCGE_Printf(" %11.2lf%% %11.2lf%% %11.2lf%% %11.2lf%%\n\n", 
                 100*(part_time->w_line_time)  /total_time,
                 100*(part_time->w_orth_time)  /total_time,
                 100*(part_time->rr_eigen_time)/total_time,
-                100*(part_time->rr_mat_time)  /total_time,
-                100*(part_time->conv_time)    /total_time);
+                100*(part_time->rr_mat_time)  /total_time);
     }
 }
 
