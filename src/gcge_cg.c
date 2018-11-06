@@ -32,7 +32,7 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCG
     GCGE_DOUBLE rate = para->cg_rate;
     GCGE_DOUBLE tmp1, tmp2, alpha, beta, rho1, rho2, error, last_error, pTw, wTw;
     void        **V_tmp = workspace->V_tmp;
-    void        **RitzVec = workspace->RitzVec;
+    void        **RitzVec = workspace->evec;
 
     //CG迭代中用到的临时向量
     ops->GetVecFromMultiVec(V_tmp, 1, &r); //记录残差向量

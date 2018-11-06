@@ -186,15 +186,31 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
             ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
             ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
         }//end for idx_p      
-	//如果有外部求解器, 解完后继续用BCG求解. 如果不要用BCG, 可以将cg_max_it设为0
-        GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+	    //如果有外部求解器, 解完后继续用BCG求解. 如果不要用BCG, 可以将cg_max_it设为0
+        //GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
     }
     else
     {
         //统一进行块形式的CG迭代
         //CG迭代求解 A * W =  RHS 
         //W存储在 V(:,w_start:w_start+w_length), RHS存储在V_tmp(:,0:w_length)
-        GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+        if(para->if_use_bcg == 1)
+        {
+            GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+        }
+        else
+        {
+            //如果不使用BCG, 因为在GCGE_CG中还要取出三个向量使用, 所以使用slepc时不能使用这种普通CG
+            for(idx=0; idx<w_length; idx++)
+            {
+                ops->GetVecFromMultiVec(V_tmp, idx, &rhs);
+                w_current_idx = w_start + idx;	
+                ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
+                GCGE_CG(A, rhs, w_current, ops, para, workspace);
+                ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
+                ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
+            }//end for idx_p      
+        }
     }//end for LinearSolver    
 }//end for this subprogram
 

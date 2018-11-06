@@ -300,3 +300,18 @@ lp64和ilp64只有在整型上有区别
 3. 使用amg+BCG好像不会对问题有任何改进, 也就是说, 精确求解W是没什么意义的.
 4. 使用-gcge_block_size可以大幅提升运行效率, 一般取为nev/4
 5. 在计算特征值非常多的情况下, gcge比lobpcg好很多, 而特征值较少时, 两者性能相当
+
+2019.11.06-1 zhangning
+1. 添加了参数 opt_rr_eig_partly, 表示是否做只计算RR中未收敛特征对的优化，默认为1
+   添加了参数 opt_bcast, 表示是否做广播前只用0号进程计算子空间特征值问题的优化，默认为1
+   1) 修改了 gcge_para.h gcge_para.c
+   2) 修改了 gcge_rayleighritz.c 添加了对这两个参数的使用
+   3) 修改了 gcge_orthogonal.c 添加了对 opt_bcast 的使用
+2. 修改了 gcge_xpw.c ,
+    1) 因为用外部求解器后再调用BCG没有好的结果，所以注释掉这里的BCG
+    2) 添加了使用普通cg还是BCG的判断,添加了参数if_use_bcg,这里也修改了gcge_para.c gcge_para.h
+3. 修改了gcge_cg.c中普通cg中对RitzVec的使用
+4. 添加了test/slepc中的三个具体的测试文件, 修改了test/slepc中的Makefile
+5. 添加了test/petsc中的两个具体的测试文件, 修改了test/petsc中的Makefile
+
+

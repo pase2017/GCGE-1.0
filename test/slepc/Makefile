@@ -10,6 +10,18 @@ MAIN1 = test_solver.c
 OBJS1 = test_solver.o
 EXE1 = ../../bin/test_solver.exe
 
+MAIN1 = test_bcg.c
+OBJS1 = test_bcg.o
+EXE1 = ../../bin/test_bcg.exe
+
+MAIN1 = test_petsc_cg.c
+OBJS1 = test_petsc_cg.o
+EXE1 = ../../bin/test_petsc_cg.exe
+
+MAIN1 = test_pcg.c
+OBJS1 = test_pcg.o
+EXE1 = ../../bin/test_pcg.exe
+
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(SLEPCINC)
 LIBS  = $(LIBGCGESLEPC) $(LIBGCGE) $(LIBSLEPC) $(LIBLAPACK) \
 	$(LIBBLAS) $(LIBGFORTRAN) -lm 

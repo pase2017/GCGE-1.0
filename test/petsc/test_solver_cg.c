@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     petsc_solver->para->ev_tol = 1e-12;//设置收敛准则
     petsc_solver->para->ev_max_it = 30;//设置GCGE最大迭代次数
     petsc_solver->para->print_part_time = 1;//设置是否打印每次迭代的时间统计信息
+    petsc_solver->para->if_use_bcg = 0;//设置不使用BCG,使用普通CG 
 
     //从命令行读入GCGE_PARA中的一些参数
     GCGE_INT error = GCGE_PARA_SetFromCommandLine(petsc_solver->para, argc, argv);
@@ -78,14 +79,6 @@ int main(int argc, char* argv[])
     //设置PETSC结构的矩阵向量操作
     GCGE_SOLVER_SetPETSCOps(petsc_solver);
 
-    //设定线性求解器
-    KSP ksp;
-    PETSC_LinearSolverCreate(&ksp, A, A);
-    PetscViewer viewer;
-    ierr = KSPView(ksp, viewer);
-    //给petsc_solver设置KSP为线性求解器
-    GCGE_SOLVER_SetPETSCOpsLinearSolver(petsc_solver, ksp);
-
     //对petsc_solver进行setup，检查参数，分配工作空间等
     GCGE_SOLVER_Setup(petsc_solver);
     //求解
@@ -96,7 +89,6 @@ int main(int argc, char* argv[])
     //释放特征值、特征向量、KSP空间
     free(eval); eval = NULL;
     VecDestroyVecs(nev, &evec);
-    KSPDestroy(&ksp);
 
     //释放矩阵空间
     ierr = MatDestroy(&A);

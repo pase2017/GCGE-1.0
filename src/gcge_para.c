@@ -57,6 +57,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->cg_rate         = 1e-2;
      //cg type: 1: 普通的形式, 2: 并行计算的形式(向量内积计算放在一起计算)
     (*para)->cg_type         = 1; 
+    (*para)->if_use_bcg      = 1; //默认使用BCG
 
     (*para)->num_iter        = 0; //output, old:-2
     (*para)->num_unlock      = 6; //output
@@ -85,6 +86,9 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->dirichlet_boundary  = 0;
 
     GCGE_STATISTIC_PARA_Create(&((*para)->stat_para));
+
+    (*para)->opt_rr_eig_partly = 1;
+    (*para)->opt_bcast = 1;
     return;
 }
 
@@ -192,6 +196,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->if_use_cg = atoi(argv[arg_index++]);
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_if_use_bcg")) 
+        {
+            arg_index++;
+            para->if_use_bcg = atoi(argv[arg_index++]);
+        }
         else if(0 == strcmp(argv[arg_index], "-gcge_cg_max_it")) 
         {
             arg_index++;
@@ -226,6 +235,16 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
         {
             arg_index++;
             para->print_result = atoi(argv[arg_index++]);
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_opt_rr_eig_partly")) 
+        {
+            arg_index++;
+            para->opt_rr_eig_partly = atoi(argv[arg_index++]);
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_opt_bcast")) 
+        {
+            arg_index++;
+            para->opt_bcast = atoi(argv[arg_index++]);
         }
         else if (0 == strcmp(argv[arg_index], "-gcge_help"))
         {
@@ -264,6 +283,8 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_print_part_time    <i>: print time of each part in gcg or not         (default: 0[1])\n");
        GCGE_Printf("  -gcge_print_para         <i>: print the parameters not                      (default: 1[0])\n");
        GCGE_Printf("  -gcge_print_result       <i>: print the final result or not                 (default: 1[0])\n");
+       GCGE_Printf("  -gcge_opt_bcast          <i>: use the optimization before bcast             (default: 1[0])\n");
+       GCGE_Printf("  -gcge_opt_rr_eig_partly  <i>: use the optimization in rr for less eigenpairs(default: 1[0])\n");
        GCGE_Printf("\n");
     }
     if (print_usage)
@@ -550,6 +571,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  max_reorth_time    : %8d, (maximun reorthogonal times)\n", para->orth_para->max_reorth_time);
        GCGE_Printf("  print_orth_zero    : %8d, (print the zero index in orthogonal or not)\n", para->orth_para->print_orth_zero);
        GCGE_Printf("  if_use_cg          : %8d, (use the internal cg or not)\n", para->if_use_cg      );
+       GCGE_Printf("  if_use_bcg         : %8d, (use the block cg or normal cg)\n", para->if_use_bcg      );
        GCGE_Printf("  cg_max_it          : %8d, (maximun numbers of cg iterations)\n", para->cg_max_it      );
        GCGE_Printf("  print_cg_error     : %8d, (print residual error in cg or not)\n", para->print_cg_error );
        GCGE_Printf("  print_eval         : %8d, (print eigenvalue in each iteration or not)\n", para->print_eval     );
@@ -566,6 +588,8 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  cg_rate            : %3.2e, (descent rate of residual in cg)\n", para->cg_rate        );
        GCGE_Printf("  multi_tol          : %3.2e, (tolerance for eigenvalue multiplicity)\n", para->multi_tol      );
        GCGE_Printf("  multi_tol_for_lock : %3.2e, (tolerance for eigenvalue multiplicity(forward))\n", para->multi_tol_for_lock);
+       GCGE_Printf("  opt_bcast          : %8d, (use the optimization before bcast or not)\n", para->opt_bcast);
+       GCGE_Printf("  opt_rr_eig_partly  : %8d, (use the optimization in rr for less eigenpairs or not)\n", para->opt_rr_eig_partly);
        GCGE_Printf("\n");
     }
 }

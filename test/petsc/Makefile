@@ -11,6 +11,8 @@ OBJS4 = test_petsc_solver_ksp.o
 OBJS5 = test_petsc_solver_ksp_given_by_user.o
 OBJS6 = test_dsyevx.o
 OBJS7 = test_solver.o
+OBJS8 = test_solver_cg.o
+OBJS9 = test_solver_petsc_cg.o
 
 EXE1  = $(GCGEBIN)/test_petsc_solver.exe 
 EXE2  = $(GCGEBIN)/test_print.exe 
@@ -19,6 +21,8 @@ EXE4  = $(GCGEBIN)/test_ksp_linear_solver_ksp.exe
 EXE5  = $(GCGEBIN)/test_petsc_solver_ksp_given_by_user.exe 
 EXE6  = $(GCGEBIN)/test_dsyevx.exe 
 EXE7  = $(GCGEBIN)/test_solver.exe 
+EXE8  = $(GCGEBIN)/test_solver_cg.exe 
+EXE9  = $(GCGEBIN)/test_solver_petsc_cg.exe 
 
 INC   = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
 LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) \
@@ -41,6 +45,8 @@ exe4:       $(EXE4)
 exe5:       $(EXE5)
 exe6:       $(EXE6)
 exe7:       $(EXE7)
+exe8:       $(EXE8)
+exe9:       $(EXE9)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -134,6 +140,18 @@ $(EXE6): $(OBJS6)
 	@echo ''
 
 $(EXE7): $(OBJS7)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE8): $(OBJS8)
+	@echo ''
+	@echo 'Creating executable bin/xx.exe'
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@echo ''
+
+$(EXE9): $(OBJS9)
 	@echo ''
 	@echo 'Creating executable bin/xx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)

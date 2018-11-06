@@ -61,7 +61,8 @@ typedef struct GCGE_PARA_ {
     GCGE_INT    if_use_cg;          //是否使用内置CG
     GCGE_INT    cg_max_it;          //CG最大迭代次数
     GCGE_DOUBLE cg_rate;            //终止CG迭代残差下降比例
-    GCGE_INT    cg_type;			  //CG迭代的类型: 1: 普通的形式, 2: 并行计算的形式(向量内积计算放在一起计算)
+    GCGE_INT    cg_type;			//CG迭代的类型: 1: 普通的形式, 2: 并行计算的形式(向量内积计算放在一起计算)
+    GCGE_INT    if_use_bcg;			//是否使用BCG: 1: BCG, 2: CG
 
     //GCGE迭代次数,因为统计的是[X,P,W]都参与计算的迭代次数，所以从-1开始
     GCGE_INT    num_iter;           //初始化为-2
@@ -71,9 +72,9 @@ typedef struct GCGE_PARA_ {
     GCGE_DOUBLE min_ind;            //最小残差的位置
     GCGE_DOUBLE sum_res;            //残差和
     GCGE_DOUBLE *res;               //残差
-    GCGE_INT dirichlet_boundary;    //是否需要进行Dirichlet边界条件的处理
+    GCGE_INT    dirichlet_boundary; //是否需要进行Dirichlet边界条件的处理
 
-    GCGE_INT    use_mpi_bcast;   //Rayleigh-Ritz中是否需要广播子空间特征向量
+    GCGE_INT    use_mpi_bcast;      //Rayleigh-Ritz中是否需要广播子空间特征向量
 
      //判定是否打印的参数
     GCGE_INT    print_eval;         //是否每次GCGE迭代后打印特征值
@@ -86,6 +87,11 @@ typedef struct GCGE_PARA_ {
     GCGE_INT    print_level;        //用打印层级来控制打印多少东西
 
     GCGE_STATISTIC_PARA *stat_para;
+
+    GCGE_INT    opt_rr_eig_partly; //是否做子空间特征值计算时只计算未收敛部分的这个优化,
+                                        //默认值为1，即RR中只计算未收敛部分
+    GCGE_INT    opt_bcast; //是否做广播子空间特征对前只让0号进程计算特征值问题的这个优化, 
+                           //默认值为1, 即只让0号进程计算，然后再广播
 
 }GCGE_PARA;
 

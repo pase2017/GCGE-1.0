@@ -226,6 +226,8 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //计算subspace_matrix的前rr_eigen_start+1到iu个特征值
     GCGE_INT    i = 0;
     GCGE_INT    rr_eigen_start = workspace->unlock[0];
+    if(para->opt_rr_eig_partly == 0)
+        rr_eigen_start = 0;
     GCGE_INT    il = rr_eigen_start; 
     //从unlock[0]开始往前判断eval[unlock[0]]这个特征值的重数
     for(i=rr_eigen_start-1; i>-1; i--)
@@ -262,11 +264,14 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //特征值与特征向量的存储位置都向后移rr_eigen_start
     
     GCGE_INT rank = 0;
-    if(para->use_mpi_bcast)
+    if(para->opt_bcast == 1)
     {
+        if(para->use_mpi_bcast)
+        {
 #if GCGE_USE_MPI
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
+        }
     }
     //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
     //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0

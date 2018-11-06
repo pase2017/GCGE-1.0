@@ -885,11 +885,14 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             //计算 M C = C Theta
             iu = w_length;
             m = iu - il + 1;
-            if(para->use_mpi_bcast)
+            if(para->opt_bcast)
             {
+                if(para->use_mpi_bcast)
+                {
 #if GCGE_USE_MPI
-                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+                    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
+                }
             }
             //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
             //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
