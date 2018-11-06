@@ -2,9 +2,9 @@
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-LIBLAPACK    = ${INTEL_DIR}/mkl/lib/intel64/libmkl_lapack95_lp64.a
-LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
-LIBGFORTRAN  = 
+LIBLAPACK    = $(GCGEHOME)/lib/liblapack.a
+LIBBLAS      = $(GCGEHOME)/lib/blas_LINUX.a
+LIBGFORTRAN  = -lgfortran
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
@@ -19,22 +19,22 @@ LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
 SLEPCINC     = $(EXTERNAL)/slepc/include
 LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
 
-HYPREINC     = ${HYPRE_DIR}/include
-LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
+HYPREINC     = $(EXTERNAL)/hypre/include
+LIBHYPRE     = $(EXTERNAL)/hypre/lib/libHYPRE.a
 
 EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
-EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE)
+EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE) $(DEBUGLIBS)
 
 ############################################################
-MPIF77       = mpiifort
-MPICC        = mpiicc
-MPICPP       = mpiicpc
+MPIF77       = mpif77
+MPICC        = mpicc
+MPICPP       = mpic++
 MPIEXEC      = mpiexec
 MPIEXECFLAGS = -np 2
 ############################################################
-VALGRIND       = 
-VALGRINDFLAGS  =
-VALGRINDFLAGSN =
+VALGRIND      = valgrind
+VALGRINDFLAGS = --tool=memcheck --leak-check=full -v --track-origins=yes --show-reachable=yes --read-var-info=yes
+VALGRINDFLAGSN = --leak-check=full -v --show-reachable=yes 
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
@@ -43,17 +43,18 @@ CC           = $(MPICC)
 CPP          = $(MPICPP)
 MAKE         = make
 
-FLINKER      = $(F77) -mkl=cluster
-CLINKER      = $(CC)  -mkl=cluster
-CPPLINKER    = $(CPP) -mkl=cluster
+FLINKER      = $(F77)
+CLINKER      = $(CC)
+CPPLINKER    = $(CPP)
 
-DEBUG        = -g
-FFLAGS       = -O3 -fPIC $(DEBUG)
-CFLAGS       = -O3 -fPIC $(DEBUG)
-CPPFLAGS     = -O3 -fPIC $(DEBUG)
+DEBUG        = -g #-DMEMWATCH -DMW_STDIO
+FFLAGS       = -O2 -fPIC $(DEBUG)
+CFLAGS       = -O2 -fPIC $(DEBUG)
+CPPFLAGS     = -O2 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
+#DEBUGLIBS    = -lmemwatch
 
 EXEC         = 
 EXECFLAGS    = 
@@ -62,13 +63,13 @@ EXECFLAGS    =
 # DEFINE for mixed code
 ############################################################
 # linking Fortran
-LIBF         = -lm
+LIBF         = -lgfortranbegin -lgfortran -lm -shared-libgcc
 # linking CPP
 LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
 # lib dir
-LDFLAGS      = -mkl=cluster
+LDFLAGS      =
 
 ############################################################
 # DEFINE dirs
