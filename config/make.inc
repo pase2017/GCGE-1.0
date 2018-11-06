@@ -2,9 +2,8 @@
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-MKLPATH      = /share/soft/intel_2018_update1/compilers_and_libraries_2018.1.163/linux/mkl/lib/intel64
-LIBLAPACK    = $(MKLPATH)/libmkl_lapack95_lp64.a
-LIBBLAS      = $(MKLPATH)/libmkl_blas95_lp64.a
+LIBLAPACK    = ${INTEL_DIR}/mkl/lib/intel64/libmkl_lapack95_lp64.a
+LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
 LIBGFORTRAN  = 
 
 ############################################################
@@ -20,8 +19,8 @@ LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
 SLEPCINC     = $(EXTERNAL)/slepc/include
 LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
 
-HYPREINC     = /share/home/hhxie/hypre/hypre-2.11.1/src/hypre/include
-LIBHYPRE     = /share/home/hhxie/hypre/hypre-2.11.1/src/hypre/lib/libHYPRE.a
+HYPREINC     = ${HYPRE_DIR}/include
+LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
 
 EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
 EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE)
@@ -49,9 +48,9 @@ CLINKER      = $(CC)  -mkl=cluster
 CPPLINKER    = $(CPP) -mkl=cluster
 
 DEBUG        = -g
-FFLAGS       = -O2 -fPIC $(DEBUG)
-CFLAGS       = -O2 -fPIC $(DEBUG)
-CPPFLAGS     = -O2 -fPIC $(DEBUG)
+FFLAGS       = -O3 -fPIC $(DEBUG)
+CFLAGS       = -O3 -fPIC $(DEBUG)
+CPPFLAGS     = -O3 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
@@ -69,7 +68,7 @@ LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
 # lib dir
-LDFLAGS      =
+LDFLAGS      = -mkl=cluster
 
 ############################################################
 # DEFINE dirs
