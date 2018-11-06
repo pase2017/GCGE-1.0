@@ -13,7 +13,7 @@ OBJS5 = test_bcg.o
 
 EXE1  = $(GCGEBIN)/test_matvec.exe 
 EXE2  = $(GCGEBIN)/test_hypre_solver.exe
-EXE3  = $(GCGEBIN)/test_hypre_solver_ls.exe
+#EXE3  = $(GCGEBIN)/test_hypre_solver_ls.exe
 EXE4  = $(GCGEBIN)/test_gcge_lobpcg.exe
 EXE5  = $(GCGEBIN)/test_bcg.exe
 
