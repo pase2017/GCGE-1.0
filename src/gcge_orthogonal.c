@@ -297,7 +297,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             current--;
             if(orth_para->print_orth_zero == 1)
             {
-                printf("In Orthogonal, there is a zero vector!, "
+                GCGE_Printf("In Orthogonal, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);	
             }//end if(orth_para->print_orth_zero == 1)	        
         }//end if(vout > orth_para->orth_zero_tol)      
@@ -637,7 +637,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
             //如果这个时候需要输出提醒信息，就输出
             if(orth_para->print_orth_zero == 1)
             {
-                printf("In OrthogonalSubspace, there is a zero vector!, "
+                GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);
             }//end if (orth_para->print_orth_zero == 1)
         }//end if (vout > orth_para->orth_zero_tol)
@@ -930,9 +930,9 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             }
             if(tmp_eval_nonzero_start)
             {
-                printf("tmp_eval_nonzero_start: %d\n", tmp_eval_nonzero_start);
+                GCGE_Printf("tmp_eval_nonzero_start: %d\n", tmp_eval_nonzero_start);
                 for(j=0; j<w_length; j++)
-                    printf("tmp_eval[%d]: %e\n", j, tmp_eval[j]);
+                    GCGE_Printf("tmp_eval[%d]: %e\n", j, tmp_eval[j]);
             }
 
             //w_length为新的非零向量个数
@@ -956,7 +956,7 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         }
         else
         {
-            printf("W all zero!\n");
+            GCGE_Printf("W all zero!\n");
             *end = start;
             i = 10;
         }
@@ -1049,7 +1049,7 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             value_inner += tmp*tmp;
          }
          value_inner = sqrt(value_inner);
-         printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+         GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
          
 
         //计算 V_tmp = [V1,V2] * subspace_dtmp
