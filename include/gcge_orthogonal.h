@@ -50,4 +50,6 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
+void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+                      void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 #endif

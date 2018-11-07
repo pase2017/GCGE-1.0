@@ -314,4 +314,8 @@ lp64和ilp64只有在整型上有区别
 4. 添加了test/slepc中的三个具体的测试文件, 修改了test/slepc中的Makefile
 5. 添加了test/petsc中的两个具体的测试文件, 修改了test/petsc中的Makefile
 
-
+2019.11.07-1 zhangning
+1. 添加了一种新的正交化方式 GCGE_SCBOrthogonal
+    这种正交化方式相比GCGE_CBOrthogonal更稳定，且比GCGE_BOrthogonal更高效，是最推荐的正交化方式
+    目前默认的正交化方式仍为最稳定的GCGE_BOrthogonal
+    要使用GCGE_SCBOrthogonal的话需要设置-gcge_w_orth_type scbgs，或者 para->w_orth_type="scbgs";
