@@ -191,6 +191,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
             //GCGE_Printf("num_init_evec = %d\n",num_init_evec);
         }while(num_init_evec < nev);
     }//end for Initialization for the eigenvectors   
+    GCGE_PrintParaInfo(para);
 
     //把用户提供的evec初值copy给V, 从evec的0到nev-1拷贝到V的0到nev-1
     mv_s[0] = 0;
@@ -508,7 +509,6 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     ops->MultiVecAxpby(1.0, RitzVec, 0.0, evec, mv_s, mv_e, ops);
 #endif
     GCGE_PrintFinalInfo(eval, para);
-    GCGE_PrintParaInfo(para);
 
 }
 
