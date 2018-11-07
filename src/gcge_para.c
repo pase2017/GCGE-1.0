@@ -39,7 +39,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交
-    (*para)->w_orth_type     = "bgs"; //使用稳定的块正交化方法
+    (*para)->w_orth_type     = "scbgs"; //使用稳定+高效的块正交化方法
     (*para)->conv_omega_norm = 0.0; //使用残差的Omega范数时，矩阵A的omega范数取多少
 
      //正交化参数
@@ -310,7 +310,7 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
      //分批计算特征值的个数: 默认情况下设置为求解特征值的个数
     if(para->block_size == 0)
     {
-        para->block_size = nev;
+        para->block_size = (nev/5 > 1)?(nev/5):1;
     }
     para->res = (GCGE_DOUBLE*)calloc(nev, sizeof(GCGE_DOUBLE));
     GCGE_INT i = 0;

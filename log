@@ -319,3 +319,5 @@ lp64和ilp64只有在整型上有区别
     这种正交化方式相比GCGE_CBOrthogonal更稳定，且比GCGE_BOrthogonal更高效，是最推荐的正交化方式
     目前默认的正交化方式仍为最稳定的GCGE_BOrthogonal
     要使用GCGE_SCBOrthogonal的话需要设置-gcge_w_orth_type scbgs，或者 para->w_orth_type="scbgs";
+2. 将block_size默认值设为 nev/5 与 1 的最大值
+3. 将w_orth_type默认值设为 scbgs
