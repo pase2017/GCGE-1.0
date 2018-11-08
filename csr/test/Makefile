@@ -47,7 +47,7 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 
 ############################################################
 
-all:	    help
+all:	help
 
 #exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9) $(EXE13)
 exe:         $(EXE13)
@@ -65,13 +65,6 @@ help:
 	@echo " "
 	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"
-	@echo " "
-
-info:
-	@echo " "
-	@echo "Summary:"
-	@echo "Executables are located in bin/"
-	@echo "Libraries   are located in lib/"
 	@echo " "
 
 run-solver:

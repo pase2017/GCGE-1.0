@@ -64,6 +64,12 @@ cleanall: clean
 	@cd $(GCGELIB);  $(RM) $(RMFLAGS) *.a
 	@cd $(GCGEINC);  $(RM) $(RMFLAGS) *.h
 
+install:
+	@echo "Create $(INSTALLDIR)/include and $(INSTALLDIR)/lib"
+	@mkdir -p  $(INSTALLDIR)
+	@$(CP) -fR $(GCGEINC) $(INSTALLDIR)
+	@$(CP) -fR $(GCGELIB) $(INSTALLDIR)
+
 help:
 	@echo " "
 	@echo "make {libs|clean|cleanlibs|help}" 
