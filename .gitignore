@@ -1,5 +1,6 @@
 ctags.sh
 tags
+.readme
 # Prerequisites
 *.d
 
