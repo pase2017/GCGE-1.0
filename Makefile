@@ -60,7 +60,7 @@ clean:
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
 
 
-cleanlibs: clean
+cleanall: clean
 	@cd $(GCGELIB);  $(RM) $(RMFLAGS) *.a
 	@cd $(GCGEINC);  $(RM) $(RMFLAGS) *.h
 

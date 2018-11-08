@@ -1,6 +1,7 @@
 ########################################################################
 GCGEHOME = ..
 include $(GCGEHOME)/config/make.inc
+.PHONY: all lib clean help
 
 ########################################################################
 FILES   = gcge_utilities.c gcge_statistics.c gcge_para.c gcge_ops.c \
