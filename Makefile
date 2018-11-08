@@ -5,7 +5,7 @@ include $(GCGEHOME)/config/make.inc
 WITH_MPI = $(findstring mpi, $(CC))
 
 install_libs =
-install_libs += $(if $(WITHMPI),  with-mpi, without-mpi) 
+install_libs += $(if $(WITHMPI),  without-mpi, with-mpi) 
 install_libs += libgcge_core libgcge_csr
 install_libs += $(if $(HYPREINC), libgcge_hypre) 
 install_libs += $(if $(PETSCINC), libgcge_petsc) 
