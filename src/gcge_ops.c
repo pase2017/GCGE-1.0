@@ -69,23 +69,24 @@ void GCGE_Default_FreeMultiVec(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS
     GCGE_INT i = 0;
     for(i=0; i<n_vec; i++)
     {
-        ops->FreeVec(&(*MultiVec)[i]);  (*MultiVec)[i] = NULL;
+       ops->FreeVec(&(*MultiVec)[i]);  (*MultiVec)[i] = NULL;
     }
     free(*MultiVec); *MultiVec = NULL;
 }
 
-void GCGE_Default_MultiVecSetRandomValue(void **multi_vec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_Default_MultiVecSetRandomValue(void **multi_vec, GCGE_INT start, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
 {
     GCGE_INT i = 0;
     void     *x;
     for(i=0; i<n_vec; i++)
     {
-        ops->GetVecFromMultiVec(multi_vec, i, &x);
+        ops->GetVecFromMultiVec(multi_vec, start + i, &x);
         ops->VecSetRandomValue(x);
-        ops->RestoreVecForMultiVec(multi_vec, i, &x);
-    }
-}
+        ops->RestoreVecForMultiVec(multi_vec, start + i, &x);
+    }//end for i iteration
+}//end for this subprogram
 
+//矩阵 mat 乘多个向量: y(:,start[1]:end[1]) = mat * x(:, start[0]:end[0]) 
 void GCGE_Default_MatDotMultiVec(void *mat, void **x, void **y, 
         GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops)
 {
@@ -96,12 +97,13 @@ void GCGE_Default_MatDotMultiVec(void *mat, void **x, void **y,
     {
         ops->GetVecFromMultiVec(x, start[0]+i, &xs);
         ops->GetVecFromMultiVec(y, start[1]+i, &ys);
-        ops->MatDotVec(mat, x[start[0]+i], y[start[1]+i]);
+        ops->MatDotVec(mat, xs, ys);
         ops->RestoreVecForMultiVec(x, start[0]+i, &xs);
         ops->RestoreVecForMultiVec(y, start[1]+i, &ys);
     }
 }
 
+//多个向量组的线性组合: y(:, start[1]:end[1]) = a*x(:,start[0]:end[0]) + b*y(:,start[1]:end[1])
 void GCGE_Default_MultiVecAxpby(GCGE_DOUBLE a, void **x, GCGE_DOUBLE b, void **y, 
         GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops)
 {
@@ -118,6 +120,7 @@ void GCGE_Default_MultiVecAxpby(GCGE_DOUBLE a, void **x, GCGE_DOUBLE b, void **y
     }
 }
 
+//对向量进行线性组合: y(:, col_y) = a*x(:,col_x) + b*y(:,col_y)
 void GCGE_Default_MultiVecAxpbyColumn(GCGE_DOUBLE a, void **x, GCGE_INT col_x, 
         GCGE_DOUBLE b, void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops)
 {
@@ -130,6 +133,8 @@ void GCGE_Default_MultiVecAxpbyColumn(GCGE_DOUBLE a, void **x, GCGE_INT col_x,
 }
 
 /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i][j] */
+//对连续的向量组进行线性组合: y(:,start[1]:end[1]) = x(:,start[0]:end[0])*a
+//a 为一个系数矩阵, 按列排列的
 void GCGE_Default_MultiVecLinearComb(void **x, void **y, GCGE_INT *start, GCGE_INT *end,
         GCGE_DOUBLE *a, GCGE_INT lda, void *dmat, GCGE_INT lddmat, struct GCGE_OPS_ *ops)
 {
@@ -140,91 +145,114 @@ void GCGE_Default_MultiVecLinearComb(void **x, void **y, GCGE_INT *start, GCGE_I
     void     *xs, *ys;
     for(idx_y=start[1]; idx_y<end[1]; idx_y++)
     {
-        ops->GetVecFromMultiVec(x, start[0], &xs);
+        //取出y的相应的列
         ops->GetVecFromMultiVec(y, idx_y,    &ys);
-
-        ops->VecAxpby(a[idx_y*lda+start[0]], xs, 0.0, ys);
-
+        //ops->VecAxpby(0.0, ys, 0.0, ys);
+	//取出x的相应的列
+        ops->GetVecFromMultiVec(x, start[0], &xs);
+	//ys = a(0,idy)*xs + 0.0*ys
+        //ops->VecAxpby(a[idx_y*lda+start[0]], xs, 0.0, ys);
+        ops->VecAxpby(a[(idx_y-start[1])*lda], xs, 0.0, ys);
+	//把xs返回给x(:,start[0])
         ops->RestoreVecForMultiVec(x, start[0], &xs);
-        
+        //下面进行迭代
         for(idx_x = start[0]+1; idx_x<end[0]; idx_x++)
         {
             ops->GetVecFromMultiVec(x, idx_x, &xs);
-            ops->VecAxpby(a[idx_y*lda+idx_x], xs, 1.0, ys);
+            ops->VecAxpby(a[(idx_y-start[1])*lda+idx_x-start[0]], xs, 1.0, ys);
             ops->RestoreVecForMultiVec(x, idx_x, &xs);
-        }
+        }//end for idy
+        //返回ys
         ops->RestoreVecForMultiVec(y, idx_y, &ys);
-    }
-}
+    }//end for idx_x
+}//end for this subprogram
 
+// lda : leading dimension of matrix a
+// a(start[0]:end[0],start[1]:end[1]) = V(:,start[0]:end[0])^T * W(:,start[1]:end[1])
+// 做内积得到值是存在矩阵a的相应的位置
 void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is_sym, 
         GCGE_INT *start, GCGE_INT *end, GCGE_INT lda, struct GCGE_OPS_ *ops)
 {
+    //lda表示做完相减存储到V的位置？
     GCGE_INT iv = 0, iw = 0;
     GCGE_DOUBLE *p = a;
     void     *vs, *ws;
-    /* TODO some error */
+    /* TODO some error 确实*/
     if(strcmp(is_sym, "sym") == 0)
     {
-        GCGE_INT length = end[0] - start[0];
-        for(iw=0, p=a; iw<length; iw++)
+        //表示矩阵a是对称的，并且只存储他的上三角部分
+        GCGE_INT length = end[1] - start[1];
+        //p = a;
+        //iw: 表示的是列号
+        for(iw=0; iw<length; iw++)
         {
             ops->GetVecFromMultiVec(W, iw+start[1], &ws);
+	    //计算的是矩阵的上三角部分
             for(iv=0; iv<=iw; iv++, p++)
             {
                 ops->GetVecFromMultiVec(V, iv+start[0], &vs);
                 ops->VecInnerProd(vs, ws, p);
                 ops->RestoreVecForMultiVec(V, iv+start[0], &vs);
-//		printf ( "iw = %d, iv = %d\n", iw, iv );
-            }
+		//printf ( "iw = %d, iv = %d\n", iw, iv );
+            }//end for iv
             ops->RestoreVecForMultiVec(W, iw+start[1], &ws);
-            p += lda-(iw+1);
-        }
-        //对称化
-//	printf ( "-----------------\n" );
+            p += lda - (iw+1);
+        }//end for iw
+        //对称化: 也就是产生矩阵的下三角部分，这里只需要用到对称行就可以直接得到
+	//printf ( "-----------------\n" );
         for(iw=0; iw<length; iw++)
         {
             for(iv=iw+1; iv<length; iv++)
             {
-//		printf ( "iw = %d, iv = %d\n", iw, iv );
+		//printf ( "iw = %d, iv = %d\n", iw, iv );
+		//a(iv,iw) = a(iw,iv)
                 a[iw*lda+iv] = a[iv*lda+iw];
-            }
-        }
-    }
+            }//end for iv（行号）
+        }//end for iw(列号)
+    }//处理完对称矩阵的情况
     else
     {
+        //这里是处理非对称矩阵情况
+        //jvw： 记录的是每一列，我们没有计算的那些元素的个数
         GCGE_INT jvw = lda - (end[0] - start[0]);
-        for(iw=start[1], p=a; iw<end[1]; iw++)
+         //p = a;
+        for(iw=start[1]; iw<end[1]; iw++)
         {
+	    //iw列
             ops->GetVecFromMultiVec(W, iw, &ws);
+	    //iv行：从 start[0]到end[0]都需要计算
             for(iv=start[0]; iv<end[0]; iv++, p++)
             {
                 ops->GetVecFromMultiVec(V, iv, &vs);
-                ops->VecInnerProd(V[iv], W[iw], p);
+                ops->VecInnerProd(vs, ws, p);
                 ops->RestoreVecForMultiVec(V, iv, &vs);
-            }
+            }//end for iv
             ops->RestoreVecForMultiVec(W, iw, &ws);
+	    //把p的位置进行相应地移动
             p += jvw;
-        }
-    }
+        }//end for iw
+    }//处理完了非对称的情况
+}//end for this subprogram
 
-}
 
+//把V_1和V_2的相应的列组交换: 即： V_1(:,start[0]:end[0])与V_2(:,start[1]:end[1])相互狡猾
 void GCGE_Default_MultiVecSwap(void **V_1, void **V_2, GCGE_INT *start, GCGE_INT *end, 
         struct GCGE_OPS_ *ops)
 {
     GCGE_INT i = 0;
-    GCGE_INT size = end[0]-start[0];
+    GCGE_INT size = end[0] - start[0];
     void     *vs, *ws;
     for(i=0; i<size; i++)
     {
+      /*TODO*/
+      //这里交换是否可以省掉一步???
         ops->GetVecFromMultiVec(V_1, start[0]+i, &vs);
         ops->GetVecFromMultiVec(V_2, start[1]+i, &ws);
         ops->RestoreVecForMultiVec(V_1, start[0]+i, &ws);
         ops->RestoreVecForMultiVec(V_2, start[1]+i, &vs);
     }
 }
-
+//进行稠密矩阵特征值求解 (这里还是按照Laplack的要求进行设置的)
 void GCGE_Default_DenseMatEigenSolver(char *jobz, char *range, char *uplo, 
         GCGE_INT *nrows, GCGE_DOUBLE *a, GCGE_INT *lda, 
         GCGE_DOUBLE *vl, GCGE_DOUBLE *vu, GCGE_INT *il, GCGE_INT *iu, 
@@ -234,6 +262,8 @@ void GCGE_Default_DenseMatEigenSolver(char *jobz, char *range, char *uplo,
         GCGE_INT *iwork, GCGE_INT *liwork, 
         GCGE_INT *ifail, GCGE_INT *info)
 {
+    //调用Laplack的subroutine进行计算dsyevx_
+    //未来还可以测试dsyevd_
     dsyevx_(jobz, range, uplo, nrows, a, lda, vl, vu, il, iu, 
             abstol, nev, eval, evec, lde, work, lwork, 
             iwork, ifail, info);
@@ -259,6 +289,7 @@ void GCGE_Default_DenseMatEigenSolver(char *jobz, char *range, char *uplo,
     */
 }
 
+//两个稠密矩阵相乘，这里调用BLAS的Subroutine
 void GCGE_Default_DenseMatDotDenseMat(char *transa, char *transb, 
         GCGE_INT    *nrows, GCGE_INT    *ncols, GCGE_INT    *mid, 
         GCGE_DOUBLE *alpha, GCGE_DOUBLE *a,     GCGE_INT    *lda, 
@@ -269,6 +300,7 @@ void GCGE_Default_DenseMatDotDenseMat(char *transa, char *transb,
             alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
+//两个对称矩阵的乘积，调用BLAS的Subroutine
 void GCGE_Default_DenseSymMatDotDenseMat(char *side, char *uplo, 
         GCGE_INT    *nrows, GCGE_INT    *ncols,
         GCGE_DOUBLE *alpha, GCGE_DOUBLE *a,   GCGE_INT    *lda,
@@ -279,7 +311,7 @@ void GCGE_Default_DenseSymMatDotDenseMat(char *side, char *uplo,
            b, ldb, beta, c, ldc);
 }
 
-
+//创建OPS的一个向量，进行初始的设置
 void GCGE_OPS_Create(GCGE_OPS **ops)
 {
     *ops = (GCGE_OPS*)malloc(sizeof(GCGE_OPS));
@@ -311,10 +343,10 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->DenseMatDestroy = NULL;
     (*ops)->LinearSolver = NULL;
 }
-
+//OPS的setup: 主要是进行对OPS的赋值， 同时也判断赋值是否充足和合理了
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
 {
-    GCGE_INT error;
+    GCGE_INT error = 0;
     if(ops->MatDotVec == NULL)
     {
         error = 1;
@@ -434,4 +466,8 @@ void GCGE_OPS_Free(GCGE_OPS **ops)
     free(*ops); *ops = NULL;
 }
 
+void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_workspace)
+{
+    ops->linear_solver_workspace = linear_solver_workspace;
+}
 

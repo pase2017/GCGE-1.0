@@ -91,3 +91,23 @@ char* GCGE_GetCharFromCommandLine(const char *para, GCGE_INT argc, char* argv[])
     return charpara;
 }
 
+
+void GCGE_Printf(char *fmt, ...)
+{
+#if GCGE_USE_MPI
+    GCGE_INT myrank = -1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    if(0 == myrank) {
+        va_list vp;
+        va_start(vp, fmt);
+        vprintf(fmt, vp);
+        va_end(vp);
+    }
+#else
+    va_list vp;
+    va_start(vp, fmt);
+    vprintf(fmt, vp);
+    va_end(vp);
+#endif
+}
+

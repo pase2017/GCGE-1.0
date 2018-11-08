@@ -46,6 +46,7 @@ void GCGE_PART_TIME_Create(GCGE_PART_TIME **part_time)
     (*part_time) = (GCGE_PART_TIME*)malloc(sizeof(GCGE_PART_TIME));
     (*part_time)->w_line_time = 0.0;
     (*part_time)->x_axpy_time = 0.0;
+    (*part_time)->x_orth_time = 0.0;
     (*part_time)->p_orth_time = 0.0;
     (*part_time)->p_axpy_time = 0.0;
     (*part_time)->w_orth_time = 0.0;

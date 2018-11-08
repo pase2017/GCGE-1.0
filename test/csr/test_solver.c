@@ -29,8 +29,9 @@
 
 int main(int argc, char* argv[])
 {
-//    mwInit();
+    //    mwInit();
     srand((unsigned)time(NULL));
+    //创建
     GCGE_SOLVER *solver;
     GCGE_INT help = GCGE_SOLVER_Create(&solver, argc, argv);
     if(help)
@@ -40,21 +41,27 @@ int main(int argc, char* argv[])
     }
 
     //创建矩阵
-const char *file_A = "../data/testA";
-const char *file_B = "../data/testB";
-//    const char *file_A = "../data/A_3.txt";
-//    const char *file_B = "../data/M_3.txt";
+    //const char *file_A = "../data/testA";
+    //const char *file_B = "../data/testB";
+    const char *file_A = "../data/A_5.txt";
+    const char *file_B = "../data/M_5.txt";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_MAT *B = CSR_ReadMatFile(file_B);
 
     /* TODO should be modidfied */
-//    int nev = GCGE_SOLVER_GetNumEigen(solver);
-//    GCGE_SOLVER_SetNumEigen(solver, nev);
-    solver->para->nev = 3;
+    //    int nev = GCGE_SOLVER_GetNumEigen(solver);
+    //    GCGE_SOLVER_SetNumEigen(solver, nev);
+    solver->para->nev = 10;
+    solver->para->ev_tol = 1e-8;
+    solver->para->orth_para->print_orth_zero = 1;
+    solver->para->dirichlet_boundary = 1;
     int nev = solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double));
     CSR_VEC **evec = (CSR_VEC**)malloc(nev*sizeof(CSR_VEC*));
+    solver->para->cg_max_it = 10;
+    solver->para->ev_max_it = 30;
     int i = 0; 
+    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
     for(i=0; i<nev; i++)
     {
         CSR_BuildVecByMat(A, evec+i);
@@ -66,28 +73,29 @@ const char *file_B = "../data/testB";
     GCGE_SOLVER_SetEigenvalues(solver, eval);
     GCGE_SOLVER_SetEigenvectors(solver, (void**)evec);
     /* TODO  */
-//    GCGE_SOLVER_SetEigenpaires(solver, eval);
+    //    GCGE_SOLVER_SetEigenpaires(solver, eval);
 
     //setup and solve
     GCGE_SOLVER_Setup(solver);
+    printf("line 80\n");
     GCGE_SOLVER_Solve(solver);
     GCGE_SOLVER_Free(&solver);
 
-    printf ( "A\n" );
-    CSR_PrintMat(A);
-    printf ( "B\n" );
-    CSR_PrintMat(B);
-    printf ( "lambda\n" );
-    for(i=0; i<nev; i++)
-    {
-        printf("eval[%d] = %18.15lf\n", i, eval[i]);
-    }
-    printf ( "evec\n" );
-    for(i=0; i<nev; i++)
-    {
-        CSR_PrintVec(evec[i]);
-    }
-    
+    //printf ( "A\n" );
+    //CSR_PrintMat(A);
+    //printf ( "B\n" );
+    //CSR_PrintMat(B);
+    //printf ( "lambda\n" );
+    //for(i=0; i<nev; i++)
+    //{
+    //    printf("eval[%d] = %18.15lf\n", i, eval[i]);
+    //}
+    //printf ( "evec\n" );
+    //for(i=0; i<nev; i++)
+    //{
+    //    CSR_PrintVec(evec[i]);
+    //}
+
 
     //释放矩阵空间
     CSR_MatFree(&A);
@@ -100,6 +108,6 @@ const char *file_B = "../data/testB";
     free(eval); eval = NULL;
     //释放特征对空间
 
-//    mwTerm();
+    //    mwTerm();
     return 0;
 }

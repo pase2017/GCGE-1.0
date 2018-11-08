@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
     }
 
     //创建矩阵
-    const char *file_A = "../data/testA";
-    const char *file_B = "../data/testB";
+    const char *file_A = "../test/data/testA";
+    const char *file_B = "../test/data/testB";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_MAT *B = CSR_ReadMatFile(file_B);
 
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     int start = 0, end = 2;
     /* SHOULD be modified to ops */
     GCGE_Orthogonal((void **)multi_vec, start, &end, (void *)B, 
-	  solver->ops, solver->para->orth_para, solver->workspace);
+	  solver->ops, solver->para->orth_para, solver->workspace->V_tmp, solver->workspace->subspace_dtmp);
 
     for(k=0; k<num_vec; k++)
     {
@@ -102,10 +102,13 @@ int main(int argc, char* argv[])
     
     double entries[6] = {0.0, 1.0, 2.0, 1.0, 2.0, 3.0};
     end = 2;
-    GCGE_OrthogonalSubspace((double *)entries, 0, &end, 3, 
-	  NULL, -1, solver->para->orth_para, solver->workspace);
+    
+    //  void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+    //  void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
+    GCGE_OrthogonalSubspace((double *)entries, 3, 0, &end,
+	  NULL, -1, solver->para->orth_para);
     printf ( "entries\n" );
-    printf ( "%f\t%f\t%f\n%f\t%f\t%f\n", 
+    printf ( "%16.5f\t%10.15f\t%10.15f\n%10.15f\t%10.15f\t%10.15f\n", 
 	  entries[0], entries[1], entries[2], 
 	  entries[3], entries[4], entries[5]  );
 

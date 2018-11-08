@@ -32,13 +32,15 @@ int main(int argc, char* argv[])
     srand((unsigned)time(NULL));
 
     //创建矩阵
-    const char *file_A = "../data/testA";
-    const char *file_B = "../data/testB";
+    //const char *file_A = "../test/data/testA";
+    //const char *file_B = "../test/data/testB";
+    const char *file_A = "../test/data/A_5.txt";
+    const char *file_B = "../test/data/M_5.txt";
     CSR_MAT *A = CSR_ReadMatFile(file_A);
     CSR_MAT *B = CSR_ReadMatFile(file_B);
 
-    CSR_PrintMat(A);
-    CSR_PrintMat(B);
+    //CSR_PrintMat(A);
+    //CSR_PrintMat(B);
 
     CSR_VEC *rhs;
     CSR_BuildVecByMat(A, &rhs);
@@ -47,7 +49,8 @@ int main(int argc, char* argv[])
     int i;
     for(i=0; i<rhs->size; i++)
     {
-       rhs->Entries[i] = 10*rand()/(RAND_MAX+1.0);
+       //rhs->Entries[i] = 10*rand()/(RAND_MAX+1.0);
+       rhs->Entries[i] = 1.0;
     }
 
     CSR_VEC *x;
@@ -59,11 +62,11 @@ int main(int argc, char* argv[])
         CSR_BuildVecByMat(A, vec_tmp+i);
     }
 
-    printf ( "Ax=rhs\n" );
-    printf ( "A\n" );
-    CSR_PrintMat(A);
-    printf ( "rhs\n" );
-    CSR_PrintVec(rhs);
+    //printf ( "Ax=rhs\n" );
+    //printf ( "A\n" );
+    //CSR_PrintMat(A);
+    //printf ( "rhs\n" );
+    //CSR_PrintVec(rhs);
 
     GCGE_OPS *ops;
     GCGE_OPS_Create(&ops);
@@ -73,15 +76,22 @@ int main(int argc, char* argv[])
     GCGE_PARA_Setup(para);
     /* Should op->SolveLinearEquations */
     /* Should ls_para linear_solver_para */
+    for(i=0; i<x->size; i++)
+    {
+       //rhs->Entries[i] = 10*rand()/(RAND_MAX+1.0);
+       x->Entries[i] = 0.0;
+    }
     GCGE_CG((void *)A, (void *)rhs, (void *)x, ops, para, (void **)vec_tmp);
 
-    printf ( "x\n" );
-    CSR_PrintVec(x);
+    //printf ( "x\n" );
+    //CSR_PrintVec(x);
     printf ( "rhs - Ax\n" );
     ops->MatDotVec((void *)A, (void *)x, (void *)vec_tmp[0]);
-    ops->VecAxpby(-1, (void *)vec_tmp[0], 1, (void *)rhs);
-    CSR_PrintVec(rhs);
-
+    ops->VecAxpby(-1.0, (void *)vec_tmp[0], 1.0, (void *)rhs);
+    //CSR_PrintVec(rhs);
+    GCGE_DOUBLE error;
+    ops->VecInnerProd(rhs, rhs, &error);
+    printf("the final error: %10.5f\n",sqrt(error));
     GCGE_PARA_Free(&para);
     GCGE_OPS_Free(&ops);
 

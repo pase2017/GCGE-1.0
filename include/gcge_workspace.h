@@ -22,13 +22,19 @@
 
 #include "gcge_para.h"
 #include "gcge_ops.h"
-
+//workspace 主要是存储在算法中的内存空间和表征算法中的参数
 typedef struct GCGE_WORKSPACE_ {
     //向量工作空间
+    GCGE_INT   V_size;
+    GCGE_INT   V_tmp_size;
+    GCGE_INT   CG_p_size;
+    GCGE_INT   CG_r_size;
+    GCGE_INT   RitzVec_size;
     void       **V; //V用于存储[X,P,W]基底
     void       **V_tmp; //V_tmp用作临时的向量存储空间
     /* TODO */
     void       **RitzVec; //RitzVec用于存储Ritz向量
+    void       **evec; //evec为用户给的特征向量空间，大小为nev
 
     void       **CG_p; //CG迭代中的p向量
     void       **CG_r; //CG迭代中的r向量
@@ -43,6 +49,7 @@ typedef struct GCGE_WORKSPACE_ {
 
     GCGE_INT    conv_bs; //全部收敛的批次的特征值个数
     GCGE_INT    unconv_bs; //本批次中未收敛的特征值个数
+    GCGE_INT    num_soft_locked_in_last_iter; //上次迭代中已收敛的特征值个数
 
     //子空间操作用到的工作空间
     void        *dense_matrix; //稠密子空间矩阵

@@ -2,9 +2,11 @@
 GCGEHOME = ../../..
 include $(GCGEHOME)/config/make.inc
 
+CC      = $(MPICC)
+CLINKER = $(MPICC)
 ########################################################################
-OBJS = xx.o xxx.o 
-INC  = -I$(APPINC) -I$(GCGEINC)
+OBJS = gcge_app_hypre.o
+INC  = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC)  -DHAVE_CONFIG_H -DHYPRE_TIMING
 LIB  = $(LIBGCGEHYPRE)
 
 ########################################################################

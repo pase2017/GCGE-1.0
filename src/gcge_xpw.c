@@ -44,7 +44,8 @@
  */
 //计算RitzVec = V*subspace_evec
 //V是用来计算Ritz向量的基底向量组(GCGE_Vec),RitzVec是计算得到的Ritz向量(GCGE_Vec)
-void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **RitzVec, 
+void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **X, 
+        GCGE_INT size_X, GCGE_INT size_V,
         GCGE_OPS *ops, GCGE_WORKSPACE *workspace)
 {
     /* TODO */
@@ -52,15 +53,20 @@ void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **RitzVec,
     GCGE_DOUBLE    t1 = GCGE_GetTime();
 #endif
     GCGE_INT i = 0;
-    GCGE_INT dim_v = workspace->dim_xpw;
-    GCGE_INT dim_x = workspace->dim_x;
+    GCGE_INT dim_v = size_V;
+    GCGE_INT dim_x = size_X;
     GCGE_INT start[2];
     GCGE_INT end[2];
-    start[0] = 0;
+
+    //使用V(:,start_x:dim_v)线性组合得到X(:,start_x:dim_x)
+    //线性组合系数从start行start列开始
+    GCGE_INT start_x = workspace->num_soft_locked_in_last_iter;
+    start[0] = start_x;
     end[0]   = dim_v;
-    start[1] = 0;
+    start[1] = start_x;
     end[1]   = dim_x;
-    ops->MultiVecLinearComb(V, RitzVec, start, end, subspace_evec, dim_v, NULL, 0, ops);
+    ops->MultiVecLinearComb(V, X, start, end, subspace_evec+start_x*dim_v+start_x,
+            dim_v, NULL, 0, ops);
 #if 0 
     GCGE_DOUBLE t2 = GCGE_GetTime();
     //统计计算Rtiz向量时间
@@ -112,24 +118,25 @@ void GCGE_ComputeX(void **V, GCGE_DOUBLE *subspace_evec, void **RitzVec,
 void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
-    GCGE_INT w_start  = workspace->dim_xp; //W向量在V空间中的起始位置
-    GCGE_INT w_length = workspace->unconv_bs; //W的向量个数
-    GCGE_INT *unlock  = workspace->unlock; //未收敛的编号
-    void     **V_tmp  = workspace->V_tmp;  //临时空间，用于存储rhs以及CG迭代使用
-    void     *rhs;                         //线性方程组求解时的右端项
-    void     *x_current;                   //当前操作的X向量
-    void     *w_current;                    //当前操作的W向量
-    //rhs = V_tmp(:,0);
-    ops->GetVecFromMultiVec(V_tmp, 0, &rhs);
+    GCGE_INT w_start  = workspace->dim_xp;     //W向量在V空间中的起始位置
+    GCGE_INT w_length = workspace->unconv_bs;  //W的向量个数
+    GCGE_INT *unlock  = workspace->unlock;     //未收敛的编号
+    void     **V_tmp  = workspace->V_tmp;      //临时空间，用于存储rhs以及CG迭代使用
+    void     *rhs;                             //线性方程组求解时的右端项
+    void     *x_current;                       //当前操作的X向量
+    void     *w_current;                       //当前操作的W向量
+
 
     GCGE_INT idx = 0;
     GCGE_INT x_current_idx = 0;
     GCGE_INT w_current_idx = 0;
-
+    //先把W方程的右端项，初值都计算好
     for(idx=0; idx<w_length; idx++)
     {
+        //rhs = V_tmp(:,0);
+        ops->GetVecFromMultiVec(V_tmp, idx, &rhs);
         x_current_idx = unlock[idx];
-        w_current_idx = w_start + idx;
+        w_current_idx = w_start + idx;	
         ops->GetVecFromMultiVec(V, x_current_idx, &x_current);
         ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
         // B == NULL，那么 rhs = lambda * x_current
@@ -146,28 +153,65 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
         //赋初值
         if(fabs(eval[x_current_idx]) <= 1.0)
         {
+            //如果lambda <= 1.0, rhs = lambda * rhs
             ops->VecAxpby(0.0, rhs, eval[x_current_idx], rhs);
+            //给CG迭代赋初值： w = x; (A*x = lambda *B *x)
             ops->VecAxpby(1.0, x_current, 0.0, w_current);	  
         }
         else
         {
+            //当lambda>1.0的时候，定义初值解为: 1/lambda*x; 
+            //线性方程: (A*(x/lambda) = B * x)
             ops->VecAxpby(1.0/eval[x_current_idx], x_current, 0.0, w_current);	  
-        }                
-        //CG迭代求解 A * W = lambda * B * X          
-        //V_tmp一定要从 1 开始设置 CG迭代中的 r 和 p
-        if(ops->LinearSolver)
-        {
-            ops->LinearSolver(A, rhs, w_current, ops);
-        }
-        else
-        {
-            GCGE_CG(A, rhs, w_current, ops, para, workspace);
         }
         //再把x_current 和 w_current 返回回去
         ops->RestoreVecForMultiVec(V, x_current_idx, &x_current);
         ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
+        //把rhs返回回去
+        ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
     }//for(idx=0; idx<w_length; idx++)
-    ops->RestoreVecForMultiVec(V_tmp, 0, &rhs);
+
+    //下面统一进行线性方程的求解           
+    //用户提供了解法器，就用用户的
+    //W存储在 V(:,w_start:w_start+w_length), RHS存储在V_tmp(:,0:w_length)
+    if(ops->LinearSolver)
+    {
+        //这里是直接调用用户的解法器，期望未来用户也能提供块形式的解法器（统一进行数据广播的形式）
+        for(idx=0; idx<w_length; idx++)
+        {
+            ops->GetVecFromMultiVec(V_tmp, idx, &rhs);
+            w_current_idx = w_start + idx;	
+            ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
+            ops->LinearSolver(A, rhs, w_current, ops);
+            ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
+            ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
+        }//end for idx_p      
+	    //如果有外部求解器, 解完后继续用BCG求解. 如果不要用BCG, 可以将cg_max_it设为0
+        //GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+    }
+    else
+    {
+        //统一进行块形式的CG迭代
+        //CG迭代求解 A * W =  RHS 
+        //W存储在 V(:,w_start:w_start+w_length), RHS存储在V_tmp(:,0:w_length)
+        if(para->if_use_bcg == 1)
+        {
+            GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+        }
+        else
+        {
+            //如果不使用BCG, 因为在GCGE_CG中还要取出三个向量使用, 所以使用slepc时不能使用这种普通CG
+            for(idx=0; idx<w_length; idx++)
+            {
+                ops->GetVecFromMultiVec(V_tmp, idx, &rhs);
+                w_current_idx = w_start + idx;	
+                ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
+                GCGE_CG(A, rhs, w_current, ops, para, workspace);
+                ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
+                ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
+            }//end for idx_p      
+        }
+    }//end for LinearSolver    
 }//end for this subprogram
 
 
@@ -212,13 +256,23 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
  *  GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, orth_para)
  *  p_ncols = p_end - p_start
  *
- * >V线性组合得到P向量，存放在V_tmp中
+ * >V线性组合得到X中看作重特征值的特征向量，存放在V_tmp中
+ *  x_end_in_V_tmp = p_start-nev
  *  mv_s = { 0, 0 }
- *  mv_e = { ldc, p_ncols }
+ *  mv_e = { ldc, x_end_in_V_tmp }
  *  MultiVecLinearComb(V, V_tmp, mv_s, mv_e, px, ldc, NULL, -1, ops)
+ * >V线性组合得到P向量，存放在V_tmp中
+ *  p_end_in_V_tmp  = x_end_in_V_tmp + p_ncols
+ *  mv_s = { 0, x_end_in_V_tmp }
+ *  mv_e = { ldc, p_end_in_V_tmp }
+ *  MultiVecLinearComb(V, V_tmp, mv_s, mv_e, px, ldc, NULL, -1, ops)
+ *  把V_tmp与V中X中看作重特征值的特征向量的部分进行指针交换
  *  把V_tmp与V中P的部分进行指针交换
- *  mv_s = { p_start, 0 }
- *  mv_e = { p_end, p_ncols }
+ *  mv_s = { nev, 0 }
+ *  mv_e = { p_end, p_end_in_V_tmp }
+ *  MultiVecSwap(V, V_tmp, mv_s, mv_e, ops)
+ *  mv_s = { nev, 0 }
+ *  mv_e = { p_start, p_ncols }
  *  MultiVecSwap(V, V_tmp, mv_s, mv_e, ops)
  *
  * > out : 更新 dim_xp
@@ -274,9 +328,40 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     }
     //现在得到了与[X,P]相对应的coeff矩阵的初始向量
     //对coef的p_start到p_end列进行正交化，会修改p_end
+    /* 对稠密矩阵 C 表示连续的已收敛的locked部分
+     * 此时子空间特征向量矩阵有下面的形式
+     *
+     *  CC  XC  PC
+     *  CN  XN  PN
+     *  CP  XP  PP
+     *  CW  XW  PW
+     *
+     * XC 表示 XX 中 未收敛的特征向量的连续的已收敛的locked部分
+     * PC 表示 PX 中 连续的已收敛的locked部分
+     * XN 表示 [XX^T,XP^T,XW^T]^T 中 
+     *         未收敛的特征向量的第一个未收敛的及之后的部分
+     * PN 表示 PX 中 第一个未收敛的及之后的部分
+     * CC,CN,CP,CW表示 [XX^T,XP^T,XW^T]^T 中已收敛的特征向量的部分
+     *
+     * 对其中的
+     *
+     *  XN  PN
+     *  XP  PP
+     *  XW  PW
+     *
+     * 部分进行正交化
+     *
+     */
+    // orth_start_row 表示从稠密矩阵的哪一行开始正交化,即PN的起始行号
+    GCGE_INT orth_start = workspace->num_soft_locked_in_last_iter;
+    // orth_length 表示 进行正交化的行数
+    GCGE_INT orth_length = ldc - orth_start;
+    p_start -= orth_start;
     p_end = p_start + p_ncols;
-    GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, para->orth_para);
+    GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 
+            orth_length, p_start, &p_end, NULL, -1, para->orth_para);
     p_ncols = p_end - p_start;
+    p_end += orth_start;
 
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
@@ -284,17 +369,26 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     para->stat_para->part_time_total->p_orth_time += t2-t1;
 #endif
     //V线性组合得到P向量，存放在V_tmp中
-    mv_s[0] = 0;
-    mv_s[1] = 0;
+    //V线性组合得到X中看作重特征值的部分特征向量，存放在V_tmp中
+    GCGE_INT nev = para->nev;
+    GCGE_INT p_end_in_V_tmp = 0;
+    p_end_in_V_tmp = p_end - nev;
+
+    //线性组合的基底向量为V(:,orth_start:ldc)
+    mv_s[0] = orth_start;
     mv_e[0] = ldc;
-    mv_e[1] = p_ncols;
-    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, px, ldc, NULL, -1, ops);
+    mv_s[1] = 0;
+    mv_e[1] = p_end_in_V_tmp;
+    //线性组合的系数从第orth_start行开始
+    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, coef+nev*ldc+orth_start, 
+            ldc, NULL, -1, ops);
 
     //把V_tmp与V中P的部分进行指针交换
-    mv_s[0] = p_start;
+    //把V_tmp与V中X看作重特征值的部分特征向量的部分进行指针交换
+    mv_s[0] = nev;
     mv_s[1] = 0;
     mv_e[0] = p_end;
-    mv_e[1] = p_ncols;
+    mv_e[1] = p_end_in_V_tmp;
     ops->MultiVecSwap(V, V_tmp, mv_s, mv_e, ops);
 
     //更新workspace中的dim_xp

@@ -20,7 +20,7 @@
 #define  _GCGE_OPS_H_
 
 #include "gcge_type.h"
-
+//把每一个操作都写好，这样以后进行算法设计的时候才能方便。
 
 typedef struct GCGE_OPS_ {
 
@@ -59,14 +59,14 @@ typedef struct GCGE_OPS_ {
     void (*FreeMultiVec)            (void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
 
     /* TODO */
-    void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
+    void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT start, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
     void (*MatDotMultiVec)          (void *mat, void **x, void **y, GCGE_INT *start, GCGE_INT *end, 
                                      struct GCGE_OPS_ *ops);
     void (*MultiVecAxpby)           (GCGE_DOUBLE a, void **x, GCGE_DOUBLE b, void **y, 
                                      GCGE_INT *start, GCGE_INT *end, struct GCGE_OPS_ *ops);
     void (*MultiVecAxpbyColumn)     (GCGE_DOUBLE a, void **x, GCGE_INT col_x, GCGE_DOUBLE b, 
                                      void **y, GCGE_INT col_y, struct GCGE_OPS_ *ops);
-    /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i][j] */
+    /* vec_y[j] = \sum_{i=sx}^{ex} vec_x[i] a[i-sx][j-sy] */
     void (*MultiVecLinearComb)      (void **x, void **y, GCGE_INT *start, GCGE_INT *end,
                                      GCGE_DOUBLE *a, GCGE_INT lda, 
                                      void *dmat, GCGE_INT lddmat, struct GCGE_OPS_ *ops);
@@ -78,6 +78,7 @@ typedef struct GCGE_OPS_ {
     /* TODO kernal function should use this op to get j-th vector */
     void (*GetVecFromMultiVec)      (void **V, GCGE_INT j, void **x);
     void (*RestoreVecForMultiVec)   (void **V, GCGE_INT j, void **x);
+    void (*SetDirichletBoundary)(void**Vecs, GCGE_INT nev, void* A, void* B);
 
 
     /* DEEP option */
@@ -228,4 +229,5 @@ void GCGE_OPS_Create(GCGE_OPS **ops);
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops);
 void GCGE_OPS_Free(GCGE_OPS **ops);
 
+void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_workspace);
 #endif

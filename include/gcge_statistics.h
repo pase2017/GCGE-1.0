@@ -22,6 +22,7 @@
 
 typedef struct GCGE_PART_TIME_ {
     GCGE_DOUBLE x_axpy_time;
+    GCGE_DOUBLE x_orth_time; 
     GCGE_DOUBLE p_axpy_time;
     GCGE_DOUBLE p_orth_time;
     GCGE_DOUBLE w_line_time; /* linear solver */
@@ -56,3 +57,4 @@ void GCGE_PART_TIME_Free  (GCGE_PART_TIME **part_time);
 void GCGE_OPS_TIME_COUNT_Create(GCGE_OPS_TIME_COUNT **ops_time_count);
 void GCGE_OPS_TIME_COUNT_Free  (GCGE_OPS_TIME_COUNT **ops_time_count);
 #endif
+
