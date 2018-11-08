@@ -27,8 +27,10 @@ typedef struct GCGE_ORTH_PARA_ {
     //正交化用到的参数
     GCGE_DOUBLE orth_zero_tol;     //确定正交化中出现０向量的阈值
     GCGE_DOUBLE reorth_tol;        //确定是否进行重正交化的阈值
+    GCGE_DOUBLE scbgs_reorth_tol;  //确定SCB正交化中是否进行重正交化的阈值
     GCGE_DOUBLE criterion_tol;     //确定是否进行块正交化，当sum_res小于这个值的时候进行单个向量正交化
     GCGE_INT    max_reorth_time;   //最大的重正交化次数
+    GCGE_INT    scbgs_wself_max_reorth_time; //SCB正交化中自身的最多重正交化次数
     GCGE_INT    print_orth_zero;   //print_orthzero确定是否打印正交化过程中出现0向量的信息,0:不打印，1:打印
 
 }GCGE_ORTH_PARA;

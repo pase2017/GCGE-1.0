@@ -44,11 +44,13 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
      //正交化参数
     (*para)->orth_para = (GCGE_ORTH_PARA *)malloc(sizeof(GCGE_PARA));
-    (*para)->orth_para->orth_zero_tol   = 1e-16;
-    (*para)->orth_para->reorth_tol      = 0.75;
-    (*para)->orth_para->max_reorth_time = 3;
-    (*para)->orth_para->criterion_tol   = 1e-6;
-    (*para)->orth_para->print_orth_zero = 0;
+    (*para)->orth_para->orth_zero_tol    = 1e-16;
+    (*para)->orth_para->reorth_tol       = 0.75;
+    (*para)->orth_para->scbgs_reorth_tol = 1e-16;
+    (*para)->orth_para->max_reorth_time  = 3;
+    (*para)->orth_para->scbgs_wself_max_reorth_time = 1;
+    (*para)->orth_para->criterion_tol    = 1e-6;
+    (*para)->orth_para->print_orth_zero  = 0;
 
     (*para)->multi_tol       = 0.2;
     (*para)->multi_tol_for_lock = 1e-6;
@@ -171,10 +173,20 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->orth_para->reorth_tol = atof(argv[arg_index++]);
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_scbgs_reorth_tol")) 
+        {
+            arg_index++;
+            para->orth_para->scbgs_reorth_tol = atof(argv[arg_index++]);
+        }
         else if(0 == strcmp(argv[arg_index], "-gcge_max_reorth_time")) 
         {
             arg_index++;
             para->orth_para->max_reorth_time = atoi(argv[arg_index++]);
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_scbgs_wself_max_reorth_time")) 
+        {
+            arg_index++;
+            para->orth_para->scbgs_wself_max_reorth_time = atoi(argv[arg_index++]);
         }
         else if(0 == strcmp(argv[arg_index], "-gcge_print_orth_zero")) 
         {
@@ -272,7 +284,9 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_w_orth_type        <c>: use which kind of orthogonalization           (default: bgs[cbgs|gs])\n");
        GCGE_Printf("  -gcge_orth_zero_tol      <d>: zero tolerance in orthogonal                  (default: 1e-16)\n");
        GCGE_Printf("  -gcge_reorth_tol         <d>: reorthgonal tolerance                         (default: 0.75)\n");
+       GCGE_Printf("  -gcge_scbgs_reorth_tol   <d>: reorthgonal tolerance in scbgs                (default: 0.75)\n");
        GCGE_Printf("  -gcge_max_reorth_time    <i>: maximun reorthogonal times                    (default: 3)\n");
+       GCGE_Printf("  -gcge_scbgs_wself_max_reorth_time <i>: maximun reorthogonal times in scbgs  (default: 1)\n");
        GCGE_Printf("  -gcge_print_orth_zero    <i>: print the zero index in orthogonal or not     (default: 0[1])\n");
        GCGE_Printf("  -gcge_multi_tol          <d>: tolerance for eigenvalue multiplicity         (default: 0.2)\n");
        GCGE_Printf("  -gcge_multi_tol_for_lock <d>: tolerance for eigenvalue multiplicity to lock (default: 1e-6)\n");
@@ -312,6 +326,8 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
     {
         para->block_size = (nev/5 > 1)?(nev/5):1;
     }
+    para->orth_para->orth_zero_tol += DBL_EPSILON;
+    para->orth_para->scbgs_reorth_tol += DBL_EPSILON;
     para->res = (GCGE_DOUBLE*)calloc(nev, sizeof(GCGE_DOUBLE));
     GCGE_INT i = 0;
     //每个特征值相应的残差大小     
@@ -569,6 +585,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  block_size         : %8d, (number of eigenpairs computed in one patch)\n", para->block_size     );
        GCGE_Printf("  given_init_evec    : %8d, (given initial eigenvectors or not)\n", para->given_init_evec);
        GCGE_Printf("  max_reorth_time    : %8d, (maximun reorthogonal times)\n", para->orth_para->max_reorth_time);
+       GCGE_Printf("  scbgs_wself_max_reorth_time : %8d, (maximun reorthogonal times)\n", para->orth_para->scbgs_wself_max_reorth_time);
        GCGE_Printf("  print_orth_zero    : %8d, (print the zero index in orthogonal or not)\n", para->orth_para->print_orth_zero);
        GCGE_Printf("  if_use_cg          : %8d, (use the internal cg or not)\n", para->if_use_cg      );
        GCGE_Printf("  if_use_bcg         : %8d, (use the block cg or normal cg)\n", para->if_use_bcg      );
@@ -585,6 +602,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  ev_tol             : %3.2e, (convergence tolerance)\n", para->ev_tol         );
        GCGE_Printf("  orth_zero_tol      : %3.2e, (zero tolerance in orthogonal)\n", para->orth_para->orth_zero_tol  );
        GCGE_Printf("  reorth_tol         : %3.2e, (reorthgonal tolerance)\n", para->orth_para->reorth_tol     );
+       GCGE_Printf("  scbgs_reorth_tol   : %3.2e, (reorthgonal tolerance in scbgs)\n", para->orth_para->scbgs_reorth_tol     );
        GCGE_Printf("  cg_rate            : %3.2e, (descent rate of residual in cg)\n", para->cg_rate        );
        GCGE_Printf("  multi_tol          : %3.2e, (tolerance for eigenvalue multiplicity)\n", para->multi_tol      );
        GCGE_Printf("  multi_tol_for_lock : %3.2e, (tolerance for eigenvalue multiplicity(forward))\n", para->multi_tol_for_lock);

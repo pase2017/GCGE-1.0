@@ -1004,7 +1004,8 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     GCGE_INT       *isuppz = subspace_itmp + 10*w_length; 
     GCGE_INT       *ifail = subspace_itmp + 5*w_length; 
     GCGE_INT        info = 0;
-    GCGE_DOUBLE     Orth_Tol = 1.0e-14, value_inner = 1.0, tmp;
+    GCGE_DOUBLE     Orth_Tol = orth_para->scbgs_reorth_tol;
+    GCGE_DOUBLE     value_inner = 1.0, tmp;
     GCGE_INT        length = start *w_length, iter = 0;
 
     GCGE_INT        tmp_eval_nonzero_start = 0; //用于做线性组合的小规模特征向量的起始位置
@@ -1065,10 +1066,13 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         mv_s[1] = start;
         mv_e[1] = *end;
         ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
+
+        if(iter >= orth_para->max_reorth_time)
+            break;
     }//end while for value_inner
 
     //现在对W本身进行正交化 
-    for(iter=0;iter<1;iter++)
+    for(iter=0;iter<(orth_para->scbgs_wself_max_reorth_time);iter++)
     {
         for(current=start;current<*(end);current++)
         {

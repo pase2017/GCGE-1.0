@@ -18,6 +18,8 @@
 #ifndef _GCGE_TYPE_H_
 #define _GCGE_TYPE_H_
 
+#include <float.h>
+
 #define GCGE_DOUBLE double
 #define GCGE_INT int
 #define BLASname(name) d##name##_
