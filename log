@@ -326,3 +326,6 @@ lp64和ilp64只有在整型上有区别
 1. 给orth_zero_tol加了DBL_EPSILON
     1) 在gcge_type.h中添加了#include<float.h>
     2) 在gcge_para.c中的Setup中添加了+=DBL_EPSILON
+2. 添加了参数scbgs_wself_max_reorth_time
+    1) 修改了gcge_para.h gcge_para.c
+    2) 在gcge_orthogonal.c 中使用它
