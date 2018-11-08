@@ -1,4 +1,7 @@
 ############################################################
+INSTALLDIR   = ${HOME}/soft/GCGE-2.0
+
+############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
@@ -10,20 +13,17 @@ LIBGFORTRAN  =
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-CSRINC       = $(EXTERNAL)/csr/include
-LIBCSR       = $(EXTERNAL)/csr/lib/libcsr.a -lm
+PETSCFLAGS   = 
+PETSCINC     = ${PETSC_DIR}/include
+LIBPETSC     = ${PETSC_KSP_LIB}
 
-PETSCINC     = $(EXTERNAL)/petsc/include
-LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
+SLEPCFLAGS   = 
+SLEPCINC     = ${SLEPC_DIR}/include
+LIBSLEPC     = ${SLEPC_SYS_LIB}
 
-SLEPCINC     = $(EXTERNAL)/slepc/include
-LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
-
+HYRPREFLAGS  = -DHAVE_CONFIG_H -DHYPRE_TIMING
 HYPREINC     = ${HYPRE_DIR}/include
 LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
-
-EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
-EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE)
 
 ############################################################
 MPIF77       = mpiifort
@@ -32,9 +32,8 @@ MPICPP       = mpiicpc
 MPIEXEC      = mpiexec
 MPIEXECFLAGS = -np 2
 ############################################################
-VALGRIND       = 
-VALGRINDFLAGS  =
-VALGRINDFLAGSN =
+VALGRIND      =
+VALGRINDFLAGS =
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
@@ -43,9 +42,9 @@ CC           = $(MPICC)
 CPP          = $(MPICPP)
 MAKE         = make
 
-FLINKER      = $(F77) -mkl=cluster
-CLINKER      = $(CC)  -mkl=cluster
-CPPLINKER    = $(CPP) -mkl=cluster
+FLINKER      = $(F77)
+CLINKER      = $(CC)
+CPPLINKER    = $(CPP)
 
 DEBUG        = -g
 FFLAGS       = -O3 -fPIC $(DEBUG)
@@ -62,12 +61,12 @@ EXECFLAGS    =
 # DEFINE for mixed code
 ############################################################
 # linking Fortran
-LIBF         = -lm
+LIBF         = -lgfortranbegin -lgfortran -lm -shared-libgcc
 # linking CPP
 LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
-# lib dir
+# linker flags
 LDFLAGS      = -mkl=cluster
 
 ############################################################
@@ -78,28 +77,26 @@ GCGEBIN       = $(GCGEHOME)/bin
 GCGEINC       = $(GCGEHOME)/include
 GCGELIB       = $(GCGEHOME)/lib
 GCGESRC       = $(GCGEHOME)/src
-GCGESRC       = $(GCGEHOME)/src
 
-APPINC        = $(GCGEINC)/app
-
-EXTERNAL      = $(GCGEHOME)/external
 ############################################################
-version       = 1.0
+version       = 2.0
 
 ############################################################
 # DEFINE libs and dirs of include
 ############################################################
 
 LIBGCGE       = $(GCGELIB)/libgcge_core-$(version).a
+
 LIBGCGECSR    = $(GCGELIB)/libgcge_csr-$(version).a
 LIBGCGEHYPRE  = $(GCGELIB)/libgcge_hypre-$(version).a
 LIBGCGEPASE   = $(GCGELIB)/libgcge_pase-$(version).a
+LIBGCGEPHG    = $(GCGELIB)/libgcge_phg-$(version).a
 LIBGCGEPETSC  = $(GCGELIB)/libgcge_petsc-$(version).a
 LIBGCGESLEPC  = $(GCGELIB)/libgcge_slepc-$(version).a
 
-INCLUDE      = $(GCGEINC) $(APPINC)
 ############################################################
 
+CP           = /bin/cp
 RM           = /bin/rm
 RMFLAGS      = -f
 ARCH         = ar

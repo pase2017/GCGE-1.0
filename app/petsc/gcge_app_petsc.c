@@ -24,8 +24,6 @@
 
 #include "gcge_app_petsc.h"
 
-#include "external_petsc.h"
-
 void PETSC_ReadMatrixBinary(Mat *A, const char *filename)
 {
     PetscErrorCode ierr;

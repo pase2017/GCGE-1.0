@@ -2,11 +2,33 @@ GCGEHOME = .
 include $(GCGEHOME)/config/make.inc
 .PHONY: all libs clean help
 
+WITH_MPI = $(findstring mpi, $(CC))
+
+install_libs =
+install_libs += $(if $(WITHMPI) without-mpi  ,with-mpi  ) 
+install_libs += libgcge_core libgcge_csr
+install_libs += $(if $(HYPREINC) ,libgcge_hypre) 
+install_libs += $(if $(PETSCINC) ,libgcge_petsc) 
+install_libs += $(if $(SLEPCINC) ,libgcge_slepc) 
+
 ###########################################################
 all: 	help
 
 ###########################################################
-libs: libgcge_core libgcge_csr libgcge_hypre
+
+libs: $(install_libs)
+	@echo $(install_libs)
+	@echo "======================================="
+	@echo "Build $(strip $(subst -, , $(install_libs))) complete."
+	@echo "======================================="
+	@echo "Now to install the library to $(INSTALLDIR) do:"
+	@echo "make install"
+	
+without-mpi:
+	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 0/" $(GCGESRC)/gcge_type.h
+
+with-mpi:
+	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 1/" $(GCGESRC)/gcge_type.h
 
 libgcge_core:
 	@echo "======================================="
@@ -51,10 +73,10 @@ libgcge_slepc:
 
 clean:
 	@cd $(GCGESRC);             make clean; rm -rf *~
-	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/csr;    make clean; rm -rf *~
-#	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
-#	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
@@ -70,7 +92,13 @@ install:
 	@mkdir -p  $(INSTALLDIR)/include
 	@mkdir -p  $(INSTALLDIR)/lib
 	@$(CP) -fR $(GCGEINC)/*.h $(INSTALLDIR)/include
-	@$(CP) -fR $(GCGELIB)/*.a $(INSTALLDIR)/lib
+	@$(AR) -x  $(GCGELIB)/*.a
+	@$(ARCH) $(ARCHFLAGS) libGCGE-$(version).a *.o
+	@$(RANLIB) libGCGE-$(version).a
+	@$(RM) $(RMFLAGS) *.o
+	@$(CP) -fR libGCGE-$(version).a $(INSTALLDIR)/lib
+	@echo "Install complete."
+	@echo "======================================="
 
 help:
 	@echo " "
@@ -86,7 +114,7 @@ help:
 #	@echo "   test-slepc   - test library GCGESlepC (only 1 test)"
 	@echo " "
 	@echo "   clean        - remove temporary files except libraries"
-	@echo "   cleanlibs    - remove libraries"
+	@echo "   cleanall     - remove libraries"
 	@echo " "
 	@echo "   help         - print this information"
 	@echo " "

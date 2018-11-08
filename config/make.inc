@@ -1,60 +1,52 @@
 ############################################################
-INSTALLDIR   = ${HOME}/GCGE-2.0
+INSTALLDIR   = ${HOME}/soft/GCGE-2.0
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-LIBLAPACK    = $(GCGEHOME)/blaslapack/liblapack.a
-LIBBLAS      = $(GCGEHOME)/blaslapack/libblas.a
+LIBLAPACK    = ${INTEL_DIR}/mkl/lib/intel64/libmkl_lapack95_lp64.a
+LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-PETSCFLAGS   = 
-PETSCINC     = ${PETSC_INCLUDE}
+PETSCINC     = ${PETSC_DIR}/include
+PETSCINC     = 
 LIBPETSC     = ${PETSC_KSP_LIB}
 
 SLEPCFLAGS   = 
-SLEPCINC     = ${SLEPC_INCLUDE}
+SLEPCINC     = ${SLEPC_DIR}/include
 LIBSLEPC     = ${SLEPC_SYS_LIB}
 
 HYRPREFLAGS  = -DHAVE_CONFIG_H -DHYPRE_TIMING
-HYPREINC     = /home/liyu/WorkSpace/hypre-2.11.2/src/hypre/include
-LIBHYPRE     = /home/liyu/WorkSpace/hypre-2.11.2/src/hypre/lib/libHYPRE.a
+HYPREINC     = ${HYPRE_DIR}/include
+LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
 
 ############################################################
-MPIF77       = mpif77
-MPICC        = mpicc
-MPICPP       = mpic++
-MPIEXEC      = mpiexec
-MPIEXECFLAGS = -np 2
-############################################################
-VALGRIND      = valgrind
-VALGRINDFLAGS = --tool=memcheck --leak-check=full -v --track-origins=yes --show-reachable=yes --read-var-info=yes
+VALGRIND      =
+VALGRINDFLAGS =
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
-F77          = $(MPIF77)
-CC           = $(MPICC)
-CPP          = $(MPICPP)
-MAKE         = make
+F77          = mpiifort
+CC           = mpiicc
+CPP          = mpiicpc
+EXEC         = mpiexec
+EXECFLAGS    = -np 2
 
 FLINKER      = $(F77)
 CLINKER      = $(CC)
 CPPLINKER    = $(CPP)
 
 DEBUG        = -g
-FFLAGS       = -O2 -fPIC $(DEBUG)
-CFLAGS       = -O2 -fPIC $(DEBUG)
-CPPFLAGS     = -O2 -fPIC $(DEBUG)
+FFLAGS       = -O3 -fPIC $(DEBUG)
+CFLAGS       = -O3 -fPIC $(DEBUG)
+CPPFLAGS     = -O3 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
-
-EXEC         = 
-EXECFLAGS    = 
 
 ############################################################
 # DEFINE for mixed code
@@ -66,7 +58,7 @@ LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
 # linker flags
-LDFLAGS      =
+LDFLAGS      = -mkl=cluster
 
 ############################################################
 # DEFINE dirs
@@ -95,6 +87,7 @@ LIBGCGESLEPC  = $(GCGELIB)/libgcge_slepc-$(version).a
 
 ############################################################
 
+MAKE         = make
 CP           = /bin/cp
 RM           = /bin/rm
 RMFLAGS      = -f
