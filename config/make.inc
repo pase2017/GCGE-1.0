@@ -12,8 +12,8 @@ LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
+PETSCFLAGS   = 
 PETSCINC     = ${PETSC_DIR}/include
-PETSCINC     = 
 LIBPETSC     = ${PETSC_KSP_LIB}
 
 SLEPCFLAGS   = 

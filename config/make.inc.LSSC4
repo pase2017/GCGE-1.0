@@ -7,7 +7,6 @@ INSTALLDIR   = ${HOME}/soft/GCGE-2.0
 
 LIBLAPACK    = ${INTEL_DIR}/mkl/lib/intel64/libmkl_lapack95_lp64.a
 LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
-LIBGFORTRAN  = 
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
@@ -26,21 +25,16 @@ HYPREINC     = ${HYPRE_DIR}/include
 LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
 
 ############################################################
-MPIF77       = mpiifort
-MPICC        = mpiicc
-MPICPP       = mpiicpc
-MPIEXEC      = mpiexec
-MPIEXECFLAGS = -np 2
-############################################################
 VALGRIND      =
 VALGRINDFLAGS =
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
-F77          = $(MPIF77)
-CC           = $(MPICC)
-CPP          = $(MPICPP)
-MAKE         = make
+F77          = mpiifort
+CC           = mpiicc
+CPP          = mpiicpc
+EXEC         = mpiexec
+EXECFLAGS    = -np 2
 
 FLINKER      = $(F77)
 CLINKER      = $(CC)
@@ -53,9 +47,6 @@ CPPFLAGS     = -O3 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
-
-EXEC         = 
-EXECFLAGS    = 
 
 ############################################################
 # DEFINE for mixed code
@@ -96,6 +87,7 @@ LIBGCGESLEPC  = $(GCGELIB)/libgcge_slepc-$(version).a
 
 ############################################################
 
+MAKE         = make
 CP           = /bin/cp
 RM           = /bin/rm
 RMFLAGS      = -f

@@ -25,9 +25,11 @@ libs: $(install_libs)
 	@echo "make install"
 	
 without-mpi:
+	@echo $(install_libs)
 	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 0/" $(GCGESRC)/gcge_type.h
 
 with-mpi:
+	@echo $(install_libs)
 	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 1/" $(GCGESRC)/gcge_type.h
 
 libgcge_core:
@@ -92,7 +94,11 @@ install:
 	@mkdir -p  $(INSTALLDIR)/include
 	@mkdir -p  $(INSTALLDIR)/lib
 	@$(CP) -fR $(GCGEINC)/*.h $(INSTALLDIR)/include
-	@$(AR) -x  $(GCGELIB)/*.a
+	@$(AR) -x  $(LIBGCGE)
+	@$(AR) -x  $(LIBGCGECSR)
+	@$(AR) -x  $(LIBGCGEHYPRE)
+	@$(AR) -x  $(LIBGCGEPETSC)
+	@$(AR) -x  $(LIBGCGESLEPC)
 	@$(ARCH) $(ARCHFLAGS) libGCGE-$(version).a *.o
 	@$(RANLIB) libGCGE-$(version).a
 	@$(RM) $(RMFLAGS) *.o
