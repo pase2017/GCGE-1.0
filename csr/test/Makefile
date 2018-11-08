@@ -31,9 +31,13 @@ EXE11  = $(GCGEBIN)/test_p.exe
 EXE12  = $(GCGEBIN)/test_w.exe
 EXE13  = $(GCGEBIN)/test_csr_solver.exe
 
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
+CSRINC     = ../include
+LIBCSR     = ../lib/libcsr.a
+LIBGCGECSR = ../lib/libgcge_csr.a
+
+INC   = -I$(GCGEINC) -I$(CSRINC)
 LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) \
-	$(LIBBLAS) $(LIBGFORTRAN) -lm 
+	$(LIBBLAS) $(LIBF)
 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA

@@ -1,12 +1,12 @@
 ########################################################################
-GCGEHOME = ../../..
+GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
 ########################################################################
-OBJS = gcge_app_slepc.o 
-LIBS = $(LIBSLEPC)
-INC  = -I$(APPINC) -I$(GCGEINC) -I$(SLEPCINC)
-LIB  = $(LIBGCGESLEPC)
+OBJS = gcge_app_petsc.o 
+LIBS = $(LIBPETSC)
+INC  = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
+LIB  = $(LIBGCGEPETSC)
 
 ########################################################################
 all:	help
@@ -19,7 +19,7 @@ clean:
 help:
 	@echo "make {lib|clean|help}"
 	@echo " "
-	@echo "   lib   - create library libgcgeslepc-1.X.a"
+	@echo "   lib   - create library libgcgepetsc-1.X.a"
 	@echo " "
 	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"

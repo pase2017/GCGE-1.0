@@ -26,10 +26,22 @@
 //#include <petscoptions.h>
 //#include <petsc/private/vecimpl.h>
 //#include <petscblaslapack.h>
-#include <petscvec.h>
+#include <petscoptions.h>
+#include <petscviewer.h>
+#include <petscsys.h>
+
 #include <petscmat.h>
+#include <petscvec.h>
 #include <petscksp.h>
+#include <petscpc.h>
+
 #include <slepcbv.h>
+
+
+
+void SLEPC_ReadMatrixBinary(Mat *A, const char *filename);
+void SLEPC_LinearSolverCreate(KSP *ksp, Mat A, Mat T);
+void SLEPC_VecLocalInnerProd(Vec x, Vec y, double *value);
 
 void GCGE_SLEPC_SetOps(GCGE_OPS *ops);
 void GCGE_SOLVER_SetSLEPCOps(GCGE_SOLVER *solver);

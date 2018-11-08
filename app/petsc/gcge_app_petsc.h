@@ -26,9 +26,18 @@
 //#include <petscoptions.h>
 //#include <petsc/private/vecimpl.h>
 //#include <petscblaslapack.h>
-#include <petscvec.h>
+#include <petscoptions.h>
+#include <petscviewer.h>
+#include <petscsys.h>
+
 #include <petscmat.h>
+#include <petscvec.h>
 #include <petscksp.h>
+#include <petscpc.h>
+
+void PETSC_ReadMatrixBinary(Mat *A, const char *filename);
+void PETSC_LinearSolverCreate(KSP *ksp, Mat A, Mat T);
+void PETSC_VecLocalInnerProd(Vec x, Vec y, double *value);
 
 void GCGE_PETSC_SetOps(GCGE_OPS *ops);
 void GCGE_SOLVER_SetPETSCOps(GCGE_SOLVER *solver);

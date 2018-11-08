@@ -2,8 +2,8 @@
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
-#CC      = $(MPICC)
-#CLINKER = $(MPICC)
+CC      = $(CC)
+CLINKER = $(CC)
 ############################################################
 OBJS1 = test_matvec.o
 OBJS2 = test_hypre_solver.o
@@ -17,9 +17,9 @@ EXE2  = $(GCGEBIN)/test_hypre_solver.exe
 EXE4  = $(GCGEBIN)/test_gcge_lobpcg.exe
 EXE5  = $(GCGEBIN)/test_bcg.exe
 
-# use DHAVE_CONFIG_H and DHYPRE_TIMING to use hypre_time
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC) -DHAVE_CONFIG_H -DHYPRE_TIMING
-LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFORTRAN) -lm
+# Set $(HYPREFLAGS) to be -DHAVE_CONFIG_H -DHYPRE_TIMING to use hypre_time
+INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC) $(HYPREFLAGS)
+LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
 
 ############################################################
 
@@ -27,7 +27,7 @@ LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBGFOR
 
 all:	    help
 
-exe:         $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) 
+exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) 
 
 clean:
 	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
@@ -36,19 +36,12 @@ help:
 	@echo " "
 	@echo "make {exe|run-mesh-ani2D|clean|help}"
 	@echo " "
-	@echo "   exe   - compile two executables"
+	@echo "   exe   - compile all executables"
 	@echo " "
 	@echo "   xx    - test xx"
 	@echo " "
 	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"
-	@echo " "
-
-info:
-	@echo " "
-	@echo "Summary:"
-	@echo "Executables are located in bin/"
-	@echo "Libraries   are located in lib/"
 	@echo " "
 
 run-matvec:

@@ -1,29 +1,38 @@
 GCGEHOME = .
 include $(GCGEHOME)/config/make.inc
-.PHONY: clean
-
+.PHONY: all libs clean help
 
 ###########################################################
 all: 	help
 
-
 ###########################################################
-libs: 
-	@echo "======================================="
-	@echo "        Making libraries               "
-	@cd $(GCGESRC);             $(MAKE) lib
-	@cd $(GCGESRC)/app/csr;     $(MAKE) lib
-	@cd $(GCGESRC)/app/hypre;   $(MAKE) lib
-	@cd $(GCGESRC)/app/petsc;   $(MAKE) lib
-	@cd $(GCGESRC)/app/slepc;   $(MAKE) lib
-	@cd $(EXTERNAL)/csr/src;    $(MAKE) lib
-	@cd $(EXTERNAL)/petsc/src;  $(MAKE) lib
-	@cd $(EXTERNAL)/slepc/src;  $(MAKE) lib
+libs: libgcge_core libgcge_csr libgcge_hypre
 
-libgcge:
+libgcge_core:
+	@echo "======================================="
+	@echo "        Making library GCGE CORE       "
+	@cd $(GCGEHOME)/src;         $(MAKE) lib
+
+libgcge_csr:
 	@echo "======================================="
 	@echo "        Making library GCGE             "
-	@cd $(GCGEHOME)/src;         $(MAKE) lib
+	@cd $(GCGEHOME)/csr;        $(MAKE) lib
+
+libgcge_hypre:
+	@echo "======================================="
+	@echo "        Making library HYPRE           "
+	@cd $(GCGEHOME)/app/hypre;  $(MAKE) lib
+
+libgcge_petsc:
+	@echo "======================================="
+	@echo "        Making library PETSC           "
+	@cd $(GCGEHOME)/app/petsc;  $(MAKE) lib
+
+libgcge_slepc:
+	@echo "======================================="
+	@echo "        Making library SLEPC           "
+	@cd $(GCGEHOME)/app/slepc;  $(MAKE) lib
+
 
 #test-csr: 
 #	@cd $(GCGEHOME)/test/csr;    $(MAKE) exe run-solver
@@ -41,21 +50,19 @@ libgcge:
 #	@cd $(GCGEHOME)/test/slepc;  $(MAKE) exe run-ex1
 
 clean:
-	@cd $(GCGEHOME)/src; make clean; rm -rf *~
-	@cd $(GCGEHOME)/src/app/csr; make clean; rm -rf *~
-	@cd $(GCGEHOME)/src/app/hypre; make clean; rm -rf *~
-	@cd $(GCGEHOME)/src/app/petsc; make clean; rm -rf *~
-	@cd $(GCGEHOME)/src/app/slepc; make clean; rm -rf *~
-	@cd $(GCGEHOME)/test/csr; make clean; rm -rf *~
+	@cd $(GCGESRC);             make clean; rm -rf *~
+	@cd $(GCGEHOME)/csr;        make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
+#	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
+#	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
-	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
-	@cd $(GCGEHOME)/external/csr/src; make clean; rm -rf *~
-	@cd $(GCGEHOME)/external/petsc/src; make clean; rm -rf *~
-	@cd $(GCGEHOME)/external/slepc/src; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
 
 
-cleanlibs: 
+cleanlibs: clean
 	@cd $(GCGELIB);  $(RM) $(RMFLAGS) *.a
+	@cd $(GCGEINC);  $(RM) $(RMFLAGS) *.h
 
 help:
 	@echo " "

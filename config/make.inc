@@ -2,28 +2,27 @@
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-LIBLAPACK    = $(GCGEHOME)/lib/liblapack.a
-LIBBLAS      = $(GCGEHOME)/lib/blas_LINUX.a
-LIBGFORTRAN  = -lgfortran
+LIBLAPACK    = $(GCGEHOME)/blaslapack/liblapack.a
+LIBBLAS      = $(GCGEHOME)/blaslapack/libblas.a
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-CSRINC       = $(EXTERNAL)/csr/include
-LIBCSR       = $(EXTERNAL)/csr/lib/libcsr.a -lm
+CSRINC       = $(GCGEHOME)/csr/include
+LIBCSR       = $(GCGEHOME)/csr/lib/libcsr.a -lm
 
-PETSCINC     = $(EXTERNAL)/petsc/include
-LIBPETSC     = ${PETSC_KSP_LIB} $(EXTERNAL)/petsc/lib/libpetsc.a
+PETSCFLAGS   = 
+PETSCINC     = ${PETSC_INCLUDE}
+LIBPETSC     = ${PETSC_KSP_LIB}
 
-SLEPCINC     = $(EXTERNAL)/slepc/include
-LIBSLEPC     = ${SLEPC_SYS_LIB} $(EXTERNAL)/slepc/lib/libslepc.a
+SLEPCFLAGS   = 
+SLEPCINC     = ${SLEPC_INCLUDE}
+LIBSLEPC     = ${SLEPC_SYS_LIB}
 
-HYPREINC     = $(EXTERNAL)/hypre/include
-LIBHYPRE     = $(EXTERNAL)/hypre/lib/libHYPRE.a
-
-EXTERNALINCLUDEDIRS = -I$(PETSCINC) -I$(SLEPCINC) -I$(HYPREINC)
-EXTERNALLINKLIBS    = $(LIBPETSC) $(LIBSLEPC) $(LIBHYPRE) $(DEBUGLIBS)
+HYRPREFLAGS  = -DHAVE_CONFIG_H -DHYPRE_TIMING
+HYPREINC     = /home/liyu/WorkSpace/hypre-2.11.2/src/hypre/include
+LIBHYPRE     = /home/liyu/WorkSpace/hypre-2.11.2/src/hypre/lib/libHYPRE.a
 
 ############################################################
 MPIF77       = mpif77
@@ -34,7 +33,6 @@ MPIEXECFLAGS = -np 2
 ############################################################
 VALGRIND      = valgrind
 VALGRINDFLAGS = --tool=memcheck --leak-check=full -v --track-origins=yes --show-reachable=yes --read-var-info=yes
-VALGRINDFLAGSN = --leak-check=full -v --show-reachable=yes 
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
@@ -47,14 +45,13 @@ FLINKER      = $(F77)
 CLINKER      = $(CC)
 CPPLINKER    = $(CPP)
 
-DEBUG        = -g #-DMEMWATCH -DMW_STDIO
+DEBUG        = -g
 FFLAGS       = -O2 -fPIC $(DEBUG)
 CFLAGS       = -O2 -fPIC $(DEBUG)
 CPPFLAGS     = -O2 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
-#DEBUGLIBS    = -lmemwatch
 
 EXEC         = 
 EXECFLAGS    = 
@@ -68,7 +65,7 @@ LIBF         = -lgfortranbegin -lgfortran -lm -shared-libgcc
 LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
-# lib dir
+# linker flags
 LDFLAGS      =
 
 ############################################################
@@ -79,28 +76,29 @@ GCGEBIN       = $(GCGEHOME)/bin
 GCGEINC       = $(GCGEHOME)/include
 GCGELIB       = $(GCGEHOME)/lib
 GCGESRC       = $(GCGEHOME)/src
-GCGESRC       = $(GCGEHOME)/src
 
-APPINC        = $(GCGEINC)/app
+APPINC        = $(GCGEHOME)/app/include
+APPLIB        = $(GCGEHOME)/app/lib
 
-EXTERNAL      = $(GCGEHOME)/external
 ############################################################
-version       = 1.0
+version       = 2.0
 
 ############################################################
 # DEFINE libs and dirs of include
 ############################################################
 
 LIBGCGE       = $(GCGELIB)/libgcge_core-$(version).a
-LIBGCGECSR    = $(GCGELIB)/libgcge_csr-$(version).a
+
 LIBGCGEHYPRE  = $(GCGELIB)/libgcge_hypre-$(version).a
 LIBGCGEPASE   = $(GCGELIB)/libgcge_pase-$(version).a
+LIBGCGEPHG    = $(GCGELIB)/libgcge_phg-$(version).a
 LIBGCGEPETSC  = $(GCGELIB)/libgcge_petsc-$(version).a
 LIBGCGESLEPC  = $(GCGELIB)/libgcge_slepc-$(version).a
 
-INCLUDE      = $(GCGEINC) $(APPINC)
+INCLUDE       = $(GCGEINC)
 ############################################################
 
+CP           = /bin/cp
 RM           = /bin/rm
 RMFLAGS      = -f
 ARCH         = ar
