@@ -19,13 +19,13 @@ HEADERS = gcge_utilities.h gcge_statistics.h gcge_para.h gcge_ops.h \
           gcge.h
 OBJS    = ${FILES:.c=.o}
 
-INC  = 
-LIB  = $(LIBGCGE)
+INC     = 
+LIB     = $(LIBGCGE)
 
 ########################################################################
-all:        help
+all:    help
 
-lib:        $(LIB)
+lib:    $(LIB)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o
@@ -33,9 +33,9 @@ clean:
 help:
 	@echo "make {lib|clean|help}"
 	@echo " "
-	@echo "   lib - create library libgcge-$(version).a"
+	@echo "   lib   - create library $(LIB)"
 	@echo " "
-	@echo "   clean - clean the package"
+	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"
 	@echo " "
 
@@ -55,7 +55,7 @@ $(LIB): $(OBJS)
 	@echo ''
 	@echo 'Creating library $(LIB)'
 	@echo 'Creating header files $(GCGEINC)/{$(HEADERS)}'
-	@$(ARCH) $(ARCHFLAGS) $(LIB)  $(OBJS)
+	@$(ARCH) $(ARCHFLAGS) $(LIB) $(OBJS)
 	@$(RANLIB) $(LIB)
 	@$(CP) -fR gcge_*.h $(GCGEINC)
 	@$(CP) -fR gcge.h   $(GCGEINC)

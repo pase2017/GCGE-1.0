@@ -1,8 +1,5 @@
 ############################################################
-
-############################################################
 INSTALLDIR   = ${HOME}/GCGE-2.0
-
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
@@ -14,9 +11,6 @@ LIBBLAS      = $(GCGEHOME)/blaslapack/libblas.a
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
-
-CSRINC       = $(GCGEHOME)/csr/include
-LIBCSR       = $(GCGEHOME)/csr/lib/libcsr.a -lm
 
 PETSCFLAGS   = 
 PETSCINC     = ${PETSC_INCLUDE}
@@ -83,9 +77,6 @@ GCGEINC       = $(GCGEHOME)/include
 GCGELIB       = $(GCGEHOME)/lib
 GCGESRC       = $(GCGEHOME)/src
 
-APPINC        = $(GCGEHOME)/app/include
-APPLIB        = $(GCGEHOME)/app/lib
-
 ############################################################
 version       = 2.0
 
@@ -95,13 +86,13 @@ version       = 2.0
 
 LIBGCGE       = $(GCGELIB)/libgcge_core-$(version).a
 
+LIBGCGECSR    = $(GCGELIB)/libgcge_csr-$(version).a
 LIBGCGEHYPRE  = $(GCGELIB)/libgcge_hypre-$(version).a
 LIBGCGEPASE   = $(GCGELIB)/libgcge_pase-$(version).a
 LIBGCGEPHG    = $(GCGELIB)/libgcge_phg-$(version).a
 LIBGCGEPETSC  = $(GCGELIB)/libgcge_petsc-$(version).a
 LIBGCGESLEPC  = $(GCGELIB)/libgcge_slepc-$(version).a
 
-INCLUDE       = $(GCGEINC)
 ############################################################
 
 CP           = /bin/cp

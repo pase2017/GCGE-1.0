@@ -1,17 +1,20 @@
 ########################################################################
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
+.PHONY: all lib clean help
 
 ########################################################################
-OBJS = gcge_app_slepc.o 
-LIBS = $(LIBSLEPC)
-INC  = -I$(APPINC) -I$(GCGEINC) -I$(SLEPCINC)
-LIB  = $(LIBGCGESLEPC)
+FILES   = gcge_app_slepc.c
+HEADERS = gcge_app_slepc.h
+OBJS    = ${FILES:.c=.o}
+
+INC     = -I$(GCGEINC) -I$(SLEPCINC) $(SLEPCFLAGS)
+LIB     = $(LIBGCGESLEPC)
 
 ########################################################################
 all:	help
 
-lib:	$(LIB) info
+lib:	$(LIB)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o
@@ -19,19 +22,11 @@ clean:
 help:
 	@echo "make {lib|clean|help}"
 	@echo " "
-	@echo "   lib   - create library libgcgeslepc-1.X.a"
+	@echo "   lib   - create library $(LIB)"
 	@echo " "
 	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"
 	@echo " "
-
-info:
-	@echo " "
-	@echo "Summary:"
-	@echo "Executables are located in bin/"
-	@echo "Libraries are located in lib/"
-	@echo " "
-
 
 ########################################################################
 .f.o:
@@ -39,7 +34,7 @@ info:
 	@$(F77) $(FFLAGS) -c $*.f -o $*.o $(INC)
 .c.o:
 	@echo '$(CC)  -c $(CFLAGS) ' $*.c
-	$(CC)  $(CFLAGS) -c $*.c -o $*.o $(INC)
+	@$(CC)  $(CFLAGS) -c $*.c -o $*.o $(INC)
 .cpp.o:
 	@echo '$(CPP)  -c $(CPPFLAGS) ' $*.cpp
 	@$(CPP)  $(CPPFLAGS) -c $*.cpp -o $*.o $(INC)
@@ -48,7 +43,10 @@ info:
 $(LIB): $(OBJS)
 	@echo ''
 	@echo 'Creating library $(LIB)'
-	@$(ARCH) $(ARCHFLAGS) $(LIB)  $(OBJS)
+	@echo 'Creating header files $(GCGEINC)/$(HEADERS)'
+	@$(ARCH) $(ARCHFLAGS) $(LIB) $(OBJS)
 	@$(RANLIB) $(LIB)
+	@$(CP) -fR $(HEADERS) $(GCGEINC)
 
+$(OBJS): $(HEADERS)
 ########################################################################

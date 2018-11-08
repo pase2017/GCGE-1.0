@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  csr.h
+ *       Filename:  gcge_app_csr.h
  *
  *    Description:  
  *
@@ -15,19 +15,14 @@
  *
  * =====================================================================================
  */
-/*
- * 定义稀疏矩阵，并且提供稀疏矩阵和相应的向量的数据结构和相互之间的操作：
- * 目前提供的操作：
- * 1. 向量的线性组合
- * 2. 向量的内积
- * 3. 矩阵向量乘
- *  创建多个向量
- */
 
+#ifndef _GCGE_APP_CSR_H_
+#define _GCGE_APP_CSR_H_
 
+#include "gcge_type.h"
+#include "gcge_ops.h"
+#include "gcge_solver.h"
 
-#ifndef _CSR_H_
-#define _CSR_H_
 
 typedef struct CSR_MAT_ {	
     /** 下面是存储稀疏矩阵的行压缩形式 */
@@ -82,4 +77,14 @@ void CSR_PrintMat(CSR_MAT *mat);
 void CSR_PrintVec(CSR_VEC *vec);
 //处理Dirichlet边条件
 void CSR_SetDirichletBoundary(CSR_VEC **Vecs, int nev, CSR_MAT *A, CSR_MAT *B);
+
+void GCGE_CSR_SetOps(GCGE_OPS *ops);
+void GCGE_SOLVER_SetCSROps(GCGE_SOLVER *solver);
+
+GCGE_SOLVER *GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, int argc, char* argv[]);
+
+
+
+
+
 #endif

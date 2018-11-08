@@ -1,14 +1,15 @@
 ########################################################################
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
-########################################################################
-CSRINC      = ../include
-LIBGCGECSR  = ../lib/libgcge_csr.a
+.PHONY: all lib clean help
 
-HEADER = gcge_app_csr.h
-OBJS   = gcge_app_csr.o
-INC    = -I$(GCGEINC) -I$(CSRINC)
-LIB    = $(LIBGCGECSR)
+########################################################################
+FILES   = gcge_app_phg.c
+HEADERS = gcge_app_phg.h
+OBJS    = ${FILES:.c=.o}
+
+INC     = -I$(GCGEINC) -I$(PHGINC) $(PHGFLAGS)
+LIB     = $(LIBGCGEPHG)
 
 ########################################################################
 all:	help
@@ -42,9 +43,10 @@ help:
 $(LIB): $(OBJS)
 	@echo ''
 	@echo 'Creating library $(LIB)'
-	@echo 'Creating library $(CSRINC)/$(HEADER)'
-	@$(ARCH) $(ARCHFLAGS) $(LIB)  $(OBJS)
+	@echo 'Creating header files $(GCGEINC)/$(HEADERS)'
+	@$(ARCH) $(ARCHFLAGS) $(LIB) $(OBJS)
 	@$(RANLIB) $(LIB)
-	@$(CP) $(HEADER)  $(CSRINC)
+	@$(CP) -fR $(HEADERS) $(GCGEINC)
 
+$(OBJS): $(HEADERS)
 ########################################################################

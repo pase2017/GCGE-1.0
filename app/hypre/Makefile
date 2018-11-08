@@ -46,7 +46,7 @@ $(LIB): $(OBJS)
 	@echo 'Creating header files $(GCGEINC)/$(HEADERS)'
 	@$(ARCH) $(ARCHFLAGS) $(LIB) $(OBJS)
 	@$(RANLIB) $(LIB)
-	@$(CP) -fR $(HEADERS)  $(GCGEINC)
+	@$(CP) -fR $(HEADERS) $(GCGEINC)
 
 $(OBJS): $(HEADERS)
 ########################################################################

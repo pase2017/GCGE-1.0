@@ -11,12 +11,12 @@ libs: libgcge_core libgcge_csr libgcge_hypre
 libgcge_core:
 	@echo "======================================="
 	@echo "        Making library GCGE CORE       "
-	@cd $(GCGEHOME)/src;         $(MAKE) lib
+	@cd $(GCGEHOME)/src;        $(MAKE) lib
 
 libgcge_csr:
 	@echo "======================================="
-	@echo "        Making library GCGE             "
-	@cd $(GCGEHOME)/csr;        $(MAKE) lib
+	@echo "        Making library CSR             "
+	@cd $(GCGEHOME)/app/csr;    $(MAKE) lib
 
 libgcge_hypre:
 	@echo "======================================="
@@ -51,11 +51,11 @@ libgcge_slepc:
 
 clean:
 	@cd $(GCGESRC);             make clean; rm -rf *~
-	@cd $(GCGEHOME)/csr;        make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/csr;    make clean; rm -rf *~
 #	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
 #	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
-	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
+#	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
 
@@ -67,8 +67,10 @@ cleanall: clean
 install:
 	@echo "Create $(INSTALLDIR)/include and $(INSTALLDIR)/lib"
 	@mkdir -p  $(INSTALLDIR)
-	@$(CP) -fR $(GCGEINC) $(INSTALLDIR)
-	@$(CP) -fR $(GCGELIB) $(INSTALLDIR)
+	@mkdir -p  $(INSTALLDIR)/include
+	@mkdir -p  $(INSTALLDIR)/lib
+	@$(CP) -fR $(GCGEINC)/*.h $(INSTALLDIR)/include
+	@$(CP) -fR $(GCGELIB)/*.a $(INSTALLDIR)/lib
 
 help:
 	@echo " "

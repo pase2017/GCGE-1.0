@@ -2,8 +2,6 @@
 GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
-CC      = $(CC)
-CLINKER = $(CC)
 ############################################################
 OBJS1 = test_matvec.o
 OBJS2 = test_hypre_solver.o
@@ -11,14 +9,14 @@ OBJS3 = test_hypre_solver_ls.o
 OBJS4 = test_gcge_lobpcg.o
 OBJS5 = test_bcg.o
 
-EXE1  = $(GCGEBIN)/test_matvec.exe 
-EXE2  = $(GCGEBIN)/test_hypre_solver.exe
-#EXE3  = $(GCGEBIN)/test_hypre_solver_ls.exe
-EXE4  = $(GCGEBIN)/test_gcge_lobpcg.exe
-EXE5  = $(GCGEBIN)/test_bcg.exe
+EXE1  = test_matvec.exe 
+EXE2  = test_hypre_solver.exe
+#EXE3  = test_hypre_solver_ls.exe
+EXE4  = test_gcge_lobpcg.exe
+EXE5  = test_bcg.exe
 
 # Set $(HYPREFLAGS) to be -DHAVE_CONFIG_H -DHYPRE_TIMING to use hypre_time
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(HYPREINC) $(HYPREFLAGS)
+INC   = -I$(GCGEINC) -I$(HYPREINC) $(HYPREFLAGS)
 LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
 
 ############################################################
@@ -30,7 +28,7 @@ all:	    help
 exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) 
 
 clean:
-	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
+	@$(RM) $(RMFLAGS) *.o *.exe
 
 help:
 	@echo " "
