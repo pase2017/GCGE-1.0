@@ -1,49 +1,49 @@
 ############################################################
-INSTALLDIR   = ${HOME}/soft/GCGE-2.0
+INSTALLDIR   = ${HOME}/GCGE-2.0
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
-LIBLAPACK    = ${INTEL_DIR}/mkl/lib/intel64/libmkl_lapack95_lp64.a
-LIBBLAS      = ${INTEL_DIR}/mkl/lib/intel64/libmkl_blas95_lp64.a
+LIBLAPACK    = $(GCGEHOME)/blaslapack/liblapack.a
+LIBBLAS      = $(GCGEHOME)/blaslapack/libblas.a
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
 ############################################################
 
 PETSCFLAGS   = 
-PETSCINC     = ${PETSC_DIR}/include
-LIBPETSC     = ${PETSC_KSP_LIB}
+PETSCINC     = 
+LIBPETSC     =
 
 SLEPCFLAGS   = 
-SLEPCINC     = ${SLEPC_DIR}/include
-LIBSLEPC     = ${SLEPC_SYS_LIB}
+SLEPCINC     =
+LIBSLEPC     =
 
-HYRPREFLAGS  = -DHAVE_CONFIG_H -DHYPRE_TIMING
-HYPREINC     = ${HYPRE_DIR}/include
-LIBHYPRE     = ${HYPRE_DIR}/lib/libHYPRE.a
+HYRPREFLAGS  =
+HYPREINC     =
+LIBHYPRE     =
 
 ############################################################
-VALGRIND      =
-VALGRINDFLAGS =
+VALGRIND      = valgrind
+VALGRINDFLAGS = --tool=memcheck --leak-check=full -v --track-origins=yes --show-reachable=yes --read-var-info=yes
 ############################################################
 # DEFINE compilers, linkers and execution
 ############################################################
-F77          = mpiifort
-CC           = mpiicc
-CPP          = mpiicpc
-EXEC         = mpiexec
-EXECFLAGS    = -np 2
+F77          = gfortran
+CC           = gcc
+CPP          = g++
+EXEC         = 
+EXECFLAGS    = 
 
 FLINKER      = $(F77)
 CLINKER      = $(CC)
 CPPLINKER    = $(CPP)
 
 DEBUG        = -g
-FFLAGS       = -O3 -fPIC $(DEBUG)
-CFLAGS       = -O3 -fPIC $(DEBUG)
-CPPFLAGS     = -O3 -fPIC $(DEBUG)
+FFLAGS       = -O2 -fPIC $(DEBUG)
+CFLAGS       = -O2 -fPIC $(DEBUG)
+CPPFLAGS     = -O2 -fPIC $(DEBUG)
 
 DEBUGEXEC    = $(VALGRIND)
 DEBUGFLAGS   = $(VALGRINDFLAGS)
@@ -58,7 +58,7 @@ LIBCPP       = -lstdc++
 # other exist libs
 LIBOE        = 
 # linker flags
-LDFLAGS      = -mkl=cluster
+LDFLAGS      =
 
 ############################################################
 # DEFINE dirs

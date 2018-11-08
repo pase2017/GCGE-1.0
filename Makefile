@@ -5,11 +5,11 @@ include $(GCGEHOME)/config/make.inc
 WITH_MPI = $(findstring mpi, $(CC))
 
 install_libs =
-install_libs += $(if $(WITHMPI) without-mpi  ,with-mpi  ) 
+install_libs += $(if $(WITHMPI),  with-mpi, without-mpi) 
 install_libs += libgcge_core libgcge_csr
-install_libs += $(if $(HYPREINC) ,libgcge_hypre) 
-install_libs += $(if $(PETSCINC) ,libgcge_petsc) 
-install_libs += $(if $(SLEPCINC) ,libgcge_slepc) 
+install_libs += $(if $(HYPREINC), libgcge_hypre) 
+install_libs += $(if $(PETSCINC), libgcge_petsc) 
+install_libs += $(if $(SLEPCINC), libgcge_slepc) 
 
 ###########################################################
 all: 	help
@@ -17,7 +17,6 @@ all: 	help
 ###########################################################
 
 libs: $(install_libs)
-	@echo $(install_libs)
 	@echo "======================================="
 	@echo "Build $(strip $(subst -, , $(install_libs))) complete."
 	@echo "======================================="
@@ -25,11 +24,9 @@ libs: $(install_libs)
 	@echo "make install"
 	
 without-mpi:
-	@echo $(install_libs)
 	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 0/" $(GCGESRC)/gcge_type.h
 
 with-mpi:
-	@echo $(install_libs)
 	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 1/" $(GCGESRC)/gcge_type.h
 
 libgcge_core:
@@ -85,8 +82,9 @@ clean:
 
 
 cleanall: clean
-	@cd $(GCGELIB);  $(RM) $(RMFLAGS) *.a
-	@cd $(GCGEINC);  $(RM) $(RMFLAGS) *.h
+	@cd $(GCGELIB);   $(RM) $(RMFLAGS) *.a
+	@cd $(GCGEINC);   $(RM) $(RMFLAGS) *.h
+	@$(RM) $(RMFLAGS) libGCGE-$(version).a
 
 install:
 	@echo "Create $(INSTALLDIR)/include and $(INSTALLDIR)/lib"
@@ -94,11 +92,11 @@ install:
 	@mkdir -p  $(INSTALLDIR)/include
 	@mkdir -p  $(INSTALLDIR)/lib
 	@$(CP) -fR $(GCGEINC)/*.h $(INSTALLDIR)/include
-	@$(AR) -x  $(LIBGCGE)
-	@$(AR) -x  $(LIBGCGECSR)
-	@$(AR) -x  $(LIBGCGEHYPRE)
-	@$(AR) -x  $(LIBGCGEPETSC)
-	@$(AR) -x  $(LIBGCGESLEPC)
+	@if [ -f $(LIBGCGE) ];      then $(AR) -x  $(LIBGCGE)     ; fi
+	@if [ -f $(LIBGCGECSR) ];   then $(AR) -x  $(LIBGCGECSR)  ; fi
+	@if [ -f $(LIBGCGEHYPRE) ]; then $(AR) -x  $(LIBGCGEHYPRE); fi
+	@if [ -f $(LIBGCGEPETSC) ]; then $(AR) -x  $(LIBGCGEPETSC); fi
+	@if [ -f $(LIBGCGESLEPC) ]; then $(AR) -x  $(LIBGCGESLEPC); fi
 	@$(ARCH) $(ARCHFLAGS) libGCGE-$(version).a *.o
 	@$(RANLIB) libGCGE-$(version).a
 	@$(RM) $(RMFLAGS) *.o
