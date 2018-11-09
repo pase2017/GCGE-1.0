@@ -1142,3 +1142,250 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     }//end for(i=0; i <2; ++i)
 }//end for the block orthogonalization
 
+/** 
+ *  V:         input,        要正交化的向量组
+ *  ldV:       input,        子空间向量组V的长度
+ *  start:     input,        要正交化的向量组在V中的起始位置
+ *  end:       input|output, 要正交化的向量组在V中的终止位置
+ *  B:         input,        正交化矩阵, 可以是NULL,这里只考虑B==NULL的情况
+ *  ldB:       input,        子空间矩阵B的规模
+ *  orth_para: input,        正交化参数
+ *  d_tmp:     input,        临时存储空间
+ *
+ *  块正交化过程：
+ *  
+ *  V = [V1, V2], V中有两个部分, 其中V1部分已经正交, 
+ *  V1中有 size_V1(这里是start)个向量, V2中有 size_V2(这里是end-start) 个向量
+ *
+ *  临时存储空间使用workspace中的 evec(nev个), V_tmp(dim_xp-nev个), CG_p(1个)
+ *
+ *  下面的过程进行两次(相当于做一次重正交化)
+ *  1. 去掉 V2 中 V1 方向的分量
+ *     for current = start_V1:end_V1
+ *         计算 d_tmp = (V2, V[current])
+ *         for V2_current = start_V2:end_V2
+ *             计算 V[V2_current] = V[V2_current] - d_tmp[V2_current-start_V2] * V[current]
+ *         end
+ *     end
+ *
+ *  2. V2 自身做正交化 
+ *     for current = start_V2:end_V2
+ *         计算 d_tmp = (V[current:end_V2], V[current])
+ *         norm = sqrt(d_tmp[0])
+ *         如果norm > orth_zero_tol
+ *            for V2_current = current:end_V2
+ *                计算 V[V2_current] = V[V2_current] - d_tmp[V2_current-i]/norm * V[current]
+ *            end
+ *         否则，判定向量V[V2_current]为0
+ *     end
+ *
+ */
+void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+        GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
+        GCGE_DOUBLE *d_tmp, GCGE_OPS *ops)
+{
+    GCGE_Printf("Use GCGE_BOrthogonalSubspace.\n");
+    GCGE_INT    current = 0;        //当前进行正交化操作的向量编号
+    GCGE_INT    current_V2 = 0;     //当前进行正交化操作的向量编号
+    GCGE_INT    reorth_count = 0;
+    GCGE_INT    orth_length = *end - start;
+    GCGE_INT    orth_ncols = 1;
+    GCGE_INT    max_reorth_count = orth_para->max_reorth_time;
+    GCGE_DOUBLE orth_zero_tol = orth_para->orth_zero_tol;
+    GCGE_DOUBLE alpha = 1.0;
+    GCGE_DOUBLE beta = 0.0;
+    GCGE_DOUBLE norm = 0.0;
+    max_reorth_count = 2;
+    for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+    {
+        orth_length = *end - start;
+        //去掉 V2 中 V1 方向的分量
+        for(current = 0; current < start; ++current)
+        {
+            //计算 d_tmp = (V2, V[current])
+            ops->DenseMatDotDenseMat("T", "N", &orth_length, &orth_ncols,
+                    &nrows, &alpha, V+start*ldV, &ldV, V+current*ldV, &ldV,
+                    &beta, d_tmp, &orth_length);
+            //ops->DenseMatDotVec("T", &ldV, &orth_length, &alpha, V+start*ldV,
+            //        &ldV, V+current*ldV, &orth_ncols, &beta, d_tmp, &orth_ncols);
+            for(current_V2 = start; current_V2 < *end; current_V2++)
+            {
+                if(fabs(d_tmp[current_V2-start]) > 10.0*orth_zero_tol)
+                     GCGE_VecAXPBYSubspace(-d_tmp[current_V2-start], V+current*ldV,
+                        1.0, V+current_V2*ldV, nrows);
+            }
+        }
+        //V2 自身做正交化 
+        for(current = start; current < *end; ++current)
+        {
+            orth_length = *end - current;
+            //计算 d_tmp = (V[current:end_V2], V[current])
+            ops->DenseMatDotDenseMat("T", "N", &orth_length, &orth_ncols,
+                    &nrows, &alpha, V+current*ldV, &ldV, V+current*ldV, &ldV,
+                    &beta, d_tmp, &orth_length);
+            //ops->DenseMatDotVec("T", &ldV, &orth_length, &alpha, 
+            //        V+current*ldV, &ldV, V+current*ldV, &orth_ncols, 
+            //        &beta, d_tmp, &orth_ncols);
+            norm = sqrt(d_tmp[0]);
+            if(norm > orth_zero_tol)
+            {
+                GCGE_VecScaleSubspace(1.0/norm, V+current*ldV, nrows);
+                for(current_V2=current+1; current_V2 < *end; current_V2++)
+                {
+                    if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
+                        GCGE_VecAXPBYSubspace(-d_tmp[current_V2 - current]/norm, 
+                            V+current*ldV, 1.0, V+current_V2*ldV, nrows);
+                }
+            }
+            else
+            {
+                //如果v_current为0，就把最后一个向量拷贝到当前向量的位置
+                //如果本向量就是最后一个向量，那就不拷贝(考虑如果是最后一个直接跳出)
+                //同时(*end)--,把总向量的个数减1
+                //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+                if(current != *end-1)
+                {
+                    //下面这个函数的方式应该是copy（from ,to， OK！
+                    GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                }//end if (current != *end-1)
+                (*end)--;
+                current--;
+                //如果这个时候需要输出提醒信息，就输出
+                if(orth_para->print_orth_zero == 1)
+                {
+                    printf("In OrthogonalSubspace, there is a zero vector!, "
+                            "current = %d, start = %d, end = %d\n", current, start, *end);
+                }//end if (orth_para->print_orth_zero == 1)
+            }//end if (vout > orth_para->orth_zero_tol)
+        }
+    }
+}//end for this subprogram
+
+/** 
+ *  V:         input,        要正交化的向量组
+ *  start:     input,        要正交化的向量组在V中的起始位置
+ *  end:       input|output, 要正交化的向量组在V中的终止位置
+ *  B:         input,        正交化矩阵, 可以是NULL
+ *  ops:       input,        操作
+ *  para:      input,        参数
+ *  workspace: input,        工作空间
+ *
+ *  块正交化过程：
+ *  
+ *  V = [V1, V2], V中有三个部分, 其中V1部分已经正交, 
+ *  V1中有 size_V1(这里是nev) 个向量 
+ *  V2中有 size_V2(这里是w_length=end-start) 个向量
+ *
+ *  临时存储空间使用workspace中的 evec(nev个), V_tmp(dim_xp-nev个), CG_p(1个)
+ *
+ *  下面的过程进行两次(相当于做一次重正交化)
+ *  1. 去掉 V2 中 V1 方向的分量
+ *     V2 = V2 - V1 * (V1^T * V2)
+ *   > 计算 subspace_dtmp = V1^T * V2
+ *          subspace_dtmp: GCGE_DOUBLE *数组
+ *            size_V1 行, 即start行,w_length 列
+ *   > 计算 V2 = V2 - V1 * subspace_dtmp
+ *
+ *  2. V2 自身做正交化 
+ *     for current = start_V2:end_V2
+ *         计算 d_tmp = (V[current:end_V2], V[current])
+ *         norm = sqrt(d_tmp[0])
+ *         如果norm > orth_zero_tol
+ *            for V2_current = current:end_V2
+ *                计算 V[V2_current] = V[V2_current] - d_tmp[V2_current-i]/norm * V[current]
+ *            end
+ *         否则，判定向量V[V2_current]为0
+ *     end
+ *
+ */
+void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+        GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
+        GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
+{
+    GCGE_Printf("Use GCGE_SCBOrthogonalSubspace.\n");
+    GCGE_INT    current = 0; //当前进行正交化操作的向量编号
+    GCGE_INT    current_V2 = 0; //当前进行正交化操作的向量编号
+    GCGE_INT    reorth_count = 0;
+    GCGE_INT    orth_length = *end - start;
+    GCGE_INT    old_orth_length = *end - start;
+    GCGE_INT    orth_ncols = 1;
+    GCGE_INT    max_reorth_count = orth_para->max_reorth_time;
+    GCGE_DOUBLE orth_zero_tol = orth_para->orth_zero_tol;
+    GCGE_DOUBLE alpha = 1.0;
+    GCGE_DOUBLE beta = 0.0;
+    GCGE_DOUBLE norm = 0.0;
+    GCGE_DOUBLE test_temp = 0.0;
+    GCGE_INT    test_i = 0;
+    GCGE_DOUBLE *d_tmp = workspace->subspace_dtmp;
+    GCGE_INT    tmp_eval_nonzero_start = 0;
+    GCGE_INT    i = 0;
+
+    if(start != 0)
+    {
+        for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+        {
+            orth_length = *end - start;
+            //计算 d_tmp = V1^T * V2
+            alpha = 1.0;
+            beta  = 0.0;
+            ops->DenseMatDotDenseMat("T", "N", &start, &orth_length,
+                    &nrows, &alpha, V, &ldV, V+start*ldV, &ldV,
+                    &beta, d_tmp, &start);
+            //计算 V2 = V2 - V1 * subspace_dtmp
+            alpha = -1.0;
+            beta  = 1.0;
+            ops->DenseMatDotDenseMat("N", "N", &ldV, &orth_length,
+                    &start, &alpha, V, &ldV, d_tmp, &start,
+                    &beta, V+start*ldV, &ldV);
+        }
+    }
+    max_reorth_count = 1;
+    for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+    {
+        //V2 自身做正交化 
+        for(current = start; current < *end; ++current)
+        {
+            orth_length = *end - current;
+            //计算 d_tmp = (V[current:end_V2], V[current])
+            alpha = 1.0;
+            beta  = 0.0;
+            ops->DenseMatDotDenseMat("T", "N", &orth_length, &orth_ncols,
+                    &nrows, &alpha, V+current*ldV, &ldV, V+current*ldV, &ldV,
+                    &beta, d_tmp, &orth_length);
+            //ops->DenseMatDotVec("T", &ldV, &orth_length, &alpha, 
+            //        V+current*ldV, &ldV, V+current*ldV, &orth_ncols, 
+            //        &beta, d_tmp, &orth_ncols);
+            norm = sqrt(d_tmp[0]);
+            if(norm > orth_zero_tol)
+            {
+                GCGE_VecScaleSubspace(1.0/norm, V+current*ldV, nrows);
+                for(current_V2=current+1; current_V2 < *end; current_V2++)
+                {
+                    if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
+                        GCGE_VecAXPBYSubspace(-d_tmp[current_V2 - current]/norm, 
+                            V+current*ldV, 1.0, V+current_V2*ldV, nrows);
+                }
+            }
+            else
+            {
+                //如果v_current为0，就把最后一个向量拷贝到当前向量的位置
+                //如果本向量就是最后一个向量，那就不拷贝(考虑如果是最后一个直接跳出)
+                //同时(*end)--,把总向量的个数减1
+                //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+                if(current != *end-1)
+                {
+                    //下面这个函数的方式应该是copy（from ,to， OK！
+                    GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                }//end if (current != *end-1)
+                (*end)--;
+                current--;
+                //如果这个时候需要输出提醒信息，就输出
+                if(orth_para->print_orth_zero == 1)
+                {
+                    printf("In OrthogonalSubspace, there is a zero vector!, "
+                            "current = %d, start = %d, end = %d\n", current, start, *end);
+                }//end if (orth_para->print_orth_zero == 1)
+            }//end if (vout > orth_para->orth_zero_tol)
+        }
+    }
+}//end for this subprogram

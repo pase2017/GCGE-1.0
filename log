@@ -329,3 +329,10 @@ lp64和ilp64只有在整型上有区别
 2. 添加了参数scbgs_wself_max_reorth_time
     1) 修改了gcge_para.h gcge_para.c
     2) 在gcge_orthogonal.c 中使用它
+
+2018.11.09-1 zhangning
+1. 添加了两种子空间正交化方式：GCGE_BOrthogonalSubspace与GCGE_SCBOrthogonalSubspace,
+    并添加了选择子空间正交化方式的参数p_orth_type
+    1) 修改了gcge_para.c gcge_para.h，添加参数p_orth_type
+    2) 修改了gcge_orthogonal.c gcge_orthogonal.h，添加了两种子空间正交化函数
+    3) 修改了gcge_xpw.c gcge_rayleighritz.c，添加了其中对于子空间正交化方式的选择
