@@ -2,14 +2,22 @@ GCGEHOME = .
 include $(GCGEHOME)/config/make.inc
 .PHONY: all libs clean help
 
-WITH_MPI = $(findstring mpi, $(CC))
+WITHMPI = $(findstring mpi, $(CC))
 
 install_libs =
-install_libs += $(if $(WITHMPI),  without-mpi, with-mpi) 
+install_libs += $(if $(WITHMPI),  with-mpi, without-mpi) 
 install_libs += libgcge_core libgcge_csr
 install_libs += $(if $(HYPREINC), libgcge_hypre) 
 install_libs += $(if $(PETSCINC), libgcge_petsc) 
 install_libs += $(if $(SLEPCINC), libgcge_slepc) 
+install_libs += $(if $(SLEPCINC), libgcge_slepc) 
+ifeq ($(GCGEHOME)/blaslapack/liblapack.a, $(LIBLAPACK)) 
+   install_libs += liblapack
+endif
+ifeq ($(GCGEHOME)/blaslapack/libblas.a, $(LIBBLAS)) 
+   install_libs += libblas
+endif
+
 
 ###########################################################
 all: 	help
@@ -54,6 +62,16 @@ libgcge_slepc:
 	@echo "        Making library SLEPC           "
 	@cd $(GCGEHOME)/app/slepc;  $(MAKE) lib
 
+liblapack:
+	@echo "======================================="
+	@echo "        Making library LAPACK          "
+	@cd $(GCGEHOME)/blaslapack/lapack;  $(MAKE) lib
+
+libblas:
+	@echo "======================================="
+	@echo "        Making library BLAS            "
+	@cd $(GCGEHOME)/blaslapack/blas;    $(MAKE) lib
+
 
 #test-csr: 
 #	@cd $(GCGEHOME)/test/csr;    $(MAKE) exe run-solver
@@ -79,12 +97,15 @@ clean:
 #	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/blaslapack/lapack;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/blaslapack/blas;    make clean; rm -rf *~
 
 
 cleanall: clean
 	@cd $(GCGELIB);   $(RM) $(RMFLAGS) *.a
 	@cd $(GCGEINC);   $(RM) $(RMFLAGS) *.h
 	@$(RM) $(RMFLAGS) libGCGE-$(version).a
+	@$(RM) $(RMFLAGS) $(GCGEHOME)/blaslapack/*.a
 
 install:
 	@echo "Create $(INSTALLDIR)/include and $(INSTALLDIR)/lib"
@@ -97,6 +118,8 @@ install:
 	@if [ -f $(LIBGCGEHYPRE) ]; then $(AR) -x  $(LIBGCGEHYPRE); fi
 	@if [ -f $(LIBGCGEPETSC) ]; then $(AR) -x  $(LIBGCGEPETSC); fi
 	@if [ -f $(LIBGCGESLEPC) ]; then $(AR) -x  $(LIBGCGESLEPC); fi
+	@if [ -f $(GCGEHOME)/blaslapack/liblapack.a ]; then $(AR) -x  $(LIBLAPACK); fi
+	@if [ -f $(GCGEHOME)/blaslapack/libblas.a   ]; then $(AR) -x  $(LIBBLAS);   fi
 	@$(ARCH) $(ARCHFLAGS) libGCGE-$(version).a *.o
 	@$(RANLIB) libGCGE-$(version).a
 	@$(RM) $(RMFLAGS) *.o
