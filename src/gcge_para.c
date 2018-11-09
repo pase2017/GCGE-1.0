@@ -40,7 +40,8 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交
     (*para)->w_orth_type     = "scbgs"; //使用稳定+高效的块正交化方法
-    (*para)->p_orth_type     = "gs"; //使用原始的Gram-Schmidit正交化方法
+    (*para)->p_orth_type     = "scbgs"; //使用稳定+高效的块正交化方法
+    (*para)->x_orth_type     = "gs"; //使用原始的Gram-Schmidit正交化方法
     (*para)->conv_omega_norm = 0.0; //使用残差的Omega范数时，矩阵A的omega范数取多少
 
      //正交化参数
@@ -169,6 +170,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->p_orth_type = argv[arg_index++];
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_x_orth_type")) 
+        {
+            arg_index++;
+            para->x_orth_type = argv[arg_index++];
+        }
         else if(0 == strcmp(argv[arg_index], "-gcge_orth_zero_tol")) 
         {
             arg_index++;
@@ -288,7 +294,8 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_conv_type          <c>: use reletive or abosolute or omega residual   (default: R[A|O])\n");
        GCGE_Printf("  -gcge_orth_type          <c>: use A norm or B norm orthogonal               (default: B)\n");
        GCGE_Printf("  -gcge_w_orth_type        <c>: use which kind of orthogonalization for W     (default: bgs[cbgs|gs])\n");
-       GCGE_Printf("  -gcge_p_orth_type        <c>: use which kind of subspace orthogonalization  (default: gs[scbgs|bgs])\n");
+       GCGE_Printf("  -gcge_p_orth_type        <c>: use which kind of orthogonalization for P     (default: gs[scbgs|bgs])\n");
+       GCGE_Printf("  -gcge_x_orth_type        <c>: use which kind of orthogonalization for X     (default: bgs[cbgs|gs])\n");
        GCGE_Printf("  -gcge_orth_zero_tol      <d>: zero tolerance in orthogonal                  (default: 1e-16)\n");
        GCGE_Printf("  -gcge_reorth_tol         <d>: reorthgonal tolerance                         (default: 0.75)\n");
        GCGE_Printf("  -gcge_scbgs_reorth_tol   <d>: reorthgonal tolerance in scbgs                (default: 0.75)\n");
@@ -603,8 +610,9 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  print_para         : %8d, (print the parameters not)\n", para->print_para     );
        GCGE_Printf("  print_result       : %8d, (print the final result or not)\n", para->print_result   );
        GCGE_Printf("  orth_type          : %8s, (use A norm or B norm orthogonal)\n", para->orth_type      );
-       GCGE_Printf("  w_orth_type        : %8s, (use which kind of orthogonalization)\n", para->w_orth_type    );
-       GCGE_Printf("  p_orth_type        : %8s, (use which kind of subspace orthogonalization)\n", para->p_orth_type    );
+       GCGE_Printf("  w_orth_type        : %8s, (use which kind of orthogonalization for W)\n", para->w_orth_type    );
+       GCGE_Printf("  p_orth_type        : %8s, (use which kind of orthogonalization for P)\n", para->p_orth_type    );
+       GCGE_Printf("  x_orth_type        : %8s, (use which kind of orthogonalization for X)\n", para->x_orth_type    );
        GCGE_Printf("  conv_type          : %8s, (use reletive or abosolute residual)\n", para->conv_type      );
        GCGE_Printf("  conv_omega_norm    : %f, (the omega norm of matrix A)\n", para->conv_omega_norm);
        GCGE_Printf("  ev_tol             : %3.2e, (convergence tolerance)\n", para->ev_tol         );

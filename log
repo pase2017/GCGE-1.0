@@ -336,3 +336,6 @@ lp64和ilp64只有在整型上有区别
     1) 修改了gcge_para.c gcge_para.h，添加参数p_orth_type
     2) 修改了gcge_orthogonal.c gcge_orthogonal.h，添加了两种子空间正交化函数
     3) 修改了gcge_xpw.c gcge_rayleighritz.c，添加了其中对于子空间正交化方式的选择
+2. 继续添加了X部分子空间正交化方式的参数x_orth_type
+    1) 修改了gcge_para.c gcge_para.h，添加参数x_orth_type
+    2) 修改了gcge_rayleighritz.c，修改了其中对于X部分子空间正交化方式的选择
