@@ -1389,3 +1389,114 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
         }
     }
 }//end for this subprogram
+
+/*
+ *  子空间正交化分批计算 GCGE_BlockOrthogonalSubspace
+ *  V:         input,        要正交化的向量组
+ *  ldV:       input,        向量组V的leading dimension
+ *  nrows:     input,        要进行正交化的向量长度
+ *  end:       input|output, 要正交化的向量组在V中的终止位置
+ *  orth_block_size: input,  每次正交化的向量个数
+ *  ops:       input,        操作
+ *  para:      input,        参数
+ *  workspace: input,        工作空间
+ *
+ *  块正交化过程：
+ *  
+ *  V = [V1, V2, V3, ... , Vn], V中有n个部分, 
+ *  n = (end+orth_block_size-1)/orth_block_size
+ *  Vi中有 orth_size 个向量 
+ *  orth_size = min(end-start, orth_block_size)
+ *
+ *  对 i = 0:n-1
+ *  start = i * orth_block_size
+ *  orth_size = min(end-start, orth_block_size)
+ *  block_end = start + orth_size
+ *
+ *  1. 去掉 Vi 中 Vs = [V1, ... , V{i-1}] 方向的分量
+ *     Vi = Vi - Vs * (Vs^T * Vi)
+ *   > 计算 subspace_dtmp = Vs^T * Vi
+ *          subspace_dtmp: GCGE_DOUBLE *数组
+ *            size_Vs 行, 即 start 行, orth_size 列
+ *   > 计算 Vi = Vi - Vs * subspace_dtmp
+ *
+ *  2. Vi 自身做正交化 
+ *     for current = start:block_end
+ *         计算 d_tmp = (V[current:block_end], V[current])
+ *         norm = sqrt(d_tmp[0])
+ *         如果norm > orth_zero_tol
+ *            for Vi_current = current:block_end
+ *                计算 V[Vi_current] = V[Vi_current] 
+ *                - d_tmp[Vi_current-i]/norm * V[current]
+ *            end
+ *         否则，判定向量V[Vi_current]为0
+ *     end
+ *
+ */
+void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
+        GCGE_INT nrows, GCGE_INT *end, GCGE_INT orth_block_size,
+        GCGE_OPS *ops, GCGE_PARA *para, GCGE_DOUBLE *subspace_dtmp)
+{
+    if(orth_block_size < 1)
+    {
+        orth_block_size = (*end)/5;
+    }
+    GCGE_INT num_block = ((*end)+orth_block_size-1)/orth_block_size;
+    GCGE_INT current_block = 0;
+    GCGE_INT start = 0;
+    GCGE_INT orth_size = 0;
+    GCGE_INT block_end = 0;
+    GCGE_INT reorth_count = 0;
+    GCGE_ORTH_PARA *orth_para = para->orth_para;
+    GCGE_INT max_reorth_count = orth_para->max_reorth_time;
+
+    GCGE_DOUBLE alpha = 0.0;
+    GCGE_DOUBLE beta  = 0.0;
+
+    for(current_block=0; current_block<num_block; current_block++)
+    {
+        //本批次要进行正交化的向量的起始列号,列数,与终点列号
+        orth_size = ((*end)-start < orth_block_size)?((*end)-start):orth_block_size;
+        block_end = start + orth_size;
+        if(start > 0)
+        {
+            //减去前面的分量
+            for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+            {
+                //计算 subspace_dtmp = Vs^T * Vi
+                alpha = 1.0;
+                beta  = 0.0;
+                ops->DenseMatDotDenseMat("T", "N", &start, &orth_size,
+                        &nrows, &alpha, V, &ldV, V+start*ldV, &ldV,
+                        &beta, subspace_dtmp, &start);
+                //计算 Vi = Vi - Vs * subspace_dtmp
+                alpha = -1.0;
+                beta  = 1.0;
+                ops->DenseMatDotDenseMat("N", "N", &ldV, &orth_size,
+                        &start, &alpha, V, &ldV, subspace_dtmp, &start,
+                        &beta, V+start*ldV, &ldV);
+            }
+        }
+        //自身正交化
+        if(strcmp(para->x_orth_type, "bgs") == 0)
+        {
+            GCGE_BOrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
+                NULL, -1, orth_para, subspace_dtmp, ops);
+        }
+        else
+        {
+            GCGE_OrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
+                NULL, -1, orth_para);
+        }
+        //更新下一批次的start
+        start += orth_size;
+        if(start < block_end)
+        {
+            //说明自身正交化时有0向量出现
+            //更新end
+            *end -= block_end-start;
+            //将最后几列向量拷贝到当前start位置
+            memcpy(V+start*ldV, V+(*end)*ldV, (block_end-start)*ldV*sizeof(GCGE_DOUBLE));
+        }
+    }
+}

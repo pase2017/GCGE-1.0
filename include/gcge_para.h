@@ -32,6 +32,7 @@ typedef struct GCGE_ORTH_PARA_ {
     GCGE_INT    max_reorth_time;   //最大的重正交化次数
     GCGE_INT    scbgs_wself_max_reorth_time; //SCB正交化中自身的最多重正交化次数
     GCGE_INT    print_orth_zero;   //print_orthzero确定是否打印正交化过程中出现0向量的信息,0:不打印，1:打印
+    GCGE_INT    x_orth_block_size; //X部分子空间正交化时每批次计算的向量个数
 
 }GCGE_ORTH_PARA;
 

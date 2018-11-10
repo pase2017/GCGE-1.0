@@ -339,3 +339,9 @@ lp64和ilp64只有在整型上有区别
 2. 继续添加了X部分子空间正交化方式的参数x_orth_type
     1) 修改了gcge_para.c gcge_para.h，添加参数x_orth_type
     2) 修改了gcge_rayleighritz.c，修改了其中对于X部分子空间正交化方式的选择
+
+2018.11.10-1 zhangning
+1. 添加了分批计算的子空间正交化方式，并在计算X部分的子空间正交化时使用
+    1) 修改了gcge_orthogonal.c gcge_orthogonal.h添加了GCGE_BlockOrthogonalSubspace
+    2) 修改了gcge_para.h gcge_para.c 添加了正交化分批计算的x_orth_block_size这个参数
+    3) 修改了gcge_rayleighritz.c 添加了这种正交化方式的调用

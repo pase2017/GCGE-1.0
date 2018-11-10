@@ -59,4 +59,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
 void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
       GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
       GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
+void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
+        GCGE_INT nrows, GCGE_INT *end, GCGE_INT orth_block_size,
+        GCGE_OPS *ops, GCGE_PARA *para, GCGE_DOUBLE *subspace_dtmp);
 #endif
