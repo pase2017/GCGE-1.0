@@ -3,21 +3,12 @@ GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
 ############################################################
-OBJS1 = test_matvec.o
-OBJS2 = test_hypre_solver.o
-OBJS3 = test_hypre_solver_ls.o
-OBJS4 = test_gcge_lobpcg.o
-OBJS5 = test_bcg.o
+OBJS2 = test_phg_solver.o
 
-EXE1  = test_matvec.exe 
-EXE2  = test_hypre_solver.exe
-#EXE3  = test_hypre_solver_ls.exe
-EXE4  = test_gcge_lobpcg.exe
-EXE5  = test_bcg.exe
+EXE2  = test_phg_solver.exe
 
-# Set $(HYPREFLAGS) to be -DHAVE_CONFIG_H -DHYPRE_TIMING to use hypre_time
-INC   = -I$(GCGEINC) -I$(HYPREINC) $(HYPREFLAGS)
-LIBS  = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
+INC   = -I$(GCGEINC) -I$(PHGINC) $(PHGFLAGS)
+LIBS  = $(LIBGCGEPHG) $(LIBGCGE) $(LIBPHG) $(LIBSLEPC) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
 
 ############################################################
 
@@ -43,20 +34,8 @@ help:
 	@echo "   help  - print this message"
 	@echo " "
 
-run-matvec:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE1)
-
-run-hypre-solver:
+run-phg-solver:
 	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE2)
-
-run-hypre-solver-ls:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE3)
-
-run-gcge-lobpcg:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE4)
-
-run-bcg:
-	$(DEBUGEXEC) $(DEBUGFLAGS) $(EXE5)
 
 ############################################################
 .f.o:
@@ -70,34 +49,10 @@ run-bcg:
 	@$(CPP)  $(CPPFLAGS) -c $*.cpp -o $*.o $(INC)
 
 ############################################################
-$(EXE1): $(OBJS1)
-	@echo ''
-	@echo 'Creating executable bin/xx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
-	@echo ''
-
 $(EXE2): $(OBJS2)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
 	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
-	@echo ''
-
-$(EXE3): $(OBJS3)
-	@echo ''
-	@echo 'Creating executable bin/xxx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
-	@echo ''
-
-$(EXE4): $(OBJS4) laplace.o 
-	@echo ''
-	@echo 'Creating executable bin/xxx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $^ $(LIBS)
-	@echo ''
-
-$(EXE5): $(OBJS5) laplace.o 
-	@echo ''
-	@echo 'Creating executable bin/xxx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@echo ''
 
 ############################################################

@@ -10,7 +10,7 @@ install_libs += libgcge_core libgcge_csr
 install_libs += $(if $(HYPREINC), libgcge_hypre) 
 install_libs += $(if $(PETSCINC), libgcge_petsc) 
 install_libs += $(if $(SLEPCINC), libgcge_slepc) 
-install_libs += $(if $(SLEPCINC), libgcge_slepc) 
+install_libs += $(if $(PHGINC),   libgcge_phg) 
 ifeq ($(GCGEHOME)/blaslapack/liblapack.a, $(LIBLAPACK)) 
    install_libs += liblapack
 endif
@@ -62,6 +62,11 @@ libgcge_slepc:
 	@echo "        Making library SLEPC           "
 	@cd $(GCGEHOME)/app/slepc;  $(MAKE) lib
 
+libgcge_phg:
+	@echo "======================================="
+	@echo "        Making library PHG             "
+	@cd $(GCGEHOME)/app/phg;    $(MAKE) lib
+
 liblapack:
 	@echo "======================================="
 	@echo "        Making library LAPACK          "
@@ -94,6 +99,7 @@ clean:
 	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/phg;    make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
 #	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
@@ -118,6 +124,7 @@ install:
 	@if [ -f $(LIBGCGEHYPRE) ]; then $(AR) -x  $(LIBGCGEHYPRE); fi
 	@if [ -f $(LIBGCGEPETSC) ]; then $(AR) -x  $(LIBGCGEPETSC); fi
 	@if [ -f $(LIBGCGESLEPC) ]; then $(AR) -x  $(LIBGCGESLEPC); fi
+	@if [ -f $(LIBGCGEPHG)   ]; then $(AR) -x  $(LIBGCGEPHG)  ; fi
 	@if [ -f $(GCGEHOME)/blaslapack/liblapack.a ]; then $(AR) -x  $(LIBLAPACK); fi
 	@if [ -f $(GCGEHOME)/blaslapack/libblas.a   ]; then $(AR) -x  $(LIBBLAS);   fi
 	@$(ARCH) $(ARCHFLAGS) libGCGE-$(version).a *.o
