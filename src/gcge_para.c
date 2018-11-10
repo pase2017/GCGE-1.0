@@ -54,6 +54,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->orth_para->criterion_tol    = 1e-6;
     (*para)->orth_para->print_orth_zero  = 0;
     (*para)->orth_para->x_orth_block_size= 0;
+    (*para)->orth_para->w_orth_block_size= 0;
 
     (*para)->multi_tol       = 0.2;
     (*para)->multi_tol_for_lock = 1e-6;
@@ -135,6 +136,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
         {
             arg_index++;
             para->orth_para->x_orth_block_size = atoi(argv[arg_index++]);
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_w_orth_block_size")) 
+        {
+            arg_index++;
+            para->orth_para->w_orth_block_size = atoi(argv[arg_index++]);
         }
         else if(0 == strcmp(argv[arg_index], "-gcge_if_lobgcg")) 
         {
@@ -303,6 +309,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_p_orth_type        <c>: use which kind of orthogonalization for P     (default: gs[scbgs|bgs])\n");
        GCGE_Printf("  -gcge_x_orth_type        <c>: use which kind of orthogonalization for X     (default: bgs[cbgs|gs])\n");
        GCGE_Printf("  -gcge_x_orth_block_size  <i>: number of vectors orthogonalized in one patch (default: nev/5)\n");
+       GCGE_Printf("  -gcge_w_orth_block_size  <i>: number of vectors orthogonalized in one patch (default: nev/5)\n");
        GCGE_Printf("  -gcge_orth_zero_tol      <d>: zero tolerance in orthogonal                  (default: 1e-16)\n");
        GCGE_Printf("  -gcge_reorth_tol         <d>: reorthgonal tolerance                         (default: 0.75)\n");
        GCGE_Printf("  -gcge_scbgs_reorth_tol   <d>: reorthgonal tolerance in scbgs                (default: 0.75)\n");
@@ -350,6 +357,10 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
     if(para->orth_para->x_orth_block_size == 0)
     {
         para->orth_para->x_orth_block_size = nev/5;
+    }
+    if(para->orth_para->x_orth_block_size == 0)
+    {
+        para->orth_para->x_orth_block_size = para->block_size/5;
     }
     para->orth_para->orth_zero_tol += DBL_EPSILON;
     para->orth_para->scbgs_reorth_tol += DBL_EPSILON;
@@ -625,6 +636,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  p_orth_type        : %8s, (use which kind of orthogonalization for P)\n", para->p_orth_type    );
        GCGE_Printf("  x_orth_type        : %8s, (use which kind of orthogonalization for X)\n", para->x_orth_type    );
        GCGE_Printf("  x_orth_block_size  : %8d, (number of vectors orthogonalized in one patch)\n", para->orth_para->x_orth_block_size     );
+       GCGE_Printf("  w_orth_block_size  : %8d, (number of vectors orthogonalized in one patch)\n", para->orth_para->w_orth_block_size     );
        GCGE_Printf("  conv_type          : %8s, (use reletive or abosolute residual)\n", para->conv_type      );
        GCGE_Printf("  conv_omega_norm    : %f, (the omega norm of matrix A)\n", para->conv_omega_norm);
        GCGE_Printf("  ev_tol             : %3.2e, (convergence tolerance)\n", para->ev_tol         );

@@ -1071,7 +1071,7 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     
     
     //对W自身进行正交化
-    GCGE_INT step = 4;    
+    GCGE_INT step = ((*end - start) < orth_para->w_orth_block_size)?(*end - start) : orth_para->w_orth_block_size;
     // 对V中[start：end]向量组本身进行正交化   
     GCGE_INT w_start, w_end, old_w_end;    
     

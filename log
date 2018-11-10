@@ -347,4 +347,7 @@ lp64和ilp64只有在整型上有区别
     3) 修改了gcge_rayleighritz.c 添加了这种正交化方式的调用
 2. 修改了SCBOrthogonal为分批计算的方式，并在W部分的正交化时使用
     1) 修改了gcge_orthogonal.c gcge_orthogonal.h
+3. add a parameter orth_para->w_orth_block_size in GCGE_PARA
+    1) 修改了gcge_para.h gcge_para.c 添加了正交化分批计算的w_orth_block_size这个参数
+    2) 修改了gcge_orthogonal.c
 
