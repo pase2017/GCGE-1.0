@@ -968,6 +968,323 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_ORTH_PARA  *orth_para = para->orth_para; 
+    GCGE_INT        current = 0;               //表示for循环中当前正在进行正交化的向量编号
+    GCGE_INT        w_length = (*end) - start; //表示W向量的个数
+    GCGE_INT        reorth_count = 0; //统计(重)正交化次数
+    GCGE_INT        mv_s[2] = { 0, 0 }; //使用向量组的初始位置
+    GCGE_INT        mv_e[2] = { 0, 0 }; //使用向量组的终止位置
+
+    GCGE_INT        dim_x  = workspace->dim_x;
+    GCGE_INT        dim_xp = workspace->dim_xp;
+    GCGE_INT        nev = para->nev;
+
+    GCGE_DOUBLE     norm_value = 0.0;  //存储当前向量的范数
+    GCGE_DOUBLE    *d_tmp = workspace->subspace_dtmp;
+    void           *vec_current; //当前正在进行正交化的向量
+    void           *vec_tmp;
+    void          **CG_p = workspace->CG_p;
+    //void          **evec = workspace->evec;
+    void           **V_tmp = workspace->V_tmp;
+    GCGE_INT        i = 0, j = 0;
+
+    //求解特征值问题所用参数
+    GCGE_DOUBLE     vl = 0.0;
+    GCGE_DOUBLE     vu = 0.0;
+    GCGE_DOUBLE     abstol = 0.0;
+    GCGE_DOUBLE    *tmp_evec = workspace->subspace_evec;
+    //tmp_evec前 dim_W*dim_W的位置用来存储特真向量
+    GCGE_DOUBLE    *tmp_eval = tmp_evec + w_length*w_length;
+    GCGE_DOUBLE    *dwork_space = d_tmp + w_length*w_length;
+    GCGE_INT        il = 1;
+    GCGE_INT        iu = w_length;
+    GCGE_INT        m = iu-il+1;
+    GCGE_INT        lwork = 8*w_length;
+    GCGE_INT        liwork = 5*w_length;
+    GCGE_INT       *subspace_itmp = workspace->subspace_itmp;
+    GCGE_INT       *isuppz = subspace_itmp + 10*w_length; 
+    GCGE_INT       *ifail = subspace_itmp + 5*w_length; 
+    GCGE_INT        info = 0;
+    GCGE_DOUBLE     Orth_Tol = orth_para->scbgs_reorth_tol;
+    GCGE_DOUBLE     value_inner = 1.0, tmp;
+    GCGE_INT        length = start *w_length, iter = 0;
+
+    GCGE_INT        tmp_eval_nonzero_start = 0; //用于做线性组合的小规模特征向量的起始位置
+    GCGE_INT        nonzero_flag = 0;           //用于确定内积是否都接近0
+
+    //开始进行正交化, 首先把W中含有的X和P的分量都减去，这一部分需要进行快操作，这样才有效率
+    //默认做两次正交化，为了增加数值稳定性,
+    while(value_inner > Orth_Tol)
+    {   
+        //w_length = *end - start;
+        iter ++;      
+        
+        //计算 V_tmp = B * V3 
+        if(B == NULL)
+        {
+            mv_s[0] = start;
+            mv_e[0] = *end;
+            mv_s[1] = 0;
+            mv_e[1] = w_length;
+            ops->MultiVecAxpby(1.0, V, 0.0, V_tmp, mv_s, mv_e, ops);	  	
+        }
+        else
+        {
+            mv_s[0] = start;
+            mv_e[0] = *end;
+            mv_s[1] = 0;
+            mv_e[1] = w_length;
+            ops->MatDotMultiVec(B, V, V_tmp, mv_s, mv_e, ops);
+        }
+        //计算 subspace_dtmp = [V1,V2]^T * V_tmp
+        mv_s[0] = 0;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, start, ops);  
+        value_inner = 0.0;
+        for(i=0;i<length;i++)
+        { 
+            tmp = d_tmp[i];
+            value_inner += tmp*tmp;
+         }
+         value_inner = sqrt(value_inner);
+         GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+         
+
+        //计算 V_tmp = [V1,V2] * subspace_dtmp
+        mv_s[0] = 0;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, d_tmp, start, NULL, -1, ops);
+
+        //计算 V3 = V3 - V_tmp
+        mv_s[0] = 0;
+        mv_e[0] = w_length;
+        mv_s[1] = start;
+        mv_e[1] = *end;
+        ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
+
+        if(iter >= orth_para->max_reorth_time)
+            break;
+    }//end while for value_inner
+    
+    
+    //对W自身进行正交化
+    GCGE_INT step = 4;    
+    // 对V中[start：end]向量组本身进行正交化   
+    GCGE_INT w_start, w_end, old_w_end;    
+    
+    //第一步对开始部分进行正交化
+    w_start = start;        
+    w_end = w_start + step;
+    if(w_end> *end)
+        w_end = *end;
+    //接下来就是对 W[w_start:w_end]进行正交化
+    GCGE_SCBOrth_Self(V, w_start, &w_end, B, ops, para, workspace);
+    
+    //然后进行迭代，在每一步首先减去前面的分量，然后再对自己的部分进行正交化
+    //current = w_end;
+    while(w_end < *end)
+    {
+        //第一步：把之前的分量减去
+        w_start = w_end;
+        w_end = w_start + step;
+        if(w_end> *end)
+             w_end = *end;
+        old_w_end = w_end;
+        GCGE_SCBOrth_Minus(V, w_start, &w_end, B, ops, para, workspace);
+        //第二步：对自身进行正交化: 如果中间出现零向量，会返回新的w_end和workspace->dim_xpw
+        GCGE_SCBOrth_Self(V, w_start, &w_end, B, ops, para, workspace);
+        //如果出现零向量，把V的最后几列与现在w_end之后的几列相交换，并且同时end下降相应的
+        if(w_end<old_w_end)
+        {
+           *end -= old_w_end - w_end;
+           mv_s[0] = w_end;      //表示swap中第一个向量组的起始位置
+           mv_s[1] = *end;     //表示swap中第二个向量组的起始位置
+           mv_e[0] = old_w_end;  //表示swap中第一个向量组的终止位置
+           mv_e[1] = *end + old_w_end - w_end;         //表示swap中第二个向量组的终止位置
+           ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
+        }//end for if w_end<old_w_end              
+    }//end for(current = dim_xpw; current<*(end); current++)      
+}//end for the block orthogonalization
+
+
+//subfunction: 把当前的向量组见去之前已经正交化好的向量组
+//注意，这里是一个定制的正交化过程，现在是对V的W部分进行正交化，之前的X和P部分已经处理完备，现在
+//这里减去的分量都是W的部分
+void GCGE_SCBOrth_Minus(void **V, GCGE_INT start, GCGE_INT *end, 
+        void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+    GCGE_ORTH_PARA  *orth_para = para->orth_para; 
+    GCGE_INT        current = 0; //表示for循环中当前正在进行正交化的向量编号
+    GCGE_INT        w_length = (*end) - start; //表示目前处理的向量个数
+    GCGE_INT        reorth_count = 0; //统计(重)正交化次数
+    GCGE_INT        mv_s[2] = { 0, 0 }; //使用向量组的初始位置
+    GCGE_INT        mv_e[2] = { 0, 0 }; //使用向量组的终止位置
+    
+    GCGE_INT        dim_xp = workspace->dim_xp;
+
+    //GCGE_DOUBLE     norm_value = 0.0;  //存储当前向量的范数
+    GCGE_DOUBLE     *d_tmp = workspace->subspace_dtmp;
+    void            **V_tmp = workspace->V_tmp;
+    GCGE_INT        i = 0;
+    GCGE_DOUBLE     Orth_Tol = orth_para->scbgs_reorth_tol;
+    GCGE_DOUBLE     value_inner = 1.0, tmp;
+    GCGE_INT        length = (start - dim_xp) *w_length, iter = 0;
+    //开始进行正交化
+    //默认做两次正交化，为了增加数值稳定性
+    while(value_inner > Orth_Tol)
+    {   
+        //w_length = *end - start;
+        iter ++;        
+        //计算 V_tmp = B * V3 
+        if(B == NULL)
+        {
+            mv_s[0] = start;
+            mv_e[0] = *end;
+            mv_s[1] = 0;
+            mv_e[1] = w_length;
+            ops->MultiVecAxpby(1.0, V, 0.0, V_tmp, mv_s, mv_e, ops);	  	
+        }
+        else
+        {
+            mv_s[0] = start;
+            mv_e[0] = *end;
+            mv_s[1] = 0;
+            mv_e[1] = w_length;
+            ops->MatDotMultiVec(B, V, V_tmp, mv_s, mv_e, ops);
+        }
+        //计算 subspace_dtmp = W1^T * V_tmp
+        mv_s[0] = dim_xp;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, start, ops);  
+        value_inner = 0.0;
+        for(i=0;i<length;i++)
+        { 
+            tmp = d_tmp[i];
+            value_inner += tmp*tmp;
+         }
+         value_inner = sqrt(value_inner);
+         GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+         
+
+        //计算 V_tmp = W1 * subspace_dtmp
+        mv_s[0] = dim_xp;
+        mv_e[0] = start;
+        mv_s[1] = 0;
+        mv_e[1] = w_length;
+        ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, d_tmp, start, NULL, -1, ops);
+
+        //计算 W2 = W2 - V_tmp
+        mv_s[0] = 0;
+        mv_e[0] = w_length;
+        mv_s[1] = start;
+        mv_e[1] = *end;
+        ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
+
+        if(iter >= orth_para->max_reorth_time)
+            break;
+    }//end while for value_inner 
+}//end for orth_minus  
+        
+
+//subfunction for orthogonalization process: Orthogonalization for the vectors self
+//对V中[start：end]向量组本身进行正交化    
+void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end, 
+              void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+   GCGE_ORTH_PARA  *orth_para = para->orth_para; 
+   GCGE_INT        iter = 0, current, w_lengths;
+   GCGE_INT        w_length;
+   GCGE_INT        j = 0;
+   GCGE_DOUBLE     norm_value = 0.0;  //存储当前向量的范数
+   GCGE_DOUBLE     *d_tmp = workspace->subspace_dtmp;
+   void            *vec_current; //当前正在进行正交化的向量
+   void            *vec_tmp;
+   void            **CG_p = workspace->CG_p;
+   GCGE_INT        mv_s[2] = { 0, 0 }; //使用向量组的初始位置
+   GCGE_INT        mv_e[2] = { 0, 0 }; //使用向量组的终止位置
+   //现在对W本身进行正交化 
+   for(iter=0;iter<(orth_para->scbgs_wself_max_reorth_time);iter++)
+   {
+      for(current=start;current<*(end);current++)
+      {
+           //vec_current = W(:,current)
+           ops->GetVecFromMultiVec(V, current, &vec_current);
+           ops->GetVecFromMultiVec(CG_p, 0, &vec_tmp);
+           if(B == NULL)
+           {
+               ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	    
+           }
+           else
+           {
+               ops->MatDotVec(B, vec_current, vec_tmp);	  		    
+           }
+           ops->RestoreVecForMultiVec(CG_p, 0, &vec_tmp);
+           ops->RestoreVecForMultiVec(V, current, &vec_current);
+           // 计算 d_tmp = V^T * vec_tmp
+           // 即为 d_tmp[j] = (v_j, vec_current)_B
+           mv_s[0] = current;
+           mv_e[0] = *(end);
+           mv_s[1] = 0;
+           mv_e[1] = 1;
+           //d_tmp = vec_tmp*V(:,start:end)
+           w_length = mv_e[0] - mv_s[0];
+           //统一做内积
+           ops->MultiVecInnerProd(V, CG_p, d_tmp, "ns", mv_s, mv_e, w_length, ops);    
+           //V[current]的向量范数
+           norm_value = sqrt(d_tmp[0]);	  
+           //下面看看目前处理的向量是否是一个零向量    	  
+           if(norm_value > (orth_para->orth_zero_tol))
+           {
+               //如果vec_current不为0，就做归一化
+               ops->GetVecFromMultiVec(V, current, &vec_current);
+               //vec_current = 1/norm_value * vec_current
+               ops->VecAxpby(0.0, vec_current, 1.0/norm_value, vec_current);	
+               ops->RestoreVecForMultiVec(V, current, &vec_current);
+               for(j=current+1;j<*(end);j++)
+               {
+                    ops->GetVecFromMultiVec(V, current, &vec_current);
+                    ops->GetVecFromMultiVec(V, j, &vec_tmp);
+                    //vec_tmp = vec_tmp - d_tmp[j-current]/norm_value *vec_current
+                    ops->VecAxpby(-d_tmp[j-current]/norm_value, vec_current, 1.0, vec_tmp);
+                    ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+                    ops->RestoreVecForMultiVec(V, current, &vec_current);
+                }//end for(j=current+1;j<*(end);j++)
+            }
+            else
+            {
+                //如果vec_current为0，就把此向量与最后一个向量进行指针交换
+                //同时(*end)--,把总向量的个数减1
+                //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+                mv_s[0] = current;      //表示swap中第一个向量组的起始位置
+                mv_s[1] = (*end)-1;     //表示swap中第二个向量组的起始位置
+                mv_e[0] = current + 1;  //表示swap中第一个向量组的终止位置
+                mv_e[1] = *end;         //表示swap中第二个向量组的终止位置
+                //向量移动(由用户提供), 目的: V(:,current:end-1) = V(:, )
+                ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
+                (*end)--;
+                current--;                          
+                if(orth_para->print_orth_zero == 1)
+                {
+                    GCGE_Printf("In Orthogonal, there is a zero vector!, "
+                            "current = %d, start = %d, end = %d\n", current, start, *end);		      
+                }//end if(orth_para->print_orth_zero == 1)	    
+            }//end if(vout > orth_para->orth_zero_tol)	  
+        }//end for(current=dim_xp;current<*(end);current++)      
+    }//end for(i=0; i <2; ++i)
+}//GCGE_SCBOrth_Self
+
+
+#if 0
+//Classical Block Orthogonalization
+void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+                      void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+    GCGE_ORTH_PARA  *orth_para = para->orth_para; 
     GCGE_INT        current = 0; //表示for循环中当前正在进行正交化的向量编号
     GCGE_INT        w_length = (*end) - start; //表示W向量的个数
     GCGE_INT        reorth_count = 0; //统计(重)正交化次数
@@ -1141,6 +1458,7 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         }//end for(current=dim_xp;current<*(end);current++)      
     }//end for(i=0; i <2; ++i)
 }//end for the block orthogonalization
+#endif
 
 /** 
  *  V:         input,        要正交化的向量组
