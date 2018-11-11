@@ -8,8 +8,7 @@ OBJS2 = test_phg_solver.o
 EXE2  = test_phg_solver.exe
 
 INC   = -I$(GCGEINC) -I$(PHGINC) $(PHGFLAGS)
-LIBS  = $(LIBGCGEPHG) $(LIBGCGE) $(LIBPHG) $(LIBSLEPC) $(LIBHYPRE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
-
+LIBS  = $(LIBGCGEPHG) $(LIBGCGE) $(LIBPHG)
 ############################################################
 
 ############################################################
@@ -52,7 +51,7 @@ run-phg-solver:
 $(EXE2): $(OBJS2)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
 	@echo ''
 
 ############################################################

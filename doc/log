@@ -339,8 +339,10 @@ lp64和ilp64只有在整型上有区别
 TODO:
 可以在Makefile中的install里，去判断install_libs而不是去判断文件是否存在?
 
-
-
+2018.11.11 liyu
+1. 将phg加入app和test, 由于自适应加密部分不能被并行调用，所以只是读网格，
+   然后生成矩阵，还没有完全做的是，如何将VEC转化成DOF
+2. 将make.inc中PETSC, SLEPC, PHG需要链接的库文件显示写出来了，这样比较直观
 
 
 
