@@ -1,6 +1,8 @@
 ctags.sh
 tags
 include/*.h
+doc/latex
+doc/html
 # Prerequisites
 *.d
 

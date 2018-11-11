@@ -1,0 +1,47 @@
+===Principal developers:
+
+1. Xie Hehu
+hhxie@lsec.cc.ac.cn
+
+2. Zhang Ning
+zhangning114@lsec.cc.ac.cn
+
+3. Li Yu
+liyu@lsec.cc.ac.cn, liyu@tjufe.edu.cn
+
+4. You Chunguang
+youchg@lsec.cc.ac.cn
+
+===Contribution:
+
+1. Theory algorithm design:
+   Xie Hehu, Zhang Ning
+
+2. Software architecture design:
+   Li Yu, You Chunguang
+
+3. Internal block CG:
+   Xie Hehu, Zhang Ning
+
+4. Internal block orthogonalization 
+   Xie Hehu, Zhang Ning
+
+5. App of CSR
+   Li Yu, Zhang Ning
+
+6. App of HYPRE
+   Li Yu
+
+7. App of PETSC
+   Zhang Ning
+
+8. App of PHG
+   Li Yu
+
+9. App of SLEPC
+   Zhang Ning
+
+10.Support for OpenMP
+
+11.Support for Scalapack
+
