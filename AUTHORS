@@ -43,5 +43,10 @@ youchg@lsec.cc.ac.cn
 
 10.Support for OpenMP
 
-11.Support for Scalapack
+11.Support for ScaLAPACK
+
+12.Performance testing
+
+
+
 
