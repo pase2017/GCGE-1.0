@@ -330,6 +330,16 @@ lp64和ilp64只有在整型上有区别
     1) 修改了gcge_para.h gcge_para.c
     2) 在gcge_orthogonal.c 中使用它
 
+2018.11.09-1 zhangning
+1. 添加了两种子空间正交化方式：GCGE_BOrthogonalSubspace与GCGE_SCBOrthogonalSubspace,
+    并添加了选择子空间正交化方式的参数p_orth_type
+    1) 修改了gcge_para.c gcge_para.h，添加参数p_orth_type
+    2) 修改了gcge_orthogonal.c gcge_orthogonal.h，添加了两种子空间正交化函数
+    3) 修改了gcge_xpw.c gcge_rayleighritz.c，添加了其中对于子空间正交化方式的选择
+2. 继续添加了X部分子空间正交化方式的参数x_orth_type
+    1) 修改了gcge_para.c gcge_para.h，添加参数x_orth_type
+    2) 修改了gcge_rayleighritz.c，修改了其中对于X部分子空间正交化方式的选择
+
 
 2018.11.09-1 liyu
 修改了整体的文件结构发布2.0版本，且自适应编译代码
@@ -338,6 +348,17 @@ lp64和ilp64只有在整型上有区别
 
 TODO:
 可以在Makefile中的install里，去判断install_libs而不是去判断文件是否存在?
+
+2018.11.10-1 zhangning
+1. 添加了分批计算的子空间正交化方式，并在计算X部分的子空间正交化时使用
+    1) 修改了gcge_orthogonal.c gcge_orthogonal.h添加了GCGE_BlockOrthogonalSubspace
+    2) 修改了gcge_para.h gcge_para.c 添加了正交化分批计算的x_orth_block_size这个参数
+    3) 修改了gcge_rayleighritz.c 添加了这种正交化方式的调用
+2. 修改了SCBOrthogonal为分批计算的方式，并在W部分的正交化时使用
+    1) 修改了gcge_orthogonal.c gcge_orthogonal.h
+3. add a parameter orth_para->w_orth_block_size in GCGE_PARA
+    1) 修改了gcge_para.h gcge_para.c 添加了正交化分批计算的w_orth_block_size这个参数
+    2) 修改了gcge_orthogonal.c
 
 2018.11.11 liyu
 1. 将phg加入app和test, 由于自适应加密部分不能被并行调用，所以只是读网格，
@@ -353,3 +374,8 @@ TODO
 5. 对于test文件，需要对测试内容标准化，首先从维护csr接口开始
 6. README.md写得非常差，还需要再改进
 7. Scalapack需要加入使得小规模特征值问题可以快速求解
+
+2018.11.12-1 zhangning
+1. 把dev分支上的更新加入到dev-2.0
+    1) 修改了 gcge_para.c gcge_para.h gcge_orthogonal.c gcge_orthogonal.h gcge_xpw.c gcge_rayleighritz.c
+   见 log 2018.11.09-1 zhangning 与 2018.11.10-2 zhangning

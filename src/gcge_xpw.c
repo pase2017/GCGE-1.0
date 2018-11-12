@@ -358,8 +358,23 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     GCGE_INT orth_length = ldc - orth_start;
     p_start -= orth_start;
     p_end = p_start + p_ncols;
-    GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 
-            orth_length, p_start, &p_end, NULL, -1, para->orth_para);
+    if(strcmp(para->p_orth_type, "scbgs") == 0)
+    {
+        GCGE_SCBOrthogonalSubspace(coef + orth_start*ldc + orth_start, 
+                ldc, orth_length, p_start, &p_end, NULL, -1, 
+                para->orth_para, workspace, ops);
+    }
+    else if(strcmp(para->p_orth_type, "bgs") == 0)
+    {
+        GCGE_BOrthogonalSubspace(coef + orth_start*ldc + orth_start, 
+                ldc, orth_length, p_start, &p_end, NULL, -1, 
+                para->orth_para, workspace->subspace_dtmp, ops);
+    }
+    else
+    {
+        GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 
+                orth_length, p_start, &p_end, NULL, -1, para->orth_para);
+    }
     p_ncols = p_end - p_start;
     p_end += orth_start;
 

@@ -32,6 +32,8 @@ typedef struct GCGE_ORTH_PARA_ {
     GCGE_INT    max_reorth_time;   //最大的重正交化次数
     GCGE_INT    scbgs_wself_max_reorth_time; //SCB正交化中自身的最多重正交化次数
     GCGE_INT    print_orth_zero;   //print_orthzero确定是否打印正交化过程中出现0向量的信息,0:不打印，1:打印
+    GCGE_INT    x_orth_block_size; //X部分子空间正交化时每批次计算的向量个数
+    GCGE_INT    w_orth_block_size; //W部分正交化时每批次计算的向量个数
 
 }GCGE_ORTH_PARA;
 
@@ -54,6 +56,8 @@ typedef struct GCGE_PARA_ {
      //正交化用到的参数
     char*       orth_type;          //确定是用Ａ正交还是Ｂ正交,A : A_ORTH, B : B_ORTH
     char*       w_orth_type;        //W正交化时使用哪种正交化方式, gs:原始的修正Gram-Schmidt,bgs:稳定的块Gram-Schmidt,cbgs:高效但不稳定的块Gram-Schmidt
+    char*       p_orth_type;        //P正交化时使用哪种正交化方式, gs:原始的修正Gram-Schmidt,bgs:稳定的块Gram-Schmidt,cbgs:高效但不稳定的块Gram-Schmidt
+    char*       x_orth_type;        //X正交化时使用哪种正交化方式, gs:原始的修正Gram-Schmidt,bgs:稳定的块Gram-Schmidt,cbgs:高效但不稳定的块Gram-Schmidt
     GCGE_ORTH_PARA *orth_para;      //控制求解过程中正交化的参数集合
 
     GCGE_DOUBLE multi_tol;          //default:0.2,判断特征值重数（或距离较近）的阈值
