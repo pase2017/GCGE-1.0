@@ -383,4 +383,28 @@ TODO
 2018.11.12-2 zhangning
 1. gcge_para.c中发现一个bug, GCGE_PARA_Setup中w_orth_block_size没能正确更新
     1）修改了gcge_para.c
-   
+
+2018.11.12 liyu
+需要做的基本测试:(不仅测试正确性, 还要测试其并行效率, 如果接口是并行的话. 下述输入也可以是BV结构的输入)
+1. 矩阵向量操作     y = a Ax + b y, y = a x + b y, res = x'y                 a, b, c是常数，A是稀疏矩阵, x, y, z是向量
+2. 矩阵多向量操作   y = a Ax + b y, y = a x + b y, res = x'y                 a, b, c是常数，A是稀疏矩阵, x, y, z是多向量
+                    y = x a (linear combination)                             a是稠密矩阵, x, y是多向量
+3. 正交化           orth(A, x, y) (给定对称正定矩阵A，关于x对y做正交化)      A是稀疏矩阵，x, y是多向量
+4. 线性求解器       linear_solver(A, b, x)                                   A是稀疏矩阵，x, b是多向量 
+
+需要做的算法测试:
+1. computeX, computeP, computeW
+2. 在给定X和A, B时，计算RR过程，从生成小规模矩阵到求解R值。这里测试各种分批计算以及部分计算R值的效果
+3. 不同接口下命令行参数的使用
+
+需要修改的核心代码:
+1. workspace部分一定要有自己的管理函数
+2. computeX, computeP, computeW, orth, linear_solver一定要能分的开, 换句话讲, 可以不受其它影响下进行测试
+   更重要一点是, 它们的形式参数不能包含workspace, 只能包含它的具体成员，使得每个部分都是局部影响的
+3. 核心函数的调用一定要写成像LAPACK一样的形式参数, 或者说像lobpcg一样的也就是说，
+   核心函数的实现只用形式参数提供的操作接口:
+   矩阵多向量操作, 正交化, 线性解法器, 求解小规模特征值问题
+   核心函数的操作空间调用workspace的具体成员
+4. 每个部件都可以被优化, 整体算法应该就足够优化, 但也需要从整体上寻找需要做全局优化的地方
+5. SOLVER这个结构体的各类操作以及普通用户的简单接口需要再斟酌
+
