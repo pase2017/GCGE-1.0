@@ -358,9 +358,9 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
     {
         para->orth_para->x_orth_block_size = nev/5;
     }
-    if(para->orth_para->x_orth_block_size == 0)
+    if(para->orth_para->w_orth_block_size == 0)
     {
-        para->orth_para->x_orth_block_size = para->block_size/5;
+        para->orth_para->w_orth_block_size = para->block_size/5;
     }
     para->orth_para->orth_zero_tol += DBL_EPSILON;
     para->orth_para->scbgs_reorth_tol += DBL_EPSILON;

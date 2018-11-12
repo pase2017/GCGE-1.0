@@ -379,3 +379,8 @@ TODO
 1. 把dev分支上的更新加入到dev-2.0
     1) 修改了 gcge_para.c gcge_para.h gcge_orthogonal.c gcge_orthogonal.h gcge_xpw.c gcge_rayleighritz.c
    见 log 2018.11.09-1 zhangning 与 2018.11.10-2 zhangning
+
+2018.11.12-2 zhangning
+1. gcge_para.c中发现一个bug, GCGE_PARA_Setup中w_orth_block_size没能正确更新
+    1）修改了gcge_para.c
+   
