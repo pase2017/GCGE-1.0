@@ -14,16 +14,16 @@ youchg@lsec.cc.ac.cn
 
 ===Contribution:
 
-1. Theory algorithm design:
+1. Theory algorithm design
    Xie Hehu, Zhang Ning
 
-2. Software architecture design:
+2. Software architecture design
    Li Yu, You Chunguang
 
 3. Internal block CG:
    Xie Hehu
 
-4. Internal block orthogonalization 
+4. Internal block orthogonalization
    Xie Hehu, Zhang Ning
 
 5. App of CSR
