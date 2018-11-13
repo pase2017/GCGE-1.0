@@ -3,37 +3,36 @@ GCGEHOME = ../..
 include $(GCGEHOME)/config/make.inc
 
 ############################################################
-OBJS1 = test_solver.o
-OBJS2 = test_matvec.o
-OBJS3 = test_orthogonal.o
-OBJS4 = test_xpw.o
-OBJS5 = test_ops.o
-OBJS6 = test_cg.o
-OBJS7 = test_rayleighritz.o
-OBJS8 = test_solver_dsyev.o
-OBJS9 = test_orth_ops.o
+OBJS1  = test_solver.o
+OBJS2  = test_matvec.o
+OBJS3  = test_orthogonal.o
+OBJS4  = test_xpw.o
+OBJS5  = test_ops.o
+OBJS6  = test_cg.o
+OBJS7  = test_rayleighritz.o
+OBJS8  = test_solver_dsyev.o
+OBJS9  = test_orth_ops.o
 OBJS10 = test_orth_subspace.o
 OBJS11 = test_p.o
 OBJS12 = test_w.o
 OBJS13 = test_csr_solver.o
 
-EXE1  = $(GCGEBIN)/solver.exe 
-EXE2  = $(GCGEBIN)/test_matvec.exe 
-EXE3  = $(GCGEBIN)/test_orthogonal.exe 
-EXE4  = $(GCGEBIN)/test_xpw.exe 
-EXE5  = $(GCGEBIN)/test_ops.exe 
-EXE6  = $(GCGEBIN)/test_cg.exe 
-EXE7  = $(GCGEBIN)/test_rayleighritz.exe
-EXE8  = $(GCGEBIN)/test_solver_dsyev.exe
-EXE9  = $(GCGEBIN)/test_orth_ops.exe
-EXE10  = $(GCGEBIN)/test_orth_subspace.exe
-EXE11  = $(GCGEBIN)/test_p.exe
-EXE12  = $(GCGEBIN)/test_w.exe
-EXE13  = $(GCGEBIN)/test_csr_solver.exe
+EXE1   = solver.exe 
+EXE2   = test_matvec.exe 
+EXE3   = test_orthogonal.exe 
+EXE4   = test_xpw.exe 
+EXE5   = test_ops.exe 
+EXE6   = test_cg.exe 
+EXE7   = test_rayleighritz.exe
+EXE8   = test_solver_dsyev.exe
+EXE9   = test_orth_ops.exe
+EXE10  = test_orth_subspace.exe
+EXE11  = test_p.exe
+EXE12  = test_w.exe
+EXE13  = test_csr_solver.exe
 
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(CSRINC)
-LIBS  = $(LIBGCGECSR) $(LIBGCGE) $(LIBCSR) $(LIBLAPACK) \
-	$(LIBBLAS) $(LIBGFORTRAN) -lm 
+INC    = -I$(GCGEINC)
+LIBS   = $(LIBGCGECSR) $(LIBGCGE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA
@@ -43,13 +42,13 @@ PARA = -file_A $(MAT_A) -file_B $(MAT_M)
 
 ############################################################
 
-all:	    help
+all:	help
 
-#exe:        $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9) $(EXE13)
-exe:         $(EXE13)
+#exe:    $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7) $(EXE8) $(EXE9) $(EXE13)
+exe:    $(EXE13)
 
 clean:
-	@$(RM) $(RMFLAGS) *.o $(GCGEBIN)/*.exe *.~
+	@$(RM) $(RMFLAGS) *.o *.exe
 
 help:
 	@echo " "
@@ -61,13 +60,6 @@ help:
 	@echo " "
 	@echo "   clean - remove temporary files"
 	@echo "   help  - print this message"
-	@echo " "
-
-info:
-	@echo " "
-	@echo "Summary:"
-	@echo "Executables are located in bin/"
-	@echo "Libraries   are located in lib/"
 	@echo " "
 
 run-solver:

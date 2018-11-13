@@ -308,9 +308,31 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
             subspace_evec[i*ldm+i] = 1.0;
         for(i=rr_eigen_start; i<max_dim_x; i++)
             memset(subspace_evec+i*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
-        GCGE_OrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
-                    ldm, ldm - rr_eigen_start, 0, &sub_end, 
-                    NULL, -1, para->orth_para);
+#if 1
+        GCGE_BlockOrthogonalSubspace(subspace_evec + rr_eigen_start*ldm +
+                rr_eigen_start, ldm, ldm - rr_eigen_start, &sub_end, 
+                para->orth_para->x_orth_block_size,
+                ops, para, workspace->subspace_dtmp);
+#else
+        if(strcmp(para->x_orth_type, "scbgs") == 0)
+        {
+            GCGE_SCBOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
+                        NULL, -1, para->orth_para, workspace, ops);
+        }
+        else if(strcmp(para->x_orth_type, "bgs") == 0)
+        {
+            GCGE_BOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
+                        NULL, -1, para->orth_para, workspace->subspace_dtmp, ops);
+        }
+        else
+        {
+            GCGE_OrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
+                        NULL, -1, para->orth_para);
+        }
+#endif
     }
     //用lapack_syev计算得到的特征值是按从小到大排列,
     //如果用A内积，需要把特征值取倒数后再按从小到大排列

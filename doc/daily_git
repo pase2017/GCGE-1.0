@@ -1,0 +1,18 @@
+日常命令
+git clone git@github.com:pase2017/GCGE-1.0.git
+git checkout new_branch
+git pull
+git pull origin dev
+git add <files>
+git commit -m "<commits>"
+git push
+git log
+git reset --hard <commit id>
+git branch:查看当前分支
+创建本地分支与远程分支关联
+git checkout -b local origin/remote
+合并分支到master
+git checkout master
+git pull
+git merge local
+git status
