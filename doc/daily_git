@@ -7,4 +7,10 @@ git commit -m "<commits>"
 git push
 git log
 git reset --hard <commit id>
+创建本地分支与远程分支关联
 git checkout -b local origin/remote
+合并分支到master
+git checkout master
+git pull
+git merge local
+git status
