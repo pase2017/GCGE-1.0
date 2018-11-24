@@ -352,7 +352,7 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
      //分批计算特征值的个数: 默认情况下设置为求解特征值的个数
     if(para->block_size == 0)
     {
-        para->block_size = (nev/5 > 1)?(nev/5):1;
+        para->block_size = (nev/5 > 1)?(nev/5):nev;
     }
     if(para->orth_para->x_orth_block_size == 0)
     {
@@ -360,7 +360,7 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
     }
     if(para->orth_para->w_orth_block_size == 0)
     {
-        para->orth_para->w_orth_block_size = (para->block_size/5 > 1)?(para->block_size/5) : 1;
+        para->orth_para->w_orth_block_size = (para->block_size/5 > 1)?(para->block_size/5):1;
     }
     para->orth_para->orth_zero_tol += DBL_EPSILON;
     para->orth_para->scbgs_reorth_tol += DBL_EPSILON;

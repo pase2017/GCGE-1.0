@@ -410,3 +410,4 @@ TODO
 
 2018.11.24 zhangning
 1. gcge_para.c中Setup时，对w_orth_block_size的更新有bug, 这个参数必须大于0，做了修改
+1. gcge_para.c中Setup时，对block_size的更新改为 (nev/5 > 1)?(nev/5):nev;
