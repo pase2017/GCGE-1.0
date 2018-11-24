@@ -410,4 +410,6 @@ TODO
 
 2018.11.24 zhangning
 1. gcge_para.c中Setup时，对w_orth_block_size的更新有bug, 这个参数必须大于0，做了修改
-1. gcge_para.c中Setup时，对block_size的更新改为 (nev/5 > 1)?(nev/5):nev;
+2. gcge_para.c中Setup时，对block_size的更新改为 (nev/5 > 1)?(nev/5):nev;
+3. gcge_orthgonal.c中，BlockOrthogonalSubspace中，对orth_block_size的设置做了修改，确保它一定>0
+//4. test/slepc/中添加了更一般的测试函数test_slepc_solver.c

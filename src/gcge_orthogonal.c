@@ -1757,8 +1757,8 @@ void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
 {
     if(orth_block_size < 1)
     {
-        orth_block_size = (*end)/5;
-    }
+        orth_block_size = ((*end)/5 > 1) ? (*end)/5 : *end; 
+    }  
     GCGE_INT num_block = ((*end)+orth_block_size-1)/orth_block_size;
     GCGE_INT current_block = 0;
     GCGE_INT start = 0;
