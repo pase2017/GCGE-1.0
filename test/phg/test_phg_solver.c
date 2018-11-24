@@ -328,12 +328,13 @@ main(int argc, char *argv[])
        GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, argc,  argv);   
        //   GCGE_SOLVER_SetEigenvectors(phg_solver, (void **)evec);
        //一些参数的设置
-       phg_solver->para->ev_tol = 1e-8;
+       phg_solver->para->ev_tol = 1e-6;
        phg_solver->para->ev_max_it = 100;
        phg_solver->para->dirichlet_boundary = 0;
        //求解特征值问题
        phg_solver->para->print_eval = 0;
        phg_solver->para->print_part_time = 0;
+       phg_solver->para->multi_tol_for_lock = 0.02;
        GCGE_SOLVER_Solve(phg_solver);  
        n = nev;
 
@@ -345,6 +346,7 @@ main(int argc, char *argv[])
     }
     /* GCGE SOLVER */
 
+    printf("----------------");
     for (i = 0; i < n; i++) {
        FLOAT err_tau;
        nit = modes[i][0] * modes[i][0] +

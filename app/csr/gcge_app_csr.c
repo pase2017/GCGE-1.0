@@ -290,7 +290,7 @@ void CSR_VecSetRandomValue(CSR_VEC *vec)
     for( j=0; j<size; j++ )
     {
        vec->Entries[j] = ((double)rand())/((double)RAND_MAX+1);
-:   }
+    }
 }
 
 //稀疏矩阵乘向量
