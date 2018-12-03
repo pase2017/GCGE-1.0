@@ -51,7 +51,7 @@ run-phg-solver:
 $(EXE2): $(OBJS2)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
-	@$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
 	@echo ''
 
 ############################################################

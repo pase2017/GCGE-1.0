@@ -230,7 +230,7 @@ main(int argc, char *argv[])
     DOF **u_h, *error;
     MAP *map;
     MAT *A, *B;
-    FLOAT tol = 1e-3, tau = 0.0, PEoo, thres;
+    FLOAT tol = 1e-8, PEoo, thres;
     FLOAT *evals;
     double wtime;
 
@@ -240,7 +240,6 @@ main(int argc, char *argv[])
     phgOptionsRegisterInt("-pre_refines", "Pre-refines", &pre_refines);
     phgOptionsRegisterInt("-nev", "Number of eigenvalues", &nev);
     phgOptionsRegisterFloat("-tol", "Convergence tolerance", &tol);
-    phgOptionsRegisterFloat("-tau", "The shift", &tau);
     phgOptionsRegisterInt("-mem_max", "Maximum memory (MB)", &mem_max);
 
     phgInit(&argc, &argv);
@@ -292,7 +291,7 @@ main(int argc, char *argv[])
     }
 
     const char *pc1 = NULL;
-    phgRefineAllElements(g, 2);
+    phgRefineAllElements(g, 3);
     phgPrintf("\n");
     if (phgBalanceGrid(g, 1.2, -1, NULL, 0.))
        phgPrintf("Repartition mesh\n");
@@ -328,13 +327,14 @@ main(int argc, char *argv[])
        GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, argc,  argv);   
        //   GCGE_SOLVER_SetEigenvectors(phg_solver, (void **)evec);
        //一些参数的设置
-       phg_solver->para->ev_tol = 1e-6;
+       phg_solver->para->ev_tol = tol;
        phg_solver->para->ev_max_it = 100;
        phg_solver->para->dirichlet_boundary = 0;
        //求解特征值问题
        phg_solver->para->print_eval = 0;
        phg_solver->para->print_part_time = 0;
        phg_solver->para->multi_tol_for_lock = 0.02;
+       phg_solver->para->cg_max_it = 100;
        GCGE_SOLVER_Solve(phg_solver);  
        n = nev;
 
@@ -346,7 +346,6 @@ main(int argc, char *argv[])
     }
     /* GCGE SOLVER */
 
-    printf("----------------");
     for (i = 0; i < n; i++) {
        FLOAT err_tau;
        nit = modes[i][0] * modes[i][0] +

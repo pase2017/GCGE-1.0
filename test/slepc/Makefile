@@ -24,7 +24,7 @@ EXE1 = test_bcg.exe
 
 MAIN1 = test_slepc_solver.c
 OBJS1 = test_slepc_solver.o
-EXE1 = test_slepc_solver.exe
+EXE1 = ./test_slepc_solver.exe
 
 INC   = -I$(GCGEINC) -I$(SLEPCINC) -I$(PETSCINC)
 LIBS  = $(LIBGCGESLEPC) $(LIBGCGE) $(LIBSLEPC)
@@ -36,4 +36,6 @@ $(EXE1):$(OBJS1)
 $(OBJS1):$(MAIN1)
 	$(CC) $(CFLAGS) -c $(MAIN1) -o $(OBJS1) $(INC)
 
+run: $(EXE1)
+	$(EXEC) $(EXECFLAGS) $(EXE1) -mat_A ../data/A_5.petsc.bin -mat_B ../data/M_5.petsc.bin
 #include ${SLEPC_DIR}/lib/slepc/conf/slepc_common

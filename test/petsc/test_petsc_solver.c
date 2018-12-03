@@ -29,7 +29,6 @@
 
 #include "gcge.h"
 #include "gcge_app_petsc.h"
-#include "external_petsc.h"
 
 static char help[] = "Use GCGE-PETSc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\n";
 

@@ -24,10 +24,8 @@ EXE7  = $(GCGEBIN)/test_solver.exe
 EXE8  = $(GCGEBIN)/test_solver_cg.exe 
 EXE9  = $(GCGEBIN)/test_solver_petsc_cg.exe 
 
-INC   = -I$(APPINC) -I$(GCGEINC) -I$(PETSCINC)
-LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) \
-	$(LIBBLAS) $(LIBGFORTRAN) -lm 
-
+INC   = -I$(GCGEINC) -I$(PETSCINC) $(PETSCFLAGS)
+LIBS  = $(LIBGCGEPETSC) $(LIBGCGE) $(LIBPETSC) $(LIBLAPACK) $(LIBBLAS) 
 ############################################################
 MAT_A = $(GCGEHOME)/test/data/testA
 MAT_M = $(GCGEHOME)/test/data/testB
