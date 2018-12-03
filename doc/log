@@ -413,3 +413,8 @@ TODO
 2. gcge_para.c中Setup时，对block_size的更新改为 (nev/5 > 1)?(nev/5):nev;
 3. gcge_orthgonal.c中，BlockOrthogonalSubspace中，对orth_block_size的设置做了修改，确保它一定>0
 //4. test/slepc/中添加了更一般的测试函数test_slepc_solver.c
+
+2018.12.03 liyu
+1. 安装MUMPS, 对于petsc和phg, 我将s和d的版本都放在了一起, libmumps.a
+2. 修改了make.inc中的petsc, slepc, phg的LIB
+3. 修改了test/petsc中的makefile, 不完全
