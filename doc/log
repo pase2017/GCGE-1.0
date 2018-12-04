@@ -419,3 +419,10 @@ TODO
 2. 修改了make.inc中的petsc, slepc, phg的LIB
 3. 修改了test/petsc中的makefile, 不完全
 4. 但是petsc和phg的所用的mumps貌似不是一个版本, 前者是d后者s
+
+2018.12.04 liyu
+1. gcge_ops.c 修改多向量内积 
+   首先，做局部内积, 然后基于MPI_Type_vector将局部结果生成一个新的数据结构;
+   然后，利用MPI_Op_create自定义一个操作, 使得新的数据结构可以进行Allreduce求和
+   最后, 释放新定义的结构体和操作
+2. TODO:其它涉及频繁全局通信的地方, 都可以这样处理

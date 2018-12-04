@@ -22,6 +22,27 @@
 
 #include "gcge_ops.h"
 
+/* if use mpi, multivec inner prod will be improved by MPI_Typre_vector and MPI_Op_create */
+#if USE_MPI
+GCGE_INT SIZE_B, SIZE_E, LDA;
+void user_fn_submatrix_sum(double *in,  double *inout,  int *len,  MPI_Datatype* dptr)
+{
+   int i,  j,  k;
+   double *b,  *a;
+   for (i = 0; i < *len; ++i)
+   {
+      for (j = 0; j < SIZE_B; ++j)
+      {
+	 b = inout+j*LDA;
+	 a = in+j*LDA;
+	 for (k = 0; k < SIZE_E; ++k)
+	 {
+	    b[k] += a[k];
+	 }
+      }
+   }
+}  
+#endif
 
 //MultiVec默认值的设定是要依赖Get与Restore这两个函数的
 void GCGE_Default_GetVecFromMultiVec(void **V, GCGE_INT j, void **x)
@@ -168,7 +189,7 @@ void GCGE_Default_MultiVecLinearComb(void **x, void **y, GCGE_INT *start, GCGE_I
 }//end for this subprogram
 
 // lda : leading dimension of matrix a
-// a(start[0]:end[0],start[1]:end[1]) = V(:,start[0]:end[0])^T * W(:,start[1]:end[1])
+// a(0: end[0]-start[0], 0:end[1]-start[1]) = V(:,start[0]:end[0])^T * W(:,start[1]:end[1])
 // 做内积得到值是存在矩阵a的相应的位置
 void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is_sym, 
         GCGE_INT *start, GCGE_INT *end, GCGE_INT lda, struct GCGE_OPS_ *ops)
@@ -191,7 +212,8 @@ void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is
             for(iv=0; iv<=iw; iv++, p++)
             {
                 ops->GetVecFromMultiVec(V, iv+start[0], &vs);
-                ops->VecInnerProd(vs, ws, p);
+                //ops->VecInnerProd(vs, ws, p);
+                ops->VecLocalInnerProd(vs, ws, p);
                 ops->RestoreVecForMultiVec(V, iv+start[0], &vs);
 		//printf ( "iw = %d, iv = %d\n", iw, iv );
             }//end for iv
@@ -224,7 +246,8 @@ void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is
             for(iv=start[0]; iv<end[0]; iv++, p++)
             {
                 ops->GetVecFromMultiVec(V, iv, &vs);
-                ops->VecInnerProd(vs, ws, p);
+                //ops->VecInnerProd(vs, ws, p);
+                ops->VecLocalInnerProd(vs, ws, p);
                 ops->RestoreVecForMultiVec(V, iv, &vs);
             }//end for iv
             ops->RestoreVecForMultiVec(W, iw, &ws);
@@ -232,6 +255,25 @@ void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is
             p += jvw;
         }//end for iw
     }//处理完了非对称的情况
+
+#if USE_MPI
+
+    SIZE_B = end[1]-start[1];
+    SIZE_E = end[0]-start[0];
+    LDA    = lda;
+
+    MPI_Datatype SUBMATRIX;
+    MPI_Type_vector(SIZE_B, SIZE_E, LDA, MPI_DOUBLE, &SUBMATRIX);
+    MPI_Type_commit(&SUBMATRIX);
+
+    MPI_Op SUBMATRIX_SUM;
+    MPI_Op_create((MPI_User_function*)user_fn_submatrix_sum, 1, &SUBMATRIX_SUM);
+    MPI_Allreduce(MPI_IN_PLACE, a, 1, SUBMATRIX, SUBMATRIX_SUM, MPI_COMM_WORLD);
+    MPI_Op_free(&SUBMATRIX_SUM);
+    MPI_Type_free(&SUBMATRIX);
+
+#endif
+
 }//end for this subprogram
 
 
