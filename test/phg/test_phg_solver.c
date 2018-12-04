@@ -291,7 +291,7 @@ main(int argc, char *argv[])
     }
 
     const char *pc1 = NULL;
-    phgRefineAllElements(g, 3);
+    phgRefineAllElements(g, 9);
     phgPrintf("\n");
     if (phgBalanceGrid(g, 1.2, -1, NULL, 0.))
        phgPrintf("Repartition mesh\n");

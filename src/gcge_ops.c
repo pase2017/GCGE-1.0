@@ -23,7 +23,7 @@
 #include "gcge_ops.h"
 
 /* if use mpi, multivec inner prod will be improved by MPI_Typre_vector and MPI_Op_create */
-#if USE_MPI
+#if GCGE_USE_MPI
 GCGE_INT SIZE_B, SIZE_E, LDA;
 void user_fn_submatrix_sum(double *in,  double *inout,  int *len,  MPI_Datatype* dptr)
 {
@@ -256,7 +256,7 @@ void GCGE_Default_MultiVecInnerProd(void **V, void **W, GCGE_DOUBLE *a, char *is
         }//end for iw
     }//处理完了非对称的情况
 
-#if USE_MPI
+#if GCGE_USE_MPI
 
     SIZE_B = end[1]-start[1];
     SIZE_E = end[0]-start[0];

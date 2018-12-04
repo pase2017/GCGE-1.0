@@ -21,6 +21,10 @@
 
 #include "gcge_type.h"
 //把每一个操作都写好，这样以后进行算法设计的时候才能方便。
+#if GCGE_USE_MPI
+#include <mpi.h>
+#endif
+
 
 typedef struct GCGE_OPS_ {
 

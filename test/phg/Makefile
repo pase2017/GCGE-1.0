@@ -42,7 +42,7 @@ run-phg-solver:
 	@$(F77) $(FFLAGS) -c $*.f -o $*.o $(INC)
 .c.o:
 	@echo '$(CC)  -c $(CFLAGS) ' $*.c
-	$(CC)  $(CFLAGS) -c $*.c -o $*.o $(INC)
+	@$(CC)  $(CFLAGS) -c $*.c -o $*.o $(INC)
 .cpp.o:
 	@echo '$(CPP)  -c $(CPPFLAGS) ' $*.cpp
 	@$(CPP)  $(CPPFLAGS) -c $*.cpp -o $*.o $(INC)
@@ -51,7 +51,7 @@ run-phg-solver:
 $(EXE2): $(OBJS2)
 	@echo ''
 	@echo 'Creating executable bin/xxx.exe'
-	$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
+	@$(CLINKER) $(LDFLAGS) -o $@ $< $(LIBS)
 	@echo ''
 
 ############################################################
