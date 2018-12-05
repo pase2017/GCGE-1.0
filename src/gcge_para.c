@@ -95,6 +95,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->opt_rr_eig_partly = 1;
     (*para)->opt_bcast = 1;
+    (*para)->opt_allgatherv = 1;
     return;
 }
 
@@ -282,6 +283,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
             arg_index++;
             para->opt_bcast = atoi(argv[arg_index++]);
         }
+        else if(0 == strcmp(argv[arg_index], "-gcge_opt_allgatherv")) 
+        {
+            arg_index++;
+            para->opt_allgatherv = atoi(argv[arg_index++]);
+        }
         else if (0 == strcmp(argv[arg_index], "-gcge_help"))
         {
            print_usage = 1;
@@ -326,6 +332,7 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_print_para         <i>: print the parameters not                      (default: 1[0])\n");
        GCGE_Printf("  -gcge_print_result       <i>: print the final result or not                 (default: 1[0])\n");
        GCGE_Printf("  -gcge_opt_bcast          <i>: use the optimization before bcast             (default: 1[0])\n");
+       GCGE_Printf("  -gcge_opt_allgatherv     <i>: use the optimization before bcast             (default: 1[0])\n");
        GCGE_Printf("  -gcge_opt_rr_eig_partly  <i>: use the optimization in rr for less eigenpairs(default: 1[0])\n");
        GCGE_Printf("\n");
     }
@@ -647,6 +654,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  multi_tol          : %3.2e, (tolerance for eigenvalue multiplicity)\n", para->multi_tol      );
        GCGE_Printf("  multi_tol_for_lock : %3.2e, (tolerance for eigenvalue multiplicity(forward))\n", para->multi_tol_for_lock);
        GCGE_Printf("  opt_bcast          : %8d, (use the optimization before bcast or not)\n", para->opt_bcast);
+       GCGE_Printf("  opt_allgatherv     : %8d, (use the optimization before bcast or not)\n", para->opt_allgatherv);
        GCGE_Printf("  opt_rr_eig_partly  : %8d, (use the optimization in rr for less eigenpairs or not)\n", para->opt_rr_eig_partly);
        GCGE_Printf("\n");
     }

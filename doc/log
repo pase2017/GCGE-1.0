@@ -426,3 +426,9 @@ TODO
    然后，利用MPI_Op_create自定义一个操作, 使得新的数据结构可以进行Allreduce求和
    最后, 释放新定义的结构体和操作
 2. TODO:其它涉及频繁全局通信的地方, 都可以这样处理
+
+2018.12.05 zhangning
+1. gcge_rayleighritz.c 修改子空间特征值问题求解函数 GCGE_ComputeSubspaceEigenpairs
+   将子空间特征值平均分配给每个进程进行计算, 计算结束后再做MPI_Allgatherv统一到所有进程
+   添加了参数opt_allgatherv，默认为1，可以命令行选择是否使用这种优化
+   修改了 gcge_rayleighritz.c gcge_para.c gcge_para.h

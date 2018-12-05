@@ -98,7 +98,7 @@ typedef struct GCGE_PARA_ {
                                         //默认值为1，即RR中只计算未收敛部分
     GCGE_INT    opt_bcast; //是否做广播子空间特征对前只让0号进程计算特征值问题的这个优化, 
                            //默认值为1, 即只让0号进程计算，然后再广播
-
+    GCGE_INT    opt_allgatherv; //是否做特征值分到各进程计算，再做全收集的操作
 }GCGE_PARA;
 
 /**

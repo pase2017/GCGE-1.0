@@ -122,8 +122,8 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
     //对子空间矩阵的 XX,XP,PP 部分全部使用稠密矩阵相乘来计算
     if(dim_xp != 0)
     {
-    	//lde表示AA_last的行数(leading dimension of subspace_evec)
-    	//AA_last: 上一次迭代的AA矩阵的行数
+        //lde表示AA_last的行数(leading dimension of subspace_evec)
+        //AA_last: 上一次迭代的AA矩阵的行数
         GCGE_INT    lde = workspace->last_dim_xpw; 
         GCGE_DOUBLE alpha = 1.0, beta = 0.0;
         // 这里只是取了一个临时空间用于存储下式
@@ -196,7 +196,7 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
     }
 #endif
     GCGE_ComputeSubspaceMatrixVTAW(V, A, dim_xp, ldm, subspace_matrix+dim_xp*ldm, 
-	  ops, workspace->evec);
+      ops, workspace->evec);
 }
 
 /* brief: 计算subspace_matrix的特征对
@@ -208,7 +208,6 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
  *    所有参数，工作空间给了两个函数需要的最大空间，
  *    默认选择dsyevx，可以在使用时设置使用哪一种求解方式
  */
-//用LAPACKE_dsyev求解子空间矩阵的特征对
 void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix, 
         GCGE_DOUBLE *eval, GCGE_DOUBLE *subspace_evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
@@ -249,6 +248,8 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //subspace_itmp[liwork]在dsyevr时存储liwork
     GCGE_INT    *isuppz = subspace_itmp + 10*ldm; 
     GCGE_INT    *ifail  = subspace_itmp + 5*ldm; 
+    for(i=0; i<(workspace->dim_xpw - workspace->dim_xp); i++)
+        memset(subspace_matrix+(workspace->dim_xp+i)*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
     memcpy(temp_matrix, subspace_matrix, ldm*ldm*sizeof(GCGE_DOUBLE));
     
     GCGE_INT    nrows = ldm, ncols = ldm;
@@ -264,76 +265,163 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     //特征值与特征向量的存储位置都向后移rr_eigen_start
     
     GCGE_INT rank = 0;
-    if(para->opt_bcast == 1)
+    GCGE_INT n_proc = 1;
+    GCGE_INT j = 0;
+
+    if(para->opt_allgatherv == 1)
     {
+        if(para->opt_bcast == 1)
+        {
+            if(para->use_mpi_bcast)
+            {
+#if GCGE_USE_MPI
+                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+                MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
+#endif
+            }
+        }
+        //实际要计算的部分矩阵的行数以及要计算该矩阵的第几个特征值
+        nrows -= rr_eigen_start;
+        il -= rr_eigen_start;
+        iu -= rr_eigen_start;
+       
+        //平均每个进程要计算几个特征值, 先取上整数
+        GCGE_INT eigen_num_per_rank = (m+n_proc-1)/n_proc;
+        //取下整数的话，多出来几个特征值（也就是前几个进程要比下整数多算一个）
+        GCGE_INT num_more_eig = m - n_proc*(eigen_num_per_rank-1);
+        //old_m存储实际要计算的特征值的总个数
+        GCGE_INT old_m = m;
+        //实际每个进程要计算的特征值个数，以及第几个
+        if(rank < num_more_eig)
+        {
+            il += rank*eigen_num_per_rank;
+            iu = il+eigen_num_per_rank-1;
+            m = eigen_num_per_rank;
+        }
+        else
+        {
+            il += rank*(eigen_num_per_rank-1)+num_more_eig;
+            iu = il+eigen_num_per_rank-2;
+            m = eigen_num_per_rank-1;
+        }
+        //本进程要计算的第一个特征值，实际是大矩阵的第几个特征值
+        GCGE_INT real_eigen_start = il-1 + rr_eigen_start;
+        //正常计算该进程需要计算的特征对，放在特征对应该在的位置
+        //如果rr_eigen_start==0, 将特征值和特征向量分两次进行消息传输
+        if(m > 0)
+        {
+            ops->DenseMatEigenSolver("V", "I", "U", &nrows, 
+                    temp_matrix+rr_eigen_start*ncols+rr_eigen_start, &ncols, 
+                    &vl, &vu, &il, &iu, &abstol, 
+                    &m, eval+real_eigen_start, 
+                    subspace_evec+real_eigen_start*ldm+rr_eigen_start, &ldm, 
+                    isuppz, dwork_space, &lwork,
+                    subspace_itmp, &liwork, ifail, &info);
+        }
+#if GCGE_USE_MPI
+        memcpy(temp_matrix, eval+real_eigen_start, m*sizeof(GCGE_DOUBLE));
+        for(i=0; i<m; i++)
+        {
+            memcpy(temp_matrix+m+i*nrows, subspace_evec+real_eigen_start*ldm+i*ldm+rr_eigen_start, nrows*sizeof(GCGE_DOUBLE));
+        }
+        //rr_eigen_start至少是1
+        //发送数据的指针，发送数据量，发送数据类型
+        //接收数据的指针，接收数据量，在存储位置的偏移
+        //接收数据类型，通信子
+        GCGE_INT recv_counts[n_proc];
+        GCGE_INT recv_displs[n_proc];
+        //发送特征向量时, 每个进程要发送的个数以及应该放置的位置
+        for(i=0; i<num_more_eig; i++)
+        {
+            recv_counts[i] = eigen_num_per_rank*(nrows+1);
+        }
+        for(i=num_more_eig; i<n_proc; i++)
+        {
+            recv_counts[i] = (eigen_num_per_rank-1)*(nrows+1);
+        }
+        recv_displs[0] = 0;
+        for(i=1; i<n_proc; i++)
+            recv_displs[i] = recv_displs[i-1] + recv_counts[i-1];
+        GCGE_DOUBLE *recv_workspace;
+        //subspace_dtmp空间放大到2*ldm*ldm
+        recv_workspace = temp_matrix+recv_displs[1];
+        //printf("recv_displs: %d\n", recv_displs[1]+recv_displs[n_proc-1]+recv_counts[n_proc-1]);
+        //全收集特征向量
+        //GCGE_Printf("use MPI_Allgatherv\n");
+        MPI_Allgatherv(temp_matrix, recv_counts[rank], MPI_DOUBLE, 
+              recv_workspace, recv_counts, recv_displs, MPI_DOUBLE, MPI_COMM_WORLD);
+        //现在表示每个进程计算的特征对个数
+        GCGE_INT recv_nevec[n_proc];
+        for(i=0; i<n_proc; i++)
+        {
+            recv_counts[i] = recv_counts[i]/(nrows+1);
+            recv_nevec[i]  = recv_displs[i]/(nrows+1);
+        }
+        //0进程内容, 拷贝特征值
+        memcpy(eval+rr_eigen_start, recv_workspace, recv_counts[0]*sizeof(GCGE_DOUBLE));
+        //0进程内容, 拷贝特征向量
+        for(i=0; i<recv_counts[0]; i++)
+        {
+            memcpy(subspace_evec+(rr_eigen_start+i)*ldm+rr_eigen_start, 
+                  recv_workspace+recv_counts[0]+i*nrows, nrows*sizeof(GCGE_DOUBLE));
+        }
+        for(i=1; i<n_proc; i++)
+        {
+            //先拷贝特征值
+            memcpy(eval+rr_eigen_start+recv_nevec[i], recv_workspace+recv_displs[i], recv_counts[i]*sizeof(GCGE_DOUBLE));
+            //拷贝特征向量
+            for(j=0; j<recv_counts[i]; j++)
+            {
+                memcpy(subspace_evec+(rr_eigen_start+recv_nevec[i]+j)*ldm+rr_eigen_start, 
+                      recv_workspace+recv_displs[i]+recv_counts[i]+j*nrows, nrows*sizeof(GCGE_DOUBLE));
+            }
+        }
+#endif
+    }
+    else
+    {
+        if(para->opt_bcast == 1)
+        {
+            if(para->use_mpi_bcast)
+            {
+#if GCGE_USE_MPI
+                MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
+            }
+        }
+        //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
+        //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
+        //那么, 如果 rank==0, 就计算特征值问题, 否则不用计算, 等待广播
+        if(rank == 0)
+        {
+            nrows -= rr_eigen_start;
+            il -= rr_eigen_start;
+            iu -= rr_eigen_start;
+            ops->DenseMatEigenSolver("V", "I", "U", &nrows, 
+                temp_matrix+rr_eigen_start*ncols+rr_eigen_start, &ncols, 
+                &vl, &vu, &il, &iu, &abstol, 
+                &m, eval+rr_eigen_start, 
+            subspace_evec+rr_eigen_start*ldm+rr_eigen_start, &ldm, 
+                isuppz, dwork_space, &lwork,
+                subspace_itmp, &liwork, ifail, &info);
+            iu += rr_eigen_start;
+        }
         if(para->use_mpi_bcast)
         {
 #if GCGE_USE_MPI
-            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            memcpy(subspace_evec+iu*ldm, eval+rr_eigen_start, m*sizeof(GCGE_DOUBLE));
+            //GCGE_Printf("use MPI_Bcast\n");
+            MPI_Bcast(subspace_evec+rr_eigen_start*ldm, m*ldm+m, MPI_DOUBLE, 
+                    0, MPI_COMM_WORLD);
+            memcpy(eval+rr_eigen_start, subspace_evec+iu*ldm, m*sizeof(GCGE_DOUBLE));
 #endif
         }
-    }
-    //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
-    //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
-    //那么, 如果 rank==0, 就计算特征值问题, 否则不用计算, 等待广播
-    if(rank == 0)
-    {
-        ops->DenseMatEigenSolver("V", "I", "U", &nrows, temp_matrix, &ncols, 
-                &vl, &vu, &il, &iu, &abstol, 
-                &m, eval+rr_eigen_start, subspace_evec+rr_eigen_start*ldm, &ldm, 
-                isuppz, dwork_space, &lwork,
-                subspace_itmp, &liwork, ifail, &info);
-    }
-    if(para->use_mpi_bcast)
-    {
-#if GCGE_USE_MPI
-        memcpy(subspace_evec+iu*ldm, eval+rr_eigen_start, m*sizeof(GCGE_DOUBLE));
-        MPI_Bcast(subspace_evec+rr_eigen_start*ldm, m*ldm+m, MPI_DOUBLE, 
-                0, MPI_COMM_WORLD);
-        memcpy(eval+rr_eigen_start, subspace_evec+iu*ldm, m*sizeof(GCGE_DOUBLE));
-#endif
     }
 #if GET_PART_TIME
     GCGE_DOUBLE t2 = GCGE_GetTime();
     para->stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
     para->stat_para->part_time_total->rr_eigen_time += t2-t1;
 #endif
-    if(rr_eigen_start > 0)
-    {
-        //sub_end表示这里要进行正交化的x个数
-        GCGE_INT sub_end = max_dim_x - rr_eigen_start;
-
-        memset(subspace_evec, 0.0, rr_eigen_start*ldm*sizeof(GCGE_DOUBLE));
-        for(i=0; i<rr_eigen_start; i++)
-            subspace_evec[i*ldm+i] = 1.0;
-        for(i=rr_eigen_start; i<max_dim_x; i++)
-            memset(subspace_evec+i*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
-#if 1
-        GCGE_BlockOrthogonalSubspace(subspace_evec + rr_eigen_start*ldm +
-                rr_eigen_start, ldm, ldm - rr_eigen_start, &sub_end, 
-                para->orth_para->x_orth_block_size,
-                ops, para, workspace->subspace_dtmp);
-#else
-        if(strcmp(para->x_orth_type, "scbgs") == 0)
-        {
-            GCGE_SCBOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
-                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
-                        NULL, -1, para->orth_para, workspace, ops);
-        }
-        else if(strcmp(para->x_orth_type, "bgs") == 0)
-        {
-            GCGE_BOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
-                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
-                        NULL, -1, para->orth_para, workspace->subspace_dtmp, ops);
-        }
-        else
-        {
-            GCGE_OrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
-                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
-                        NULL, -1, para->orth_para);
-        }
-#endif
-    }
     //用lapack_syev计算得到的特征值是按从小到大排列,
     //如果用A内积，需要把特征值取倒数后再按从小到大排列
     //由于后面需要用到的只有前dim_x个特征值，所以只把前dim_x个拿到前面来
@@ -351,7 +439,7 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
 //用A内积的话，特征值从小到大，就是原问题特征值倒数的从小到大，
 //所以顺序反向，同时特征值取倒数
 void GCGE_SortEigenpairs(GCGE_DOUBLE *eval, GCGE_DOUBLE *evec, GCGE_INT nev, 
-					GCGE_INT ldv, GCGE_DOUBLE *work)
+    				GCGE_INT ldv, GCGE_DOUBLE *work)
 {
     GCGE_INT head = 0, tail = ldv-1;
     GCGE_DOUBLE tmp;
