@@ -66,4 +66,20 @@ void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end,
               void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 void GCGE_SCBOrth_Minus(void **V, GCGE_INT start, GCGE_INT *end, 
         void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
+
+//Multi Orthogonal:
+void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+         void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
+void *GCGE_SubOrthogonal(void **V, GCGE_INT *start, GCGE_INT *end,
+      void *B, void *V_tmp, GCGE_DOUBLE *subspace_dtmp, GCGE_OPS *ops);
+void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
+      GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
+void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
+      void *B, GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
+void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
+        GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
+        GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
+void GCGE_StableMultiOrthogonalSubspace(double *V, GCGE_INT ldV, 
+       GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
+       GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
 #endif

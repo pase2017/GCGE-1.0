@@ -1818,3 +1818,425 @@ void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
         }
     }
 }
+
+
+//Multi Orthogonal:
+//先减去要正交化的向量中已正交化部分的分量, 
+//再使用多重正交化方法进行自身的正交化
+/*
+ *  对向量组 V = [V1, V2] 进行正交化, 其中 V1 部分已经正交
+ *  1. 去掉 V2 中 V1 方向的分量
+ *     V2 = V2 - V1 * (V1^T * V2)
+ *  2. V2 自身正交化
+ *
+ */
+void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+         void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+    GCGE_INT mv_s[2];
+    GCGE_INT mv_e[2];
+    //GCGE_Printf("in GCGE_StableMultiOrthogonal\n");
+
+    GCGE_DOUBLE value_inner = 1.0;
+    GCGE_DOUBLE norm_tmp = 0.0;
+    GCGE_DOUBLE *subspace_dtmp = workspace->subspace_dtmp;
+    void **V_tmp = workspace->V_tmp;
+    GCGE_INT iter = 0;
+    GCGE_INT i = 0;
+    GCGE_DOUBLE Orth_Tol = para->orth_para->scbgs_reorth_tol;
+    GCGE_INT max_reorth_time = para->orth_para->max_reorth_time;
+    mv_s[0] = 0;
+    mv_e[0] = start;
+    mv_s[1] = start;
+    mv_e[1] = *end;
+
+    //先减去start之前的分量
+    while(value_inner > Orth_Tol)
+    {   
+        iter ++;      
+
+        GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
+
+        value_inner = 0.0;
+        for(i=0;i<start*(*end - start);i++)
+        { 
+            norm_tmp = subspace_dtmp[i];
+            value_inner += norm_tmp*norm_tmp;
+        }
+        value_inner = sqrt(value_inner);
+        //GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+        if(iter >= max_reorth_time)
+            break;
+    }//end while for value_inner
+
+    //GCGE_Printf("in GCGE_StableMultiOrthogonal, after GCGE_SubOrthogonal\n");
+    //然后start到end自身做正交化
+    GCGE_MultiOrthogonal(V, start, end, B, ops, para, workspace);
+
+    //GCGE_Printf("line 1868, start: %d, end: %d\n",  start, *end);
+}
+
+//计算 V2 = V2 - V1 * (V1' * B * V2)
+void *GCGE_SubOrthogonal(void **V, GCGE_INT *start, GCGE_INT *end,
+      void *B, void *V_tmp, GCGE_DOUBLE *subspace_dtmp, GCGE_OPS *ops)
+{
+    GCGE_INT length_1 = end[0]-start[0];
+    GCGE_INT length_2 = end[1]-start[1];
+    GCGE_INT mv_s[2];
+    GCGE_INT mv_e[2];
+
+    //计算 V_tmp = B * V2 
+    if(B == NULL)
+    {
+        mv_s[0] = start[1];
+        mv_e[0] = end[1];
+        mv_s[1] = 0;
+        mv_e[1] = length_2;
+        ops->MultiVecAxpby(1.0, V, 0.0, V_tmp, mv_s, mv_e, ops);
+    }
+    else
+    {
+        mv_s[0] = start[1];
+        mv_e[0] = end[1];
+        mv_s[1] = 0;
+        mv_e[1] = length_2;
+        ops->MatDotMultiVec(B, V, V_tmp, mv_s, mv_e, ops);
+    }
+
+    //即计算 subspace_dtmp = V1^T * (B * V2)
+    //计算 subspace_dtmp = V1^T * V_tmp
+    mv_s[0] = start[0];
+    mv_e[0] = end[0];
+    mv_s[1] = 0;
+    mv_e[1] = length_2;
+    ops->MultiVecInnerProd(V, V_tmp, subspace_dtmp, "ns", mv_s, mv_e, length_1, ops);  
+
+    //即计算 VV2 = V1 * (V1'*B*V2)
+    //计算 V_tmp = V1 * subspace_dtmp
+    mv_s[0] = start[0];
+    mv_e[0] = end[0];
+    mv_s[1] = 0;
+    mv_e[1] = length_2;
+    ops->MultiVecLinearComb(V, V_tmp, mv_s, mv_e, subspace_dtmp, length_1, NULL, -1, ops);
+    
+    //计算 V2 = V2 - V_tmp
+    mv_s[0] = 0;
+    mv_e[0] = length_2;
+    mv_s[1] = start[1];
+    mv_e[1] = end[1];
+    ops->MultiVecAxpby(-1.0, V_tmp, 1.0, V, mv_s, mv_e, ops);
+    
+}
+
+//对V(:, start:*end)自身进行正交化
+/*
+ *  使用递归的方式对 V 自身进行正交化
+ *  将向量组 V 分成两部分, V = [V1, V2]
+ *  1. 如果 V 中向量个数小于 max_direct_orth_length, 
+ *     使用 BGS 直接对这部分进行正交化
+ *     否则进行下面的过程
+ *
+ *  2. 调用 GCGE_MultiOrthogonal 对 V1 部分进行正交化
+ *  3. 减去 V2 中 V1 方向的分量
+ *     V2 = V2 - V1 * (V1^T * V2)
+ *  4. 调用 GCGE_MultiOrthogonal 对 V2 部分进行正交化
+ *
+ */
+void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
+      GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+    //GCGE_Printf("line 1873, start: %d, end: %d\n",  start, *end);
+    GCGE_INT length = *end - start;
+    //GCGE_Printf("in GCGE_MultiOrthogonal, start: %d, end: %d, length: %d\n", 
+    //          start, *end, length);
+    //将start到end进行二分，并确定左右两侧的起始、终点位置，以及向量个数
+    GCGE_INT length_1;
+    GCGE_INT length_2;
+    GCGE_INT mid;
+
+    length_1 = length/2;
+    length_2 = length - length_1;
+    mid      = start + length_1;
+
+    GCGE_INT       i = 0;
+    GCGE_INT       mv_s[2];
+    GCGE_INT       mv_e[2];
+    GCGE_INT       iter = 0;
+    GCGE_ORTH_PARA *orth_para = para->orth_para; 
+    GCGE_DOUBLE    Orth_Tol = orth_para->scbgs_reorth_tol;
+    GCGE_DOUBLE    *subspace_dtmp = workspace->subspace_dtmp;
+    GCGE_DOUBLE    value_inner = 1.0;
+    GCGE_DOUBLE    norm_tmp = 0.0;
+    void           **V_tmp = workspace->V_tmp;
+    void           *vec;
+    void           *vec_tmp;
+
+    GCGE_INT max_direct_orth_length = para->orth_para->max_direct_orth_length;
+    if(length <= max_direct_orth_length)
+    {
+        //使用GCGE_SubOrthogonalSelfWithEigen这种正交化方式，
+        //精度要求较高时，很容易出问题
+        GCGE_SubOrthogonalSelfBGS(V, start, end, B, 
+              para, ops, workspace);
+    }
+    else
+    {
+
+        //左侧
+        //因为可以直接处理length==1, 所以直接调用GCGE_MultiOrthogonal
+        GCGE_MultiOrthogonal(V, start, &mid, B, ops, para, workspace);
+        
+        //右侧
+        //如果左侧有0向量出现，先将右侧最后的向量拷贝到前面
+        if(mid + length_2 < *end)
+        {
+            GCGE_INT new_end_2 = mid + length_2;
+            GCGE_INT n_zero = *end - new_end_2;
+            mv_s[0] = mid;
+            mv_e[0] = mid + n_zero;
+            mv_s[1] = new_end_2;
+            mv_e[1] = *end;
+            ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
+            *end = new_end_2;
+        }
+        //右侧减去左侧的分量
+        while(value_inner > Orth_Tol)
+        {   
+            iter ++;      
+            mv_s[0] = start;
+            mv_e[0] = mid;
+            mv_s[1] = mid;
+            mv_e[1] = *end;
+            GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
+            value_inner = 0.0;
+            for(i=0;i<length_1*length_2;i++)
+            { 
+                norm_tmp = subspace_dtmp[i];
+                value_inner += norm_tmp*norm_tmp;
+            }
+            value_inner = sqrt(value_inner);
+            //GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+            if(iter >= orth_para->max_reorth_time)
+                break;
+        }//end while for value_inner
+	if(value_inner > Orth_Tol)
+	{
+	    GCGE_Printf("in GCGE_SubOrthogonal, V1: %d-%d, V2: %d-%d, reorth_count: %d, value_inner: %e\n", 
+	      start, mid-1, mid, *end, orth_para->max_reorth_time, value_inner);
+	}
+        
+        GCGE_MultiOrthogonal(V, mid, end, B, ops, para, workspace);
+    }
+}
+
+void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
+      void *B, GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace)
+{
+    GCGE_INT current;
+    void **V_tmp = workspace->V_tmp;
+    void *vec_current;
+    void *vec_tmp;
+    GCGE_INT j = 0;
+    GCGE_INT mv_s[2];
+    GCGE_INT mv_e[2];
+    GCGE_INT length = 0;
+    GCGE_DOUBLE *d_tmp = workspace->subspace_dtmp;
+    GCGE_DOUBLE norm_value = 0.0;
+    GCGE_DOUBLE orth_zero_tol = para->orth_para->orth_zero_tol;
+    //现在对W本身进行正交化 
+    for(current=start;current<*(end);current++)
+    {
+        //vec_current = W(:,current)
+        ops->GetVecFromMultiVec(V, current, &vec_current);
+        ops->GetVecFromMultiVec(V_tmp, 0, &vec_tmp);
+        if(B == NULL)
+        {
+            ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);        
+        }
+        else
+        {
+            ops->MatDotVec(B, vec_current, vec_tmp);                  
+        }
+        ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
+        ops->RestoreVecForMultiVec(V, current, &vec_current);
+        // 计算 d_tmp = V^T * vec_tmp
+        // 即为 d_tmp[j] = (v_j, vec_current)_B
+        mv_s[0] = current;
+        mv_e[0] = *end;
+        mv_s[1] = 0;
+        mv_e[1] = 1;
+        //d_tmp = vec_tmp*V(:,start:end)
+        length = mv_e[0] - mv_s[0];
+        //统一做内积
+        ops->MultiVecInnerProd(V, V_tmp, d_tmp, "ns", mv_s, mv_e, length, ops);    
+        //V[current]的向量范数
+        norm_value = sqrt(d_tmp[0]);      
+        //下面看看目前处理的向量是否是一个零向量          
+        if(norm_value > orth_zero_tol)
+        {
+            //如果vec_current不为0，就做归一化
+            ops->GetVecFromMultiVec(V, current, &vec_current);
+            //vec_current = 1/norm_value * vec_current
+            ops->VecAxpby(0.0, vec_current, 1.0/norm_value, vec_current);    
+            ops->RestoreVecForMultiVec(V, current, &vec_current);
+            for(j=current+1;j<*end;j++)
+            {
+                ops->GetVecFromMultiVec(V, current, &vec_current);
+                ops->GetVecFromMultiVec(V, j, &vec_tmp);
+                //vec_tmp = vec_tmp - d_tmp[j-current]/norm_value *vec_current
+                ops->VecAxpby(-d_tmp[j-current]/norm_value, vec_current, 1.0, vec_tmp);
+                ops->RestoreVecForMultiVec(V, j, &vec_tmp);
+                ops->RestoreVecForMultiVec(V, current, &vec_current);
+            }//end for(j=current+1;j<*(end);j++)
+        }
+        else
+        {
+            //如果vec_current为0，就把此向量与最后一个向量进行指针交换
+            //同时(*end)--,把总向量的个数减1
+            //同时current--,把当前向量的编号减1,循环到下次仍计算当前编号的向量(即原end)
+            mv_s[0] = current; //表示swap中第一个向量组的起始位置
+            mv_s[1] = (*end)-1; //表示swap中第二个向量组的起始位置
+            mv_e[0] = current + 1; //表示swap中第一个向量组的终止位置
+            mv_e[1] = *end; //表示swap中第二个向量组的终止位置
+            //向量移动（由用户提供），目的: V(:,current:end-1) = V(:, )
+            ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
+            (*end)--;
+            current--;
+            if(para->orth_para->print_orth_zero == 1)
+            {
+                GCGE_Printf("In GCGE_SubOrthogonalSelfBGS, there is a zero vector!, "
+                        "current = %d, start = %d, end = %d\n", current, start, *end);              
+            }//end if(orth_para->print_orth_zero == 1)        
+        }//end if(vout > orth_para->orth_zero_tol)      
+    }//end for(current=dim_xp;current<*(end);current++)      
+}
+
+/*
+ *  使用递归的方式对 V 自身进行正交化
+ *  将向量组 V 分成两部分, V = [V1, V2]
+ *  1. 如果 V 中向量个数小于 max_direct_orth_length, 
+ *     使用 BGS 直接对这部分进行正交化
+ *     否则进行下面的过程
+ *
+ *  2. 调用 GCGE_MultiOrthogonalSubspace 对 V1 部分进行正交化
+ *  3. 减去 V2 中 V1 方向的分量
+ *     V2 = V2 - V1 * (V1^T * V2)
+ *  4. 调用 GCGE_MultiOrthogonalSubspace 对 V2 部分进行正交化
+ *
+ */
+void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
+        GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
+        GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
+{
+    //将start到end进行二分，并确定左右两侧的起始、终点位置，以及向量个数
+    GCGE_INT length   = *end - start;
+    GCGE_INT length_1 = length/2;
+    GCGE_INT length_2 = length - length_1;
+    GCGE_INT mid      = start + length_1;
+
+    GCGE_INT    reorth_count = 0;
+    GCGE_INT    max_reorth_count = orth_para->max_reorth_time;
+    GCGE_DOUBLE alpha = 1.0;
+    GCGE_DOUBLE beta = 0.0;
+    GCGE_DOUBLE *subspace_dtmp = workspace->subspace_dtmp;
+    GCGE_INT    max_direct_orth_length = orth_para->max_direct_orth_length;
+    GCGE_INT    old_length = length;
+    GCGE_DOUBLE value_tmp;
+
+    //GCGE_Printf("line 2389, start: %d, end: %d, length: %d\n", 
+    //              start, *end, length);
+    //if(length <= max_direct_orth_length)
+    if(length == 1)
+    {
+        //GCGE_OrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &length, 
+        //      B, ldB, orth_para);
+        value_tmp = GCGE_VecNormSubspace(V+start*ldV, nrows);
+        if(value_tmp > orth_para->orth_zero_tol)
+        {
+            GCGE_VecScaleSubspace(1.0/value_tmp, V+start*ldV, nrows);
+        }//做完归一化的情况，下面考虑是 0 向量的情况
+        else
+        {
+            *end = start;
+        }
+        //value_tmp = GCGE_VecNormSubspace(V+start*ldV, nrows);
+        //GCGE_Printf("line 2406, start: %d, end: %d, length: %d, ip: %e\n", 
+        //      start, *end, length, value_tmp);
+        //if(length < old_length)
+        //    *end = start + length;
+    }
+    else
+    {
+        GCGE_MultiOrthogonalSubspace(V, ldV, nrows, start, &mid, B, ldB, 
+              orth_para, workspace, ops);
+        if(mid + length_2 < *end)
+        {
+            GCGE_INT new_end_2 = mid + length_2;
+            GCGE_INT n_zero = *end - new_end_2;
+            length_1 -= n_zero;
+            memcpy(V+mid*ldV, V+new_end_2*ldV, n_zero*ldV*sizeof(GCGE_DOUBLE));
+            *end = new_end_2;
+        }
+        for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+        {
+            //计算 d_tmp = V1^T * V2
+            alpha = 1.0;
+            beta  = 0.0;
+            ops->DenseMatDotDenseMat("T", "N", &length_1, &length_2,
+                    &nrows, &alpha, V+start*ldV, &ldV, V+mid*ldV, &ldV,
+                    &beta, subspace_dtmp, &length_1);
+            //计算 V2 = V2 - V1 * subspace_dtmp
+            alpha = -1.0;
+            beta  = 1.0;
+            ops->DenseMatDotDenseMat("N", "N", &ldV, &length_2, &length_1, 
+                    &alpha, V+start*ldV, &ldV, subspace_dtmp, &length_1,
+                    &beta, V+mid*ldV, &ldV);
+        }
+        GCGE_MultiOrthogonalSubspace(V, ldV, nrows, mid, end, B, ldB, 
+              orth_para, workspace, ops);
+    }
+}
+
+//先减去要正交化的向量中已正交化部分的分量, 
+//再使用多重正交化方法进行自身的正交化
+/*
+ *  对向量组 V = [V1, V2] 进行正交化, 其中 V1 部分已经正交
+ *  1. 去掉 V2 中 V1 方向的分量
+ *     V2 = V2 - V1 * (V1^T * V2)
+ *  2. V2 自身正交化
+ *
+ */
+void GCGE_StableMultiOrthogonalSubspace(double *V, GCGE_INT ldV, 
+       GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
+       GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
+{
+    GCGE_INT    reorth_count = 0;
+    GCGE_INT    orth_length = *end - start;
+    GCGE_INT    old_orth_length = *end - start;
+    GCGE_INT    max_reorth_count = orth_para->max_reorth_time;
+    GCGE_DOUBLE alpha = 1.0;
+    GCGE_DOUBLE beta = 0.0;
+    GCGE_DOUBLE *d_tmp = workspace->subspace_dtmp;
+    if(start != 0)
+    {
+        for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+        {
+            orth_length = *end - start;
+            //计算 d_tmp = V1^T * V2
+            alpha = 1.0;
+            beta  = 0.0;
+            ops->DenseMatDotDenseMat("T", "N", &start, &orth_length,
+                    &nrows, &alpha, V, &ldV, V+start*ldV, &ldV,
+                    &beta, d_tmp, &start);
+            //计算 V2 = V2 - V1 * subspace_dtmp
+            alpha = -1.0;
+            beta  = 1.0;
+            ops->DenseMatDotDenseMat("N", "N", &ldV, &orth_length,
+                    &start, &alpha, V, &ldV, d_tmp, &start,
+                    &beta, V+start*ldV, &ldV);
+        }
+    }
+    GCGE_MultiOrthogonalSubspace(V, ldV, nrows, start, end, B, ldB, 
+        orth_para, workspace, ops);
+}
+

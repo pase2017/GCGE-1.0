@@ -370,6 +370,12 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
                 ldc, orth_length, p_start, &p_end, NULL, -1, 
                 para->orth_para, workspace->subspace_dtmp, ops);
     }
+    else if(strcmp(para->p_orth_type, "multi") == 0)
+    {
+        GCGE_StableMultiOrthogonalSubspace(coef+orth_start*ldc + orth_start, 
+                ldc, orth_length, p_start, &p_end, NULL, -1, 
+                para->orth_para, workspace, ops);
+    }
     else
     {
         GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 

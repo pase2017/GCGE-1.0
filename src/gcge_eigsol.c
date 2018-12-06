@@ -439,6 +439,11 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
             GCGE_SCBOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace);
         }
+        else if(strcmp(para->w_orth_type, "multi") == 0)
+        {
+            GCGE_StableMultiOrthogonal(V, workspace->dim_xp, 
+		  &(workspace->dim_xpw), Orth_mat, ops, para, workspace);
+        }
         else
         {
             GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,

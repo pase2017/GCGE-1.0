@@ -432,3 +432,10 @@ TODO
    将子空间特征值平均分配给每个进程进行计算, 计算结束后再做MPI_Allgatherv统一到所有进程
    添加了参数opt_allgatherv，默认为1，可以命令行选择是否使用这种优化
    修改了 gcge_rayleighritz.c gcge_para.c gcge_para.h
+
+2018.12.06 zhangning
+1. TODO: gcge_para.c 中 opt_allgatherv默认值改为0，allgatherv后有时需要再对X部分做一次正交化，要再考虑
+2. 添加multi正交化
+    修改了 gcge_orthogonal.c .h
+    修改了 gcge_eigsol.c gcge_xpw.c
+    修改了 gcge_para.c .h

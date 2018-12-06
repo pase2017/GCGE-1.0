@@ -55,6 +55,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->orth_para->print_orth_zero  = 0;
     (*para)->orth_para->x_orth_block_size= 0;
     (*para)->orth_para->w_orth_block_size= 0;
+    (*para)->orth_para->max_direct_orth_length = 1;
 
     (*para)->multi_tol       = 0.2;
     (*para)->multi_tol_for_lock = 1e-6;
@@ -95,7 +96,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->opt_rr_eig_partly = 1;
     (*para)->opt_bcast = 1;
-    (*para)->opt_allgatherv = 1;
+    (*para)->opt_allgatherv = 0;
     return;
 }
 
@@ -142,6 +143,11 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
         {
             arg_index++;
             para->orth_para->w_orth_block_size = atoi(argv[arg_index++]);
+        }
+        else if(0 == strcmp(argv[arg_index], "-gcge_max_direct_orth_length")) 
+        {
+            arg_index++;
+            para->orth_para->max_direct_orth_length = atoi(argv[arg_index++]);
         }
         else if(0 == strcmp(argv[arg_index], "-gcge_if_lobgcg")) 
         {
@@ -644,6 +650,7 @@ void GCGE_PrintParaInfo(GCGE_PARA *para)
        GCGE_Printf("  x_orth_type        : %8s, (use which kind of orthogonalization for X)\n", para->x_orth_type    );
        GCGE_Printf("  x_orth_block_size  : %8d, (number of vectors orthogonalized in one patch)\n", para->orth_para->x_orth_block_size     );
        GCGE_Printf("  w_orth_block_size  : %8d, (number of vectors orthogonalized in one patch)\n", para->orth_para->w_orth_block_size     );
+       GCGE_Printf("  max_direct_orth_length : %8d, (maximum length of direct orthogonal in multi orthogonal)\n", para->orth_para->max_direct_orth_length);
        GCGE_Printf("  conv_type          : %8s, (use reletive or abosolute residual)\n", para->conv_type      );
        GCGE_Printf("  conv_omega_norm    : %f, (the omega norm of matrix A)\n", para->conv_omega_norm);
        GCGE_Printf("  ev_tol             : %3.2e, (convergence tolerance)\n", para->ev_tol         );
