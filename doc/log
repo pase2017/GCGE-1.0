@@ -442,4 +442,5 @@ TODO
 
 2018.12.07 zhangning
 1. 修改了 gcge_para.c，将正交化的默认方式改为 multi
-2. 将子空间opt_allgatherv部分恢复成原来的方式
+//2. 将子空间opt_allgatherv部分恢复成原来的方式
+3. opt_allgatherv已经改回最新的方式

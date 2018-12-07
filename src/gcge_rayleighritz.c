@@ -208,7 +208,7 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
  *    所有参数，工作空间给了两个函数需要的最大空间，
  *    默认选择dsyevx，可以在使用时设置使用哪一种求解方式
  */
-#if 1
+#if 0
 void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix, 
         GCGE_DOUBLE *eval, GCGE_DOUBLE *subspace_evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
