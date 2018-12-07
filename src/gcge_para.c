@@ -21,8 +21,6 @@
 #include <string.h>
 #include "gcge_para.h"
 
-
-
 //创建GCGE_Para结构并进行初始化
 void GCGE_PARA_Create(GCGE_PARA **para)
 {
@@ -39,9 +37,9 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交
-    (*para)->w_orth_type     = "scbgs"; //使用稳定+高效的块正交化方法
-    (*para)->p_orth_type     = "scbgs"; //使用稳定+高效的块正交化方法
-    (*para)->x_orth_type     = "gs"; //使用原始的Gram-Schmidit正交化方法
+    (*para)->w_orth_type     = "multi"; //使用多重正交化方法
+    (*para)->p_orth_type     = "multi"; //使用多重正交化方法
+    (*para)->x_orth_type     = "multi"; //使用多重正交化方法
     (*para)->conv_omega_norm = 0.0; //使用残差的Omega范数时，矩阵A的omega范数取多少
 
      //正交化参数
@@ -317,9 +315,9 @@ GCGE_INT GCGE_PARA_SetFromCommandLine(GCGE_PARA *para, GCGE_INT argc, char **arg
        GCGE_Printf("  -gcge_ev_tol             <d>: convergence tolerance                         (default: 1e-4)\n");
        GCGE_Printf("  -gcge_conv_type          <c>: use reletive or abosolute or omega residual   (default: R[A|O])\n");
        GCGE_Printf("  -gcge_orth_type          <c>: use A norm or B norm orthogonal               (default: B)\n");
-       GCGE_Printf("  -gcge_w_orth_type        <c>: use which kind of orthogonalization for W     (default: bgs[cbgs|gs])\n");
-       GCGE_Printf("  -gcge_p_orth_type        <c>: use which kind of orthogonalization for P     (default: gs[scbgs|bgs])\n");
-       GCGE_Printf("  -gcge_x_orth_type        <c>: use which kind of orthogonalization for X     (default: bgs[cbgs|gs])\n");
+       GCGE_Printf("  -gcge_w_orth_type        <c>: use which kind of orthogonalization for W     (default: multi[scbgs|cbgs|bgs|gs])\n");
+       GCGE_Printf("  -gcge_p_orth_type        <c>: use which kind of orthogonalization for P     (default: multi[scbgs|cbgs|bgs|gs])\n");
+       GCGE_Printf("  -gcge_x_orth_type        <c>: use which kind of orthogonalization for X     (default: multi[scgbs|cbgs|bgs|gs])\n");
        GCGE_Printf("  -gcge_x_orth_block_size  <i>: number of vectors orthogonalized in one patch (default: nev/5)\n");
        GCGE_Printf("  -gcge_w_orth_block_size  <i>: number of vectors orthogonalized in one patch (default: nev/5)\n");
        GCGE_Printf("  -gcge_orth_zero_tol      <d>: zero tolerance in orthogonal                  (default: 1e-16)\n");

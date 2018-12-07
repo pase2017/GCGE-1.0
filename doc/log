@@ -439,3 +439,6 @@ TODO
     修改了 gcge_orthogonal.c .h
     修改了 gcge_eigsol.c gcge_xpw.c
     修改了 gcge_para.c .h
+
+2018.12.07 zhangning
+1. 修改了 gcge_para.c，将正交化的默认方式改为 multi
