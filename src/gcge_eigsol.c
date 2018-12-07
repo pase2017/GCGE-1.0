@@ -117,6 +117,9 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     double F_norm = 0.0;
     void  *omega_vec;
     //如果用户不给初值，这里给随机初值，用户需要提供给向量设随机值的函数
+#if GET_PART_TIME
+    t1 = GCGE_GetTime();
+#endif
     if(para->given_init_evec == 0)
     {
         if(num_init_evec < nev)
@@ -199,6 +202,11 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         GCGE_Orthogonal(evec, 0, &(workspace->dim_x), Orth_mat, ops, para, 
                     workspace->V_tmp, workspace->subspace_dtmp);
     }
+#if GET_PART_TIME
+    t2 = GCGE_GetTime();
+    stat_para->part_time_one_iter->x_orth_time = t2-t1;
+    stat_para->part_time_total->x_orth_time += t2-t1;
+#endif
     GCGE_PrintParaInfo(para);
 
     //把用户提供的evec初值copy给V, 从evec的0到nev-1拷贝到V的0到nev-1

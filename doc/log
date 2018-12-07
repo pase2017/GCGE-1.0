@@ -445,3 +445,4 @@ TODO
 //2. 将子空间opt_allgatherv部分恢复成原来的方式
 3. opt_allgatherv已经改回最新的方式
 4. 重新添加了 given_init_evec这个参数，默认用户不提供初值
+5. 添加了对初始X进行正交化的时间统计
