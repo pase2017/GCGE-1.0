@@ -208,6 +208,159 @@ void GCGE_ComputeSubspaceMatrix(void *A, void **V,
  *    所有参数，工作空间给了两个函数需要的最大空间，
  *    默认选择dsyevx，可以在使用时设置使用哪一种求解方式
  */
+#if 1
+void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix, 
+        GCGE_DOUBLE *eval, GCGE_DOUBLE *subspace_evec, 
+        GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+{
+#if GET_PART_TIME
+    GCGE_DOUBLE t1 = GCGE_GetTime();
+#endif
+    GCGE_INT    ldm = workspace->dim_xpw;
+    GCGE_INT    info;
+    GCGE_DOUBLE *temp_matrix = workspace->subspace_dtmp,
+                *dwork_space = temp_matrix + ldm*ldm,
+                vl = 0.0, vu = 0.0, abstol = 0.0;
+    //abstol = 2*dlamch_("S");
+    GCGE_INT    max_dim_x = workspace->max_dim_x;
+    //计算subspace_matrix的前rr_eigen_start+1到iu个特征值
+    GCGE_INT    i = 0;
+    GCGE_INT    rr_eigen_start = workspace->unlock[0];
+    if(para->opt_rr_eig_partly == 0)
+        rr_eigen_start = 0;
+    GCGE_INT    il = rr_eigen_start; 
+    //从unlock[0]开始往前判断eval[unlock[0]]这个特征值的重数
+    for(i=rr_eigen_start-1; i>-1; i--)
+    {
+        if(fabs(eval[i] - eval[rr_eigen_start])/eval[rr_eigen_start] < para->multi_tol_for_lock)
+        {
+            il -= 1;
+        }
+    }
+    rr_eigen_start = il;
+    il += 1;
+    workspace->num_soft_locked_in_last_iter = rr_eigen_start;
+    //rr_eigen_start = 0;
+    GCGE_INT    iu = (max_dim_x < ldm) ? max_dim_x : ldm;
+    GCGE_INT    m = iu-il+1;
+    GCGE_INT    lwork = 8*ldm;
+    GCGE_INT    liwork = 5*ldm;
+    GCGE_INT    *subspace_itmp = workspace->subspace_itmp;
+    //subspace_itmp[liwork]在dsyevr时存储liwork
+    GCGE_INT    *isuppz = subspace_itmp + 10*ldm; 
+    GCGE_INT    *ifail  = subspace_itmp + 5*ldm; 
+    for(i=0; i<(workspace->dim_xpw - workspace->dim_xp); i++)
+	memset(subspace_matrix+(workspace->dim_xp+i)*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
+    memcpy(temp_matrix, subspace_matrix, ldm*ldm*sizeof(GCGE_DOUBLE));
+    
+    GCGE_INT    nrows = ldm, ncols = ldm;
+    //以下N代表ldm
+    //work给足够大的空间: max(26*N, 1+6*N+2*N**2)
+    //lwork: dsyevr(26*N),dsyevx(8*N),dsyev(3*N),dsyevd(1+6*N+2*N**2)
+    //workspace_dtmp空间需要；N*N+lwork
+    //iwork足够大的空间：10*N
+    //liwork: dysevr(10*N),dsyevx(5*N,没有这个参数),
+    //        dsyev(没有这个参数，且不需要iwork),dsyevd(3+5*N)
+    //isuppz: dsyevr(2*N的空间)
+    //ifail: dsyevx(N的空间）
+    //特征值与特征向量的存储位置都向后移rr_eigen_start
+    
+    GCGE_INT rank = 0;
+    if(para->opt_bcast == 1)
+    {
+        if(para->use_mpi_bcast)
+        {
+#if GCGE_USE_MPI
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
+        }
+    }
+    //此时, 如果使用 MPI 且要用 MPI_Bcast, 那么 非0号 进程 rank != 0, 
+    //此时 0号 进程 rank==0, 如果 不用MPI_Bcast 也是 rank != 0
+    //那么, 如果 rank==0, 就计算特征值问题, 否则不用计算, 等待广播
+    if(rank == 0)
+    {
+#if 0
+        ops->DenseMatEigenSolver("V", "I", "U", &nrows, temp_matrix, &ncols, 
+                &vl, &vu, &il, &iu, &abstol, 
+                &m, eval+rr_eigen_start, subspace_evec+rr_eigen_start*ldm, &ldm, 
+                isuppz, dwork_space, &lwork,
+                subspace_itmp, &liwork, ifail, &info);
+#else
+	nrows -= rr_eigen_start;
+	il -= rr_eigen_start;
+	iu -= rr_eigen_start;
+        ops->DenseMatEigenSolver("V", "I", "U", &nrows, 
+	        temp_matrix+rr_eigen_start*ncols+rr_eigen_start, &ncols, 
+                &vl, &vu, &il, &iu, &abstol, 
+                &m, eval+rr_eigen_start, 
+		subspace_evec+rr_eigen_start*ldm+rr_eigen_start, &ldm, 
+                isuppz, dwork_space, &lwork,
+                subspace_itmp, &liwork, ifail, &info);
+	iu += rr_eigen_start;
+#endif
+    }
+    if(para->use_mpi_bcast)
+    {
+#if GCGE_USE_MPI
+        memcpy(subspace_evec+iu*ldm, eval+rr_eigen_start, m*sizeof(GCGE_DOUBLE));
+        GCGE_Printf("use MPI_Bcast\n");
+        MPI_Bcast(subspace_evec+rr_eigen_start*ldm, m*ldm+m, MPI_DOUBLE, 
+                0, MPI_COMM_WORLD);
+        memcpy(eval+rr_eigen_start, subspace_evec+iu*ldm, m*sizeof(GCGE_DOUBLE));
+#endif
+    }
+#if GET_PART_TIME
+    GCGE_DOUBLE t2 = GCGE_GetTime();
+    para->stat_para->part_time_one_iter->rr_eigen_time = t2-t1;
+    para->stat_para->part_time_total->rr_eigen_time += t2-t1;
+#endif
+#if 0
+    if(rr_eigen_start > 0)
+    {
+        //sub_end表示这里要进行正交化的x个数
+        GCGE_INT sub_end = max_dim_x - rr_eigen_start;
+
+        memset(subspace_evec, 0.0, rr_eigen_start*ldm*sizeof(GCGE_DOUBLE));
+        for(i=0; i<rr_eigen_start; i++)
+            subspace_evec[i*ldm+i] = 1.0;
+        for(i=rr_eigen_start; i<max_dim_x; i++)
+            memset(subspace_evec+i*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
+        if(strcmp(para->x_orth_type, "scbgs") == 0)
+        {
+            GCGE_BlockOrthogonalSubspace(subspace_evec + rr_eigen_start*ldm +
+                        rr_eigen_start, ldm, ldm - rr_eigen_start, &sub_end, 
+                        para->orth_para->x_orth_block_size,
+                        ops, para, workspace->subspace_dtmp);
+        }
+        else if(strcmp(para->x_orth_type, "bgs") == 0)
+        {
+            GCGE_BOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
+                        NULL, -1, para->orth_para, workspace->subspace_dtmp, ops);
+        }
+        else
+        {
+            GCGE_OrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+                        ldm, ldm - rr_eigen_start, 0, &sub_end, 
+                        NULL, -1, para->orth_para);
+        }
+    }
+#endif
+    //用lapack_syev计算得到的特征值是按从小到大排列,
+    //如果用A内积，需要把特征值取倒数后再按从小到大排列
+    //由于后面需要用到的只有前dim_x个特征值，所以只把前dim_x个拿到前面来
+    if(strcmp(para->orth_type, "A") == 0)
+    {
+        GCGE_SortEigenpairs(eval, subspace_evec, iu, ldm, workspace->subspace_dtmp);
+    }
+#if GET_PART_TIME
+    GCGE_DOUBLE t3 = GCGE_GetTime();
+    para->stat_para->part_time_one_iter->x_orth_time = t3-t2;
+    para->stat_para->part_time_total->x_orth_time += t3-t2;
+#endif
+}
+#else
 void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix, 
         GCGE_DOUBLE *eval, GCGE_DOUBLE *subspace_evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
@@ -435,6 +588,7 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
     para->stat_para->part_time_total->x_orth_time += t3-t2;
 #endif
 }
+#endif
 
 //用A内积的话，特征值从小到大，就是原问题特征值倒数的从小到大，
 //所以顺序反向，同时特征值取倒数
