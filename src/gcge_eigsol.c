@@ -78,6 +78,9 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     GCGE_DOUBLE *subspace_evec   = workspace->subspace_evec;   //subspace_evec表示Rayleigh-Ritz过程中的子空间向量
     void        *Orth_mat; //Orth_mat正交化时计算内积所用的矩阵: B 或者 A，通常是B
     void        *RayleighRitz_mat; //RayleighRitz_mat计算子空间矩阵时所用矩阵: A或者B,通常用A
+    
+    GCGE_DOUBLE value_1 = 0.0;
+    GCGE_DOUBLE value_2 = 0.0;
 
     workspace->evec = evec;
 
@@ -399,6 +402,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //out:   输出时大规模P向量存储在V的dim_x(p_start)到dim_xp(p_end)列
         //会修改dim_xp即p_end
         GCGE_ComputeP(subspace_evec, V, ops, para, workspace);
+
         //Ritz向量放到V中作为下次迭代中基向量的一部分
         mv_s[0] = workspace->num_soft_locked_in_last_iter;
         mv_s[1] = workspace->num_soft_locked_in_last_iter;
@@ -416,6 +420,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         stat_para->part_time_one_iter->x_axpy_time = t2-t1;
         stat_para->part_time_total->x_axpy_time += t2-t1;
 #endif
+
         //用未收敛的特征向量作为X求解线性方程组 A W = \lambda B X
         //需要参数unlock及w_length(unconv_bs),w_start,
         //修改向量组V中w_start至w_end列，不会修改参数
@@ -476,6 +481,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         t1 = GCGE_GetTime();
 #endif
         GCGE_ComputeSubspaceMatrix(RayleighRitz_mat, V, ops, para, workspace);
+
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->rr_mat_time = t2-t1;
@@ -484,6 +490,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
         //计算子空间矩阵的特征对
         GCGE_ComputeSubspaceEigenpairs(subspace_matrix, workspace->eval, subspace_evec, 
                 ops, para, workspace);
+
         workspace->last_dim_x = workspace->dim_x;
         //检查特征值重数,确定新的dim_x(即x_end)
         //这里是用什么方法进行检测的？？？
@@ -495,7 +502,9 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
         t1 = GCGE_GetTime();
 #endif
+
         GCGE_ComputeX(V, subspace_evec, evec, nev, workspace->dim_xpw, ops, workspace);
+
 #if GET_PART_TIME
         t2 = GCGE_GetTime();
         stat_para->part_time_one_iter->x_axpy_time = t2-t1;
@@ -522,13 +531,12 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     //把计算得到的近似特征对拷贝给eval,evec输出
     memcpy(eval, workspace->eval, nev*sizeof(GCGE_DOUBLE));
 
-#if 0
     mv_s[0] = 0;
-    mv_e[0] = nev;
+    mv_e[0] = workspace->num_soft_locked_in_last_iter;
     mv_s[1] = 0;
-    mv_e[1] = nev;
-    ops->MultiVecAxpby(1.0, RitzVec, 0.0, evec, mv_s, mv_e, ops);
-#endif
+    mv_e[1] = workspace->num_soft_locked_in_last_iter;
+    ops->MultiVecAxpby(1.0, V, 0.0, evec, mv_s, mv_e, ops);
+
     GCGE_PrintFinalInfo(eval, para);
 
 }
