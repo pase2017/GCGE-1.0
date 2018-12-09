@@ -143,7 +143,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             if(B == NULL)
             {
                 ops->VecInnerProd(vec_current, vec_current, &norm_value);      
-                vout = sqrt(norm_value);		  
+                vout = sqrt(norm_value);          
             }
             else
             {
@@ -152,7 +152,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 ops->MatDotVec(B, vec_current, vec_tmp2); 
                 ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
                 vout = sqrt(norm_value);
-                ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);	  
+                ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);      
             }
 
             do{
@@ -173,19 +173,19 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                         //vec_tmp2 = B*vec_current
                         ops->GetVecFromMultiVec(V_tmp, 1, &vec_tmp2); //vec_tmp2 = V_tmp[1]
                         ops->MatDotVec(B, vec_current, vec_tmp2); 
-                        ops->VecInnerProd(vec_tmp, vec_tmp2, &ipv);		
-                        ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);		
+                        ops->VecInnerProd(vec_tmp, vec_tmp2, &ipv);        
+                        ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);        
                     }//end for if
                     //接下来做： V(:,current) = V(:,current) - ipv*V(:,j)
                     ops->VecAxpby(-ipv, vec_tmp, 1.0, vec_current);
                     //ops->GetVecFromMultiVec(V, j, &vec_tmp); //vectmp = V(:,j)
-                    ops->RestoreVecForMultiVec(V, j, &vec_tmp);	      
+                    ops->RestoreVecForMultiVec(V, j, &vec_tmp);          
                 }//end for j
                 vin = vout;       
                 if(B == NULL)
                 {
                     ops->VecInnerProd(vec_current, vec_current, &norm_value);
-                    //vout = sqrt(norm_value);		      
+                    //vout = sqrt(norm_value);              
                 }
                 else
                 {
@@ -194,12 +194,12 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                     ops->MatDotVec(B, vec_current, vec_tmp2); 
                     ops->VecInnerProd(vec_current, vec_tmp2, &norm_value);
                     //vout = sqrt(norm_value);
-                    ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);	      
+                    ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);          
                 }//end if(B == NULL)
                 //ops->VecInnerProd(vec_current, vec_current, &norm_value);
                 vout = sqrt(norm_value);
                 ratio = vout/vin;
-                reorth_count;	  
+                reorth_count;      
             }while((ratio < orth_para->reorth_tol) && (reorth_count < orth_para->max_reorth_time) 
                     && (vout > orth_para->orth_zero_tol) );
             //ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
@@ -216,11 +216,11 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 ops->GetVecFromMultiVec(V, current, &vec_current);
                 if(B == NULL)
                 {
-                    ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	  
+                    ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);      
                 }
                 else
                 {
-                    ops->MatDotVec(B, vec_current, vec_tmp);	  
+                    ops->MatDotVec(B, vec_current, vec_tmp);      
                 }
                 ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
                 ops->RestoreVecForMultiVec(V, current, &vec_current);
@@ -248,7 +248,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                     ops->GetVecFromMultiVec(V, current, &vec_current);
                     ops->VecAxpby(-1.0, vec_tmp, 1.0, vec_current);
                     ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
-                    ops->RestoreVecForMultiVec(V, current, &vec_current);	  
+                    ops->RestoreVecForMultiVec(V, current, &vec_current);      
                 }//end if(current != 0)        
 
                 // d_tmp[current] 即为 (v_current_in, vec_current_in)_B
@@ -278,7 +278,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         {
             //如果vec_current不为0，就做归一化
             ops->GetVecFromMultiVec(V, current, &vec_current);
-            ops->VecAxpby(0.0, vec_current, 1/vout, vec_current);	 
+            ops->VecAxpby(0.0, vec_current, 1/vout, vec_current);     
             ops->RestoreVecForMultiVec(V, current, &vec_current);
             //ops->RestoreVecForMultiVec(V_tmp, 0, &vec_tmp);
             //ops->RestoreVecForMultiVec(V_tmp, 1, &vec_tmp2);      
@@ -298,8 +298,8 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             if(orth_para->print_orth_zero == 1)
             {
                 GCGE_Printf("In Orthogonal, there is a zero vector!, "
-                        "current = %d, start = %d, end = %d\n", current, start, *end);	
-            }//end if(orth_para->print_orth_zero == 1)	        
+                        "current = %d, start = %d, end = %d\n", current, start, *end);    
+            }//end if(orth_para->print_orth_zero == 1)            
         }//end if(vout > orth_para->orth_zero_tol)      
     }//end for(current = start; current < (*end); ++current)    
 }//end of this subprogram
@@ -378,11 +378,11 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         ops->GetVecFromMultiVec(evec,j, &vec_tmp);
         if(B == NULL)
         {
-            ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	  	
+            ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);          
         }
         else
         {
-            ops->MatDotVec(B, vec_current, vec_tmp);	  	
+            ops->MatDotVec(B, vec_current, vec_tmp);          
         }
         ops->RestoreVecForMultiVec(evec, j, &vec_tmp);
         ops->RestoreVecForMultiVec(V, j, &vec_current);
@@ -394,7 +394,7 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
         ops->GetVecFromMultiVec(V_tmp,j-nev, &vec_tmp);
         if(B == NULL)
         {
-            ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);	  	
+            ops->VecAxpby(1.0, vec_current, 0.0, vec_tmp);          
         }
         else
         {
@@ -1571,7 +1571,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
                 //如果这个时候需要输出提醒信息，就输出
                 if(orth_para->print_orth_zero == 1)
                 {
-                    printf("In OrthogonalSubspace, there is a zero vector!, "
+                    GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);
                 }//end if (orth_para->print_orth_zero == 1)
             }//end if (vout > orth_para->orth_zero_tol)
@@ -1700,7 +1700,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
                 //如果这个时候需要输出提醒信息，就输出
                 if(orth_para->print_orth_zero == 1)
                 {
-                    printf("In OrthogonalSubspace, there is a zero vector!, "
+                    GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);
                 }//end if (orth_para->print_orth_zero == 1)
             }//end if (vout > orth_para->orth_zero_tol)
@@ -1999,30 +1999,33 @@ void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B,
             ops->MultiVecSwap(V, V, mv_s, mv_e, ops);
             *end = new_end_2;
         }
-        //右侧减去左侧的分量
-        while(value_inner > Orth_Tol)
-        {   
-            iter ++;      
-            mv_s[0] = start;
-            mv_e[0] = mid;
-            mv_s[1] = mid;
-            mv_e[1] = *end;
-            GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
-            value_inner = 0.0;
-            for(i=0;i<length_1*length_2;i++)
-            { 
-                norm_tmp = subspace_dtmp[i];
-                value_inner += norm_tmp*norm_tmp;
-            }
-            value_inner = sqrt(value_inner);
-            //GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
-            if(iter >= orth_para->max_reorth_time)
-                break;
-        }//end while for value_inner
-	if(value_inner > Orth_Tol)
+	if(mid-start > 0)
 	{
-	    GCGE_Printf("in GCGE_SubOrthogonal, V1: %d-%d, V2: %d-%d, reorth_count: %d, value_inner: %e\n", 
-	      start, mid-1, mid, *end, orth_para->max_reorth_time, value_inner);
+            //右侧减去左侧的分量
+            while(value_inner > Orth_Tol)
+            {   
+                iter ++;      
+                mv_s[0] = start;
+                mv_e[0] = mid;
+                mv_s[1] = mid;
+                mv_e[1] = *end;
+                GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
+                value_inner = 0.0;
+                for(i=0;i<length_1*length_2;i++)
+                { 
+                    norm_tmp = subspace_dtmp[i];
+                    value_inner += norm_tmp*norm_tmp;
+                }
+                value_inner = sqrt(value_inner);
+                //GCGE_Printf("the %d-th orth, inner value=%e\n",iter, value_inner);    
+                if(iter >= orth_para->max_reorth_time)
+                    break;
+            }//end while for value_inner
+	    if(value_inner > Orth_Tol)
+	    {
+	       GCGE_Printf("in GCGE_SubOrthogonal, V1: %d-%d, V2: %d-%d, reorth_count: %d, value_inner: %e\n", 
+		     start, mid-1, mid, *end, orth_para->max_reorth_time, value_inner);
+	    }
 	}
         
         GCGE_MultiOrthogonal(V, mid, end, B, ops, para, workspace);
@@ -2177,21 +2180,24 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
             memcpy(V+mid*ldV, V+new_end_2*ldV, n_zero*ldV*sizeof(GCGE_DOUBLE));
             *end = new_end_2;
         }
-        for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
-        {
-            //计算 d_tmp = V1^T * V2
-            alpha = 1.0;
-            beta  = 0.0;
-            ops->DenseMatDotDenseMat("T", "N", &length_1, &length_2,
-                    &nrows, &alpha, V+start*ldV, &ldV, V+mid*ldV, &ldV,
-                    &beta, subspace_dtmp, &length_1);
-            //计算 V2 = V2 - V1 * subspace_dtmp
-            alpha = -1.0;
-            beta  = 1.0;
-            ops->DenseMatDotDenseMat("N", "N", &ldV, &length_2, &length_1, 
-                    &alpha, V+start*ldV, &ldV, subspace_dtmp, &length_1,
-                    &beta, V+mid*ldV, &ldV);
-        }
+	if(length_1 > 0)
+	{
+            for(reorth_count=0; reorth_count < max_reorth_count; reorth_count++)
+            {
+                //计算 d_tmp = V1^T * V2
+                alpha = 1.0;
+                beta  = 0.0;
+                ops->DenseMatDotDenseMat("T", "N", &length_1, &length_2,
+                        &nrows, &alpha, V+start*ldV, &ldV, V+mid*ldV, &ldV,
+                        &beta, subspace_dtmp, &length_1);
+                //计算 V2 = V2 - V1 * subspace_dtmp
+                alpha = -1.0;
+                beta  = 1.0;
+                ops->DenseMatDotDenseMat("N", "N", &ldV, &length_2, &length_1, 
+                        &alpha, V+start*ldV, &ldV, subspace_dtmp, &length_1,
+                        &beta, V+mid*ldV, &ldV);
+            }
+	}
         GCGE_MultiOrthogonalSubspace(V, ldV, nrows, mid, end, B, ldB, 
               orth_para, workspace, ops);
     }
