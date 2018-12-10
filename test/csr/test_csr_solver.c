@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
     csr_solver->para->cg_max_it = 20;
     csr_solver->para->ev_max_it = 150;
     csr_solver->para->cg_type  = 2;
+    csr_solver->para->print_part_time = 0;
+    csr_solver->para->print_eval = 0;
      
      //求解特征值问题
     GCGE_SOLVER_Solve(csr_solver);  

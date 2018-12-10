@@ -29,7 +29,7 @@ EXE9   = test_orth_ops.exe
 EXE10  = test_orth_subspace.exe
 EXE11  = test_p.exe
 EXE12  = test_w.exe
-EXE13  = test_csr_solver.exe
+EXE13  = ./test_csr_solver.exe
 
 INC    = -I$(GCGEINC)
 LIBS   = $(LIBGCGECSR) $(LIBGCGE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
