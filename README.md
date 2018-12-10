@@ -1,44 +1,88 @@
-===========================  OVERVIEW  =================================
+# General Conjugate Gradient Eigensolver (GCGE)
 
-Get the latest version at
+## OVERVIEW
 
-   src    -
+| Document Name | Description |
+| ------------- | ----------- |
+| src           |             |
+| app           |             |
+| test          |             |
+| blaslapack    |             |
 
-   app    -
 
-   test   -
+## INSTALLATION DETAILS
 
-The current release includes all the above packages plus a few 
-
-supplementary packages:
-
-   lapack - a collection of a few linear algebra algorithms (Real*8). 
-
-            We recommend to use the corresponding system library if you
-
-            have one.
-
-   blas   - a collection of basic linear algebra Real*8 subroutines such
-
-            as x*y, a*x+y, etc where x and y are vectors. We recommend 
-
-            to use the corresponding system library if you have one.
-
-=======================  INSTALLATION DETAILS  =========================
-
-We uses a simplified 'Makefile' to compile and install the package. 
+We uses a simplified `Makefile` to compile and install the package. 
 
 User should set up compiler names (FORTRAN and C) and compilation options 
 
-in the file config/make.inc. Type 'make help' for more details.
+in the file `config/make.inc`. Type `make help` for more details.
 
-$ vi config/make.inc
+`$ vi config/make.inc`
 
 provide correct names and options
 
-$ make libs
+`$ make libs`
 
-$ make install
+`$ make install`
 
-=========================  RUNNING DEMOs  ==============================
+## RUNNING DEMOs
 
+## STRUCTURE
+
+> src/
+>
+> > Makefile
+> > gcge.h
+> > gcge_cg.c
+> > gcge_cg.h
+> > gcge_eigsol.c
+> > gcge_eigsol.h
+> > gcge_matvec.c
+> > gcge_matvec.h
+> > gcge_ops.c
+> > gcge_ops.h
+> > gcge_orthogonal.c
+> > gcge_orthogonal.h
+> > gcge_para.c
+> > gcge_para.h
+> > gcge_rayleighritz.c
+> > gcge_rayleighritz.h
+> > gcge_solver.c
+> > gcge_solver.h
+> > gcge_statistics.c
+> > gcge_statistics.h
+> > gcge_type.h
+> > gcge_utilities.c
+> > gcge_utilities.h
+> > gcge_workspace.c
+> > gcge_workspace.h
+> > gcge_xpw.c
+> > gcge_xpw.h
+
+> app/
+>
+> > csr
+> > > Makefile
+> > > gcge_app_csr.c
+> > > gcge_app_csr.h
+>
+> > hypre
+> > > Makefile
+> > > gcge_app_hypre.c
+> > > gcge_app_hypre.h
+>
+> > petsc
+> > > Makefile
+> > > gcge_app_petsc.c
+> > > gcge_app_petsc.h
+>
+> > phg
+> > > Makefile
+> > > gcge_app_phg.c
+> > > gcge_app_phg.h
+>
+> > slepc
+> > > Makefile
+> > > gcge_app_slepc.c
+> > > gcge_app_slepc.h
