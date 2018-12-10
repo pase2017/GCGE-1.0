@@ -220,21 +220,20 @@ int
 main(int argc, char *argv[])
 {
     static char *fn = "../data/cube4.dat";
-    /*static char *fn = "../test/model.mesh";*/
-    static INT mem_max = 400;
+    static INT mem_max = 3000;
     size_t mem, mem_peak;
     int i, j, k, n, nit;
-    INT nev = 10;
-    INT pre_refines = 2;
+    INT nev = 20;
+    INT pre_refines = 8;
     GRID *g;
     DOF **u_h, *error;
     MAP *map;
     MAT *A, *B;
-    FLOAT tol = 1e-8, PEoo, thres;
+    FLOAT tol = 1e-3, PEoo, thres;
     FLOAT *evals;
     double wtime;
 
-    phgOptionsPreset("-dof_type P4");
+    phgOptionsPreset("-dof_type P1");
 
     phgOptionsRegisterFilename("-mesh_file", "Mesh filename", &fn);
     phgOptionsRegisterInt("-pre_refines", "Pre-refines", &pre_refines);
@@ -290,8 +289,8 @@ main(int argc, char *argv[])
 	}
     }
 
-    const char *pc1 = NULL;
-    phgRefineAllElements(g, 9);
+    int flag = 0;
+while( TRUE ){
     phgPrintf("\n");
     if (phgBalanceGrid(g, 1.2, -1, NULL, 0.))
        phgPrintf("Repartition mesh\n");
@@ -320,42 +319,104 @@ main(int argc, char *argv[])
 	  A->rmap->nglobal, phgGetTime(NULL) - wtime);
     wtime = phgGetTime(NULL);
 
+    for (i = 0; i < nev; i++) {
+       phgPrintf("  tau[%d]=%0.12e, error(u_h)=%0.2e\n",
+	     i, (double)evals[i], (double)compute_error(u_h[i], i));
+    }
+    compute_error(NULL,  0);
 
     /* GCGE SOLVER */
     {
        //创建一个特征值solver实例
-       GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, argc,  argv);   
+       /*
+       int my_argc = 2;
+       char *my_argv[2];
+       my_argv[0] = "-gcge_block_size";
+       my_argv[1] = "1";
+       GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, my_argc, my_argv);   
+       */
+       GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, argc, argv);   
        //   GCGE_SOLVER_SetEigenvectors(phg_solver, (void **)evec);
        //一些参数的设置
-       phg_solver->para->ev_tol = tol;
+       phg_solver->para->ev_tol = 1e-8;
        phg_solver->para->ev_max_it = 100;
        phg_solver->para->dirichlet_boundary = 0;
        //求解特征值问题
        phg_solver->para->print_eval = 0;
        phg_solver->para->print_part_time = 0;
-       phg_solver->para->multi_tol_for_lock = 0.02;
-       phg_solver->para->cg_max_it = 100;
-       GCGE_SOLVER_Solve(phg_solver);  
-       n = nev;
+       phg_solver->para->cg_max_it = 30;
+       phg_solver->para->given_init_evec = nev;
+       /*
+       phg_solver->para->multi_tol_for_lock = 1e-3;
+       phg_solver->para->opt_rr_eig_partly = 0;
+       phg_solver->para->multi_tol = 1.5;
+       phg_solver->para->block_size = nev;
+       phg_solver->para->w_orth_type = "scbgs";
+       phg_solver->para->p_orth_type = "scbgs";
+       phg_solver->para->x_orth_type = "scbgs";
+       */
 
-       for (i = 0; i < n; i++) {
+       BOOLEAN remove_bdry = (map->nglobal - map->bdry_nglobal == A->cmap->nglobal);
+       /* convert dof to vec */
+       DOF **dof;
+       for (i = 0; i < nev; i++) {
+	  dof = u_h+i;
+	  phgMapDofArraysToVecN(map, 1, remove_bdry, (VEC**)(phg_solver->evec+i), map->ndof, &dof);
+       }
+       GCGE_SOLVER_Solve(phg_solver);  
+       /* convert vec to dof */
+       for (i = 0; i < nev; i++) {
+	  dof = u_h+i;
+	  phgMapVecToDofArraysN(map, (VEC*)(phg_solver->evec[i]), remove_bdry, map->ndof, &dof);
 	  evals[i] = phg_solver->eval[i];
        }
-       /* should convert vec to dof */
        GCGE_SOLVER_Free_All(&phg_solver);
     }
     /* GCGE SOLVER */
 
-    for (i = 0; i < n; i++) {
+    if (flag == 1)
+       break;
+#if 0
+    for (i = 0; i < nev; i++) {
        FLOAT err_tau;
        nit = modes[i][0] * modes[i][0] +
 	  modes[i][1] * modes[i][1] +
 	  modes[i][2] * modes[i][2];
        err_tau = Fabs(evals[i] - nit * Pow(M_PI,2)) / evals[i];
-       phgPrintf("  tau[%d]=%0.12e, error(tau)=%0.2e\n",
-	     i, (double)evals[i], (double)err_tau);
+       phgPrintf("  tau[%d]=%0.12e, error(tau)=%0.2e, error(u_h)=%0.2e\n",
+	     i, (double)evals[i], (double)err_tau, (double)compute_error(u_h[i], i));
     }
+    compute_error(NULL,  0);
 
+    PEoo = 0.0;
+    phgDofSetDataByValue(error,  0.0);
+    for (i = 0; i < nev; i++) {
+       thres = estimate_error(evals[i],  u_h[i],  error);
+       if (PEoo < thres)
+	  PEoo = thres;
+    }
+    phgPrintf("indicator=%0.3le\n",  (double)PEoo);
+
+    mem = phgMemoryUsage(g,  &mem_peak);
+    phgPrintf("Memory usage: current %0.4lgMB,  peak %0.4lgMB\n", 
+	  (double)mem / (1024.0 * 1024.0), 
+	  (double)mem_peak / (1024.0 * 1024.0));
+    if (PEoo < tol || mem_peak >= 1024 * (size_t)1024 * mem_max)
+       break;
+
+    phgMarkRefine(MARK_DEFAULT, error, Pow(0.8, 2), NULL, 0., 1, 
+	  Pow(tol, 2) / g->nleaf_global);
+    phgRefineMarkedElements(g);
+#else
+    phgRefineAllElements(g, 3);
+#endif
+    phgMatDestroy(&B);
+    phgMatDestroy(&A);
+    phgMapDestroy(&map);
+
+    if( DofGetDataCountGlobal(u_h[0])>1e3 )
+       flag = 1;
+}
 #if 0
     phgPrintf("Creating \"%s\".\n", phgExportVTKn(g, "output.vtk", nev, u_h));
 #endif

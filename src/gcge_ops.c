@@ -21,24 +21,28 @@
 #include <math.h>
 
 #include "gcge_ops.h"
-
 /* if use mpi, multivec inner prod will be improved by MPI_Typre_vector and MPI_Op_create */
 #if GCGE_USE_MPI
 GCGE_INT SIZE_B, SIZE_E, LDA;
 void user_fn_submatrix_sum(double *in,  double *inout,  int *len,  MPI_Datatype* dptr)
 {
-   int i,  j,  k;
+   int i, j;
    double *b,  *a;
+   double one = 1.0;
+   int    inc = 1;
    for (i = 0; i < *len; ++i)
    {
       for (j = 0; j < SIZE_B; ++j)
       {
 	 b = inout+j*LDA;
 	 a = in+j*LDA;
+	 daxpy_(&SIZE_E, &one, a, &inc, b, &inc);
+	 /*
 	 for (k = 0; k < SIZE_E; ++k)
 	 {
 	    b[k] += a[k];
 	 }
+	 */
       }
    }
 }  

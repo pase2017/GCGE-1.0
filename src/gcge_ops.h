@@ -228,6 +228,7 @@ extern void dsymm_(char *side, char *uplo,
         GCGE_DOUBLE *b,     GCGE_INT    *ldb, GCGE_DOUBLE *beta,
         GCGE_DOUBLE *c,     GCGE_INT    *ldc);
 
+extern void daxpy_(int *size, double *alpha, double *x, int *incx, double *y, int *incy);
 
 void GCGE_OPS_Create(GCGE_OPS **ops);
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops);
