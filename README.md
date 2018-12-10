@@ -4,7 +4,7 @@
 
 | Document Name | Description |
 | ------------- | ----------- |
-| src           |             |
+| src           | core programs |
 | app           |             |
 | test          |             |
 | blaslapack    |             |
