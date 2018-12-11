@@ -35,8 +35,8 @@ typedef struct PASE_OPS_ {
     void (*VecSetRandomValue)       (void *vec);
     void (*MatDotVec)               (void *Matrix, void *x, void *r);
     void (*VecAxpby)                (GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y); /* y = ax+by */
-    void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *xTy);
-    void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *xTy);
+    void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *value_ip);
+    void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *value_ip);
     void (*VecCreateByVec)           (void **des_vec, void *src_vec);
     void (*VecCreateByMat)           (void **vec, void *mat);
     void (*VecDestroy)                 (void **vec);

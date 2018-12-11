@@ -54,9 +54,9 @@ void GCGE_CSR_VecAxpby(GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y)
 {
    CSR_VecAxpby(a, (CSR_VEC*)x, b, (CSR_VEC*)y);
 }
-void GCGE_CSR_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_CSR_VecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-   CSR_VecInnerProd((CSR_VEC*)x, (CSR_VEC*)y, xTy);
+   CSR_VecInnerProd((CSR_VEC*)x, (CSR_VEC*)y, value_ip);
 }
 void GCGE_CSR_MultiVecPrint(void **x, GCGE_INT n)
 {
@@ -365,7 +365,7 @@ void CSR_VecAxpby(double a, CSR_VEC *x, double b, CSR_VEC *y)
 }
 
 //计算向量内积，如果计算向量范数，就先计算内积，再开平方
-void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy)
+void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *value_ip)
 {
     int    i, size = x->size;
     double *x_Entries = x->Entries, *y_Entries = y->Entries, xy = 0.0;
@@ -373,8 +373,8 @@ void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy)
     {
         xy += x_Entries[i]*y_Entries[i];
     }
-    //return xTy;
-    *xTy = xy;
+    //return value_ip;
+    *value_ip = xy;
 }
 
 //由已给向量创建向量组

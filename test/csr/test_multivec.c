@@ -119,13 +119,13 @@ int main(int argc, char* argv[])
     printf ( "y\n" );
     ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
-    printf ( "MultiVecInnerProd xTy\n" );
-    double xTy[6] = {1.0, 1.0, -1.0, -1.0, 1.0, -1.0};
+    printf ( "MultiVecInnerProd value_ip\n" );
+    double value_ip[6] = {1.0, 1.0, -1.0, -1.0, 1.0, -1.0};
     ops->MultiVecInnerProd((void **)multi_vec_x, (void **)multi_vec_y, 
-	  (double *)&xTy, "n", mv_s, mv_e, num_vec_x, ops);
-    printf ( "xTy\n" );
-    printf ( "%f\t%f\t%f\n", xTy[0], xTy[2], xTy[4] );
-    printf ( "%f\t%f\t%f\n", xTy[1], xTy[3], xTy[5] );
+	  (double *)&value_ip, "n", mv_s, mv_e, num_vec_x, ops);
+    printf ( "value_ip\n" );
+    printf ( "%f\t%f\t%f\n", value_ip[0], value_ip[2], value_ip[4] );
+    printf ( "%f\t%f\t%f\n", value_ip[1], value_ip[3], value_ip[5] );
 
     printf ( "MultiVecSwap x<->y\n" );
     mv_s[0] = 0; mv_s[1] = 1;
