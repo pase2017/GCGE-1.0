@@ -19,7 +19,7 @@
 #ifndef _GCGE_APP_HYPRE_H_
 #define _GCGE_APP_HYPRE_H_
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 #include "gcge_ops.h"
 #include "gcge_solver.h"
 

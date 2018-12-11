@@ -19,7 +19,7 @@
 #ifndef  _GCGE_OPS_H_
 #define  _GCGE_OPS_H_
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 //把每一个操作都写好，这样以后进行算法设计的时候才能方便。
 #if GCGE_USE_MPI
 #include <mpi.h>

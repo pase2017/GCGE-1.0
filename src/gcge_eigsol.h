@@ -19,7 +19,7 @@
 #define _GCGE_EIGSOL_H_
 
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 
 #include "gcge_utilities.h"
 #include "gcge_statistics.h"
@@ -46,7 +46,7 @@
  * @param orth_para
  * @param workspace
  */
-void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
+void GCGE_Solve(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
         GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
 void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);

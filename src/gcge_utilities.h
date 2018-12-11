@@ -19,7 +19,7 @@
 #ifndef  _GCGE_UTILITIES_H_
 #define  _GCGE_UTILITIES_H_
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 #include <stdarg.h>
 #if GCGE_USE_MPI
 #include <mpi.h>

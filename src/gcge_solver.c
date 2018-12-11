@@ -97,5 +97,5 @@ void GCGE_SOLVER_GetEigenvectors(GCGE_SOLVER *solver, void ***evec)
 
 void GCGE_SOLVER_Solve(GCGE_SOLVER *solver)
 {    
-    GCGE_EigenSolver(solver->A, solver->B, solver->eval, solver->evec, solver->para, solver->ops, solver->workspace);
+    GCGE_Solve(solver->A, solver->B, solver->eval, solver->evec, solver->para, solver->ops, solver->workspace);
 }

@@ -18,7 +18,7 @@
 
 #ifndef _GCGE_MATVEC_H_
 #define _GCGE_MATVEC_H_
-#include "gcge_type.h"
+#include "gcge_config.h"
 #include "gcge_ops.h"
 
 //GCGE算法中用到的一些线性代数操作

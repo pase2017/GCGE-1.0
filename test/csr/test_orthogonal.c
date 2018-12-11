@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
     double entries[6] = {0.0, 1.0, 2.0, 1.0, 2.0, 3.0};
     end = 2;
     
-    //  void GCGE_OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+    //  void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
     //  void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
-    GCGE_OrthonormalizationSubspace((double *)entries, 3, 0, &end,
+    GCGE_OrthonormalizationInSubspace((double *)entries, 3, 0, &end,
 	  NULL, -1, solver->para->orth_para);
     printf ( "entries\n" );
     printf ( "%16.5f\t%10.15f\t%10.15f\n%10.15f\t%10.15f\t%10.15f\n", 

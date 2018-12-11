@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
     printf("after  X orth:\n");
     solver->ops->MultiVecPrint((void**)multi_vec, num_vec);
 
-    GCGE_OrthonormalizationSubspace(subspace_evec, num_vec, 0, &dim_x, NULL, -1, solver->para->orth_para);
+    GCGE_OrthonormalizationInSubspace(subspace_evec, num_vec, 0, &dim_x, NULL, -1, solver->para->orth_para);
     //基底multi_vec线性组合得到multi_vec_2, dim_x个
     int mv_s[2] = { 0, 0 };
     int mv_e[2] = { num_vec, dim_x };

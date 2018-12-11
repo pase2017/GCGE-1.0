@@ -62,7 +62,7 @@
  */
 //求解特征值调用GCGE_Eigen函数
 //A,B表示要求解特征值的矩阵GCGE_MATRIX，evec是要求解的特征向量GCGE_Vec
-void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
+void GCGE_Solve(void *A, void *B, GCGE_DOUBLE *eval, void **evec, 
         GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace)
 {
     /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 

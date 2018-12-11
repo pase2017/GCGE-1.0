@@ -18,7 +18,7 @@
 #ifndef _GCGE_STATISTICS_H_
 #define _GCGE_STATISTICS_H_
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 
 typedef struct GCGE_PART_TIME_ {
     GCGE_DOUBLE x_axpy_time;

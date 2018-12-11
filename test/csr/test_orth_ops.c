@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
     
     double entries[6] = {0.0, 1.0, 2.0, 1.0, 2.0, 3.0};
     end = 2;
-    GCGE_OrthonormalizationSubspace((double *)entries, 0, &end, 3, 
+    GCGE_OrthonormalizationInSubspace((double *)entries, 0, &end, 3, 
 	  NULL, -1, solver->para->orth_para, solver->workspace);
     //printf ( "entries\n" );
     //printf ( "%f\t%f\t%f\n%f\t%f\t%f\n", 

@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  gcge_type.h
+ *       Filename:  gcge_config.h
  *
  *    Description:  
  *
@@ -15,8 +15,8 @@
  *
  * =====================================================================================
  */
-#ifndef _GCGE_TYPE_H_
-#define _GCGE_TYPE_H_
+#ifndef _GCGE_CONFIG_H_
+#define _GCGE_CONFIG_H_
 
 #include <float.h>
 

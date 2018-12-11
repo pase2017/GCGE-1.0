@@ -19,7 +19,7 @@
 #define _GCGE_RAYLEIGHRITZ_H_
 
 #include <string.h>
-#include "gcge_type.h"
+#include "gcge_config.h"
 
 #include "gcge_para.h"
 #include "gcge_ops.h"

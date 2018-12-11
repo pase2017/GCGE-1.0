@@ -32,10 +32,10 @@ libs: $(install_libs)
 	@echo "make install"
 	
 without-mpi:
-	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 0/" $(GCGESRC)/gcge_type.h
+	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 0/" $(GCGESRC)/gcge_config.h
 
 with-mpi:
-	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 1/" $(GCGESRC)/gcge_type.h
+	@sed -i "s/#define GCGE_USE_MPI [01]/#define GCGE_USE_MPI 1/" $(GCGESRC)/gcge_config.h
 
 libgcge_core:
 	@echo "======================================="

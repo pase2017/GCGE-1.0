@@ -18,7 +18,7 @@
 #ifndef _GCGE_WORKSPACE_H_
 #define _GCGE_WORKSPACE_H_
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 
 #include "gcge_para.h"
 #include "gcge_ops.h"

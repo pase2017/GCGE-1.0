@@ -19,7 +19,7 @@
 #define _GCGE_XPW_H_
 
 
-#include "gcge_type.h"
+#include "gcge_config.h"
 #include "gcge_utilities.h"
 #include "gcge_statistics.h"
 

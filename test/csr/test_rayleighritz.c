@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
     printf ( "--------------------------------\n" );
     //CSR_PrintMat(A);
     //CSR_PrintMat(B);
-    GCGE_EigenSolver((void *)A, (void *)B, (GCGE_DOUBLE *)eval, (void **)multi_vec, 
+    GCGE_Solve((void *)A, (void *)B, (GCGE_DOUBLE *)eval, (void **)multi_vec, 
 	  solver->para, solver->ops, solver->workspace);
 
     printf ( "%f, %f, %f\n",  eval[0], eval[1], eval[2] );
