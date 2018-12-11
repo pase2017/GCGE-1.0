@@ -23,7 +23,8 @@
 //CG迭代求解Matrix * x = b
 //Matrix是用于求解的矩阵(GCGE_MATRIX),b是右端项向量(GCGE_VEC),x是解向量(GCGE_VEC)
 //用时，V_tmp+1
-void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
+void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, 
+             void **V_tmp1, void **V_tmp2)
 {
     //临时向量
     void        *r, *p, *w;
@@ -31,13 +32,11 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCG
     GCGE_INT    max_it = para->cg_max_it, type = para->cg_type;
     GCGE_DOUBLE rate = para->cg_rate;
     GCGE_DOUBLE tmp1, tmp2, alpha, beta, rho1, rho2, error, last_error, pTw, wTw;
-    void        **V_tmp = workspace->V_tmp;
-    void        **RitzVec = workspace->evec;
 
     //CG迭代中用到的临时向量
-    ops->GetVecFromMultiVec(V_tmp, 1, &r); //记录残差向量
-    ops->GetVecFromMultiVec(RitzVec, 0, &p); //记录下降方向
-    ops->GetVecFromMultiVec(RitzVec, 1, &w); //记录tmp=A*p
+    ops->GetVecFromMultiVec(V_tmp1, 1, &r); //记录残差向量
+    ops->GetVecFromMultiVec(V_tmp2, 0, &p); //记录下降方向
+    ops->GetVecFromMultiVec(V_tmp2, 1, &w); //记录tmp=A*p
     ops->MatDotVec(Matrix,x,r); //tmp = A*x
     ops->VecAxpby(1.0, b, -1.0, r);  
     ops->VecInnerProd(r, r, &rho2);//用残量的模来判断误差
@@ -108,9 +107,9 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCG
         //update the iteration time
         niter++;   
     }//end while((last_error/error >= rate)&&(niter<max_it))
-    ops->RestoreVecForMultiVec(V_tmp, 1, &r); 
-    ops->RestoreVecForMultiVec(RitzVec, 0, &p);
-    ops->RestoreVecForMultiVec(RitzVec, 1, &w);
+    ops->RestoreVecForMultiVec(V_tmp1, 1, &r); 
+    ops->RestoreVecForMultiVec(V_tmp2, 0, &p);
+    ops->RestoreVecForMultiVec(V_tmp2, 1, &w);
 }//end for the CG program
 
 
@@ -130,26 +129,33 @@ void GCGE_CG(void *Matrix, void *b, void *x, GCGE_OPS *ops, GCGE_PARA *para, GCG
  *  x_length:  input,        要求解的方程组个数
  *  ops:       input,        操作
  *  para:      input,        参数
- *  workspace, input,        工作空间
+ *  V_tmp1:    input,        向量组工作空间
+ *  V_tmp2:    input,        向量组工作空间
+ *  subspace_dtmp: input,    double型工作空间
+ *  subspace_itmp: input,    int型工作空间
  */
 void GCGE_BCG(void *Matrix, void **RHS, void**V, GCGE_INT x_start, GCGE_INT x_length, 
-          GCGE_OPS *ops, GCGE_PARA *para,GCGE_WORKSPACE *workspace)
+          GCGE_OPS *ops, GCGE_PARA *para, void *V_tmp1, void **V_tmp2, 
+	  GCGE_DOUBLE *subspace_dtmp, GCGE_INT *subspace_itmp)
 {
   //临时向量
   void        *x,  *r, *p, *w, *b;
-  void **CG_R = RHS, **CG_P = workspace->CG_p, **CG_W = workspace->evec, 
-       **CG_X = V;
-  GCGE_INT   id, idx, niter = 0;
+  //void        **CG_R = RHS, **CG_P = workspace->CG_p, **CG_W = workspace->evec, 
+  void        **CG_R = RHS, **CG_P = V_tmp1, **CG_W = V_tmp2, 
+              **CG_X = V;
+  GCGE_INT    id, idx, niter = 0;
   GCGE_INT    max_it = para->cg_max_it, type = para->cg_type;
   GCGE_DOUBLE rate = para->cg_rate;
   GCGE_DOUBLE tmp1, tmp2, alpha, beta;
-  GCGE_DOUBLE *rho1 = workspace->subspace_dtmp, 
+  //GCGE_DOUBLE *rho1 = workspace->subspace_dtmp, 
+  GCGE_DOUBLE *rho1 = subspace_dtmp, 
               *rho2 = rho1 + x_length, 
               *error = rho2 + x_length, 
               *last_error = error+x_length,
               *ptw = last_error + x_length,
               *rtr = ptw + x_length;
-   GCGE_INT *unlock = workspace->subspace_itmp, num_unlock = 0; 
+   //GCGE_INT *unlock = workspace->subspace_itmp, num_unlock = 0; 
+   GCGE_INT *unlock = subspace_itmp, num_unlock = 0; 
 
 
     for(idx=0; idx<x_length; idx++)

@@ -196,7 +196,9 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
         //W存储在 V(:,w_start:w_start+w_length), RHS存储在V_tmp(:,0:w_length)
         if(para->if_use_bcg == 1)
         {
-            GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,workspace);
+            GCGE_BCG(A, V_tmp, V, w_start,w_length, ops, para,
+                 workspace->CG_p, workspace->evec, 
+                 workspace->subspace_dtmp, workspace->subspace_itmp);
         }
         else
         {
@@ -206,7 +208,7 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
                 ops->GetVecFromMultiVec(V_tmp, idx, &rhs);
                 w_current_idx = w_start + idx;	
                 ops->GetVecFromMultiVec(V, w_current_idx, &w_current);
-                GCGE_CG(A, rhs, w_current, ops, para, workspace);
+                GCGE_CG(A, rhs, w_current, ops, para, workspace->V_tmp, workspace->evec);
                 ops->RestoreVecForMultiVec(V, w_current_idx, &w_current);
                 ops->RestoreVecForMultiVec(V_tmp, idx, &rhs);
             }//end for idx_p      

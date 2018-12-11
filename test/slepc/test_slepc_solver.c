@@ -32,6 +32,7 @@
 
 static char help[] = "Use GCGE-SLEPc to solve an eigensystem Ax=kBx with the matrixes loaded from files.\n";
 
+void PetscGetDifferenceMatrix(Mat *A, PetscInt n, PetscInt m);
 int main(int argc, char* argv[])
 {
     PetscErrorCode ierr;
@@ -48,8 +49,20 @@ int main(int argc, char* argv[])
     char file_P[PETSC_MAX_PATH_LEN] = "fileinput";
     ierr = PetscOptionsGetString(NULL, NULL, "-mat_P", file_P, sizeof(file_P), NULL);
 
+    PetscInt  n = 10, m = 10;
+    PetscBool flag;
     //读入矩阵, 如果命令行提供了矩阵B和P的地址, 才读矩阵B和P
-    SLEPC_ReadMatrixBinary(&A, file_A);
+    if(strcmp(file_A, "fileinput") != 0)
+    {
+        SLEPC_ReadMatrixBinary(&A, file_A);
+    }
+    else
+    {
+        ierr = PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL);
+        ierr = PetscOptionsGetInt(NULL, NULL, "-m", &m, &flag);
+        if (!flag) m=n;
+        PetscGetDifferenceMatrix(&A, n, m);
+    }
     if(strcmp(file_B, "fileinput") != 0)
     {
         SLEPC_ReadMatrixBinary(&B, file_B);
@@ -133,4 +146,28 @@ int main(int argc, char* argv[])
     ierr = SlepcFinalize();
 
     return ierr;
+}
+
+void PetscGetDifferenceMatrix(Mat *A, PetscInt n, PetscInt m)
+{
+    PetscInt N = n*m;
+    PetscInt Istart, Iend, II, i, j;
+    PetscErrorCode ierr;
+    ierr = MatCreate(PETSC_COMM_WORLD,A);
+    ierr = MatSetSizes(*A,PETSC_DECIDE,PETSC_DECIDE,N,N);
+    ierr = MatSetFromOptions(*A);
+    ierr = MatSetUp(*A);
+    
+    ierr = MatGetOwnershipRange(*A,&Istart,&Iend);
+    for (II=Istart;II<Iend;II++) {
+      i = II/n; j = II-i*n;
+      if (i>0) { ierr = MatSetValue(*A,II,II-n,-1.0,INSERT_VALUES); }
+      if (i<m-1) { ierr = MatSetValue(*A,II,II+n,-1.0,INSERT_VALUES); }
+      if (j>0) { ierr = MatSetValue(*A,II,II-1,-1.0,INSERT_VALUES); }
+      if (j<n-1) { ierr = MatSetValue(*A,II,II+1,-1.0,INSERT_VALUES); }
+      ierr = MatSetValue(*A,II,II,4.0,INSERT_VALUES);
+    }
+    
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);
 }

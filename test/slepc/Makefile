@@ -31,7 +31,7 @@ LIBS  = $(LIBGCGESLEPC) $(LIBGCGE) $(LIBSLEPC)
 
 all: $(OBJS1) $(EXE1)
 $(EXE1):$(OBJS1)
-	$(CLINKER) -o $(EXE1) $(OBJS1) $(LIBS)
+	@$(CLINKER) -o $(EXE1) $(OBJS1) $(LIBS)
 
 $(OBJS1):$(MAIN1)
 	$(CC) $(CFLAGS) -c $(MAIN1) -o $(OBJS1) $(INC)

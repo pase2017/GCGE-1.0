@@ -491,3 +491,8 @@ TODO:
    MPI_Finalize();
 #endif
 8. PHG的默认特征值求解器是什么呢? 在LSSC4上管理员安装的PHG包含了所有的外部包吗?
+
+2018.12.11 zhangning
+1. CG和BCG不依赖于GCGE_WORKSPACE
+   修改 gcge_cg.c gcge_cg.h gcge_xpw.c
+2. 修改 test_slepc_solver.c 如果不给输入矩阵，就算差分矩阵标准特征值问题
