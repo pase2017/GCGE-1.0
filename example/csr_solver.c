@@ -43,17 +43,19 @@ int main(int argc, char* argv[])
    CSR_MAT *A = CSR_ReadMatFile(file_A);
    CSR_MAT *B = CSR_ReadMatFile(file_B);
 
-   int nev = 20;
+   int nev = 10;
    //创建一个特征值solver实例
    GCGE_SOLVER *csr_solver = GCGE_CSR_Solver_Init(A, B, nev, argc,  argv);   
    //一些参数的设置
    //csr_solver->para->ev_tol = 1e-8;
    csr_solver->para->dirichlet_boundary = 1;
+   /*
    csr_solver->para->cg_max_it = 20;
    csr_solver->para->ev_max_it = 150;
    csr_solver->para->cg_type  = 2;
    csr_solver->para->print_part_time = 0;
    csr_solver->para->print_eval = 0;
+   */
 
    //求解特征值问题
    GCGE_SOLVER_Solve(csr_solver);  

@@ -33,7 +33,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     (*para)->if_lobgcg       = 0; //用gcg
     (*para)->given_init_evec = 0;
-    (*para)->ev_tol          = 1e-4;
+    (*para)->ev_tol          = 1e-8;
 
     (*para)->conv_type       = "R"; //使用相对残差判断收敛性
     (*para)->orth_type       = "B"; //使用B正交

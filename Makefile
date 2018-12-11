@@ -1,6 +1,8 @@
+###########################################################
+
 GCGEHOME = .
 include $(GCGEHOME)/config/make.inc
-.PHONY: all libs clean help
+.PHONY: all libs clean help test-csr test-hypre test-petsc test-phg test-slepc
 
 WITHMPI = $(findstring mpi, $(CC))
 
@@ -14,15 +16,13 @@ install_libs += $(if $(PHGINC),   libgcge_phg)
 ifeq ($(GCGEHOME)/blaslapack/liblapack.a, $(LIBLAPACK)) 
    install_libs += liblapack
 endif
-ifeq ($(GCGEHOME)/blaslapack/libblas.a, $(LIBBLAS)) 
+ifeq ($(GCGEHOME)/blaslapack/libblas.a, $(LIBBLAS))
    install_libs += libblas
 endif
 
-
 ###########################################################
+
 all: 	help
-
-###########################################################
 
 libs: $(install_libs)
 	@echo "======================================="
@@ -77,35 +77,31 @@ libblas:
 	@echo "        Making library BLAS            "
 	@cd $(GCGEHOME)/blaslapack/blas;    $(MAKE) lib
 
+test-csr: libs
+	@cd $(GCGEHOME)/example;  $(MAKE) run-csr-solver
 
-#test-csr: 
-#	@cd $(GCGEHOME)/test/csr;    $(MAKE) exe run-solver
+test-hypre: libs 
+	@cd $(GCGEHOME)/example;  $(MAKE) run-hypre-solver
 
-#test-hypre: 
-#	@cd $(GCGEHOME)/test/hypre;  $(MAKE) exe run-ex1
+test-petsc: libs
+	@cd $(GCGEHOME)/example;  $(MAKE) run-petsc-solver
 
-#test-pase: 
-#	@cd $(GCGEHOME)/test/pase;   $(MAKE) exe run-ex1
+test-phg: libs
+	@cd $(GCGEHOME)/example;  $(MAKE) run-phg-solver
 
-#test-petsc: 
-#	@cd $(GCGEHOME)/test/petsc;  $(MAKE) exe run-ex1
-
-#test-slepc: 
-#	@cd $(GCGEHOME)/test/slepc;  $(MAKE) exe run-ex1
+test-slepc: libs
+	@cd $(GCGEHOME)/example;  $(MAKE) run-slepc-solver
 
 clean:
 	@cd $(GCGESRC);             make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/csr;    make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/hypre;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/petsc;  make clean; rm -rf *~
-	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/app/phg;    make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/hypre; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/slepc; make clean; rm -rf *~
-#	@cd $(GCGEHOME)/test/petsc; make clean; rm -rf *~
+	@cd $(GCGEHOME)/app/slepc;  make clean; rm -rf *~
+	@cd $(GCGEHOME)/example;    make clean; rm -rf *~
 	@cd $(GCGEHOME)/blaslapack/lapack;  make clean; rm -rf *~
 	@cd $(GCGEHOME)/blaslapack/blas;    make clean; rm -rf *~
-
 
 cleanall: clean
 	@cd $(GCGELIB);   $(RM) $(RMFLAGS) *.a
@@ -141,11 +137,11 @@ help:
 	@echo "   libs         - create all libraries"
 	@echo "   libgcge      - create GCGE library"
 	@echo " "
-#	@echo "   test-csr     - test library GCGE      (only 1 test)"
-#	@echo "   test-hypre   - test library GCGEHypre (only 1 test)"
-#	@echo "   test-pase    - test library GCGEPASE  (only 1 test)"
-#	@echo "   test-petsc   - test library GCGEPetsC (only 1 test)"
-#	@echo "   test-slepc   - test library GCGESlepC (only 1 test)"
+	@echo "   test-csr     - test library GCGE"
+	@echo "   test-hypre   - test library GCGE HYPRE"
+	@echo "   test-petsc   - test library GCGE PETSC"
+	@echo "   test-phg     - test library GCGE PHG"
+	@echo "   test-slepc   - test library GCGE SLPEC"
 	@echo " "
 	@echo "   clean        - remove temporary files except libraries"
 	@echo "   cleanall     - remove libraries"

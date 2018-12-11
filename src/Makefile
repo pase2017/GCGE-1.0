@@ -14,8 +14,8 @@ HEADERS = gcge_utilities.h gcge_statistics.h gcge_para.h gcge_ops.h \
           gcge_orthogonal.h gcge_rayleighritz.h gcge_cg.h gcge_xpw.h \
           gcge_eigsol.h \
           gcge_solver.h \
-          gcge_config.h \
           gcge.h
+#          gcge_config.h \
 OBJS    = ${FILES:.c=.o}
 
 INC     = 

@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     char file_P[PETSC_MAX_PATH_LEN] = "fileinput";
     ierr = PetscOptionsGetString(NULL, NULL, "-mat_P", file_P, sizeof(file_P), NULL);
 
-    PetscInt  n = 10, m = 10;
+    PetscInt  n = 100, m = 10;
     PetscBool flag;
     //读入矩阵, 如果命令行提供了矩阵B和P的地址, 才读矩阵B和P
     if(strcmp(file_A, "fileinput") != 0)
@@ -79,9 +79,9 @@ int main(int argc, char* argv[])
     GCGE_SOLVER_SetSLEPCOps(slepc_solver);
 
     //设置一些参数-示例
-    int nev = 30;
+    int nev = 10;
     GCGE_SOLVER_SetNumEigen(slepc_solver, nev);//设置特征值个数
-    slepc_solver->para->print_eval = 0;//设置是否打印每次迭代的特征值
+//    slepc_solver->para->print_eval = 0;//设置是否打印每次迭代的特征值
 
     //从命令行读入GCGE_PARA中的一些参数
     GCGE_INT error = GCGE_PARA_SetFromCommandLine(slepc_solver->para, argc, argv);

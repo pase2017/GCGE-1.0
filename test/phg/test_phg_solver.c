@@ -328,14 +328,14 @@ while( TRUE ){
     /* GCGE SOLVER */
     {
        //创建一个特征值solver实例
-       /*
        int my_argc = 2;
        char *my_argv[2];
        my_argv[0] = "-gcge_block_size";
-       my_argv[1] = "1";
+       my_argv[1] = "50";
        GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, my_argc, my_argv);   
-       */
+       /*
        GCGE_SOLVER *phg_solver = GCGE_PHG_Solver_Init(A, B, nev, argc, argv);   
+       */
        //   GCGE_SOLVER_SetEigenvectors(phg_solver, (void **)evec);
        //一些参数的设置
        phg_solver->para->ev_tol = 1e-8;
@@ -414,7 +414,7 @@ while( TRUE ){
     phgMatDestroy(&A);
     phgMapDestroy(&map);
 
-    if( DofGetDataCountGlobal(u_h[0])>1e3 )
+    if( DofGetDataCountGlobal(u_h[0])>1e8 )
        flag = 1;
 }
 #if 0
