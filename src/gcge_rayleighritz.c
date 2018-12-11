@@ -343,7 +343,7 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
         {
             GCGE_OrthonormalizationInSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
                         ldm, ldm - rr_eigen_start, 0, &sub_end, 
-                        NULL, -1, para->orth_para);
+                        NULL, -1, para->orth_para, ops);
         }
     }
 #endif

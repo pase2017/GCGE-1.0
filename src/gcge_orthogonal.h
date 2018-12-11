@@ -44,7 +44,7 @@ void GCGE_Orthonormalization(void **V, GCGE_INT start, GCGE_INT *end,
       void **V_tmp, GCGE_DOUBLE *d_tmp);
 
 void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
-      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
+      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, GCGE_OPS *ops);
 void GCGE_BOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 void GCGE_CBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 

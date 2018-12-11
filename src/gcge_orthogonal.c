@@ -579,7 +579,7 @@ void GCGE_BOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end,
  * @param d_tmp 长度×end
  */
 void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
-      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
+      void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, GCGE_OPS *ops)
 {
     GCGE_INT    current = 0; //当前进行正交化操作的向量编号
     GCGE_INT    reorth_count = 0;
