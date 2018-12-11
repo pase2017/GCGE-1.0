@@ -260,7 +260,7 @@ void GCGE_Orthonormalization(void **V, GCGE_INT start, GCGE_INT *end,
                  *  (vi1, vi1) = (vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j, 
                  *                vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j)
                  *             = (vi0, vi0) - \sum_{j=0}^{i-1} (vi0, v_j)^2 */
-                d_tmp[current] = d_tmp[current] - GCGE_ArrayDotArrayInSubspace(d_tmp, d_tmp, current);
+                d_tmp[current] = d_tmp[current] - ops->ArrayDotArray(d_tmp, d_tmp, current);
                 // ratio = vout / vin
                 vout = sqrt(d_tmp[current]);
                 ratio = vout/vin;
@@ -591,7 +591,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
     for(current = start; current < (*end); ++current)
     {
         // 计算当前向量的范数
-        vout = GCGE_ArrayNormInSubspace(V+current*ldV, nrows);
+        vout = ops->ArrayNorm(V+current*ldV, nrows);
         if(current != 0)
         {
             reorth_count = 0;
@@ -601,12 +601,12 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
                 {
                     //修正的Gram-Schmidt正交化方法
                     //计算ip = (v_idx, v_current)
-                    ip = GCGE_ArrayDotArrayInSubspace(V+idx*ldV, V+current*ldV, nrows);
+                    ip = ops->ArrayDotArray(V+idx*ldV, V+current*ldV, nrows);
                     //计算v_current = v_current - ip * v_idx
-                    GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
+                    ops->ArrayAXPBY(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
                 }
                 // 计算当前向量的范数
-                vout = GCGE_ArrayNormInSubspace(V+current*ldV, nrows);
+                vout = ops->ArrayNorm(V+current*ldV, nrows);
 
                 ratio = vout/vin;
 
@@ -619,7 +619,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
         if(vout > orth_para->orth_zero_tol)
         {
             //如果v_current不为0，就做归一化
-            GCGE_ArrayScaleInSubspace(1.0/vout, V+current*ldV, nrows);
+            ops->ArrayScale(1.0/vout, V+current*ldV, nrows);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else 
         {
@@ -630,7 +630,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
             if(current != *end-1)
             {
                    //下面这个函数的方式应该是copy（from ,to， OK！
-                GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                ops->ArrayCopy(V+(*end -1)*ldV, V+current*ldV, nrows);
             }//end if (current != *end-1)
             (*end)--;
             current--;
@@ -657,7 +657,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, 
     for(current = start; current < (*end); ++current)
     {
         // 计算当前向量的范数
-        vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
+        vout = ops->ArrayNorm(V+current*ldV, ldV);
         if(current != 0)
         {
             reorth_count = 0;
@@ -667,12 +667,12 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, 
                 {
                     //修正的Gram-Schmidt正交化方法
                     //计算ip = (v_idx, v_current)
-                    ip = GCGE_ArrayDotArrayInSubspace(V+idx*ldV, V+current*ldV, ldV);
+                    ip = ops->ArrayDotArray(V+idx*ldV, V+current*ldV, ldV);
                     //计算v_current = v_current - ip * v_idx
-                    GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
+                    ops->ArrayAXPBY(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
                 }
                 // 计算当前向量的范数
-                vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
+                vout = ops->ArrayNorm(V+current*ldV, ldV);
 
                 ratio = vout/vin;
 
@@ -685,7 +685,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, 
         if(vout > orth_para->orth_zero_tol)
         {
             //如果v_current不为0，就做归一化
-            GCGE_ArrayScaleInSubspace(1.0/vout, V+current*ldV, ldV);
+            ops->ArrayScale(1.0/vout, V+current*ldV, ldV);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else 
         {
@@ -696,7 +696,7 @@ void GCGE_OrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT start, 
             if(current != *end-1)
             {
                    //下面这个函数的方式应该是copy（from ,to， OK！
-                GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, ldV);
+                ops->ArrayCopy(V+(*end -1)*ldV, V+current*ldV, ldV);
             }//end if (current != *end-1)
             (*end)--;
             current--;
@@ -925,7 +925,7 @@ void GCGE_CBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end,
                 }
                 else
                 {
-                    GCGE_ArrayScaleInSubspace(1.0/sqrt(tmp_eval[j]), tmp_evec+j*w_length, w_length);
+                    ops->ArrayScale(1.0/sqrt(tmp_eval[j]), tmp_evec+j*w_length, w_length);
                 }
             }
             if(tmp_eval_nonzero_start)
@@ -1529,7 +1529,7 @@ void GCGE_BOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
             for(current_V2 = start; current_V2 < *end; current_V2++)
             {
                 if(fabs(d_tmp[current_V2-start]) > 10.0*orth_zero_tol)
-                     GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2-start], V+current*ldV,
+                     ops->ArrayAXPBY(-d_tmp[current_V2-start], V+current*ldV,
                         1.0, V+current_V2*ldV, nrows);
             }
         }
@@ -1547,11 +1547,11 @@ void GCGE_BOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
             norm = sqrt(d_tmp[0]);
             if(norm > orth_zero_tol)
             {
-                GCGE_ArrayScaleInSubspace(1.0/norm, V+current*ldV, nrows);
+                ops->ArrayScale(1.0/norm, V+current*ldV, nrows);
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
-                        GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2 - current]/norm, 
+                        ops->ArrayAXPBY(-d_tmp[current_V2 - current]/norm, 
                             V+current*ldV, 1.0, V+current_V2*ldV, nrows);
                 }
             }
@@ -1564,7 +1564,7 @@ void GCGE_BOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
                 if(current != *end-1)
                 {
                     //下面这个函数的方式应该是copy（from ,to， OK！
-                    GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                    ops->ArrayCopy(V+(*end -1)*ldV, V+current*ldV, nrows);
                 }//end if (current != *end-1)
                 (*end)--;
                 current--;
@@ -1676,11 +1676,11 @@ void GCGE_SCBOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrow
             norm = sqrt(d_tmp[0]);
             if(norm > orth_zero_tol)
             {
-                GCGE_ArrayScaleInSubspace(1.0/norm, V+current*ldV, nrows);
+                ops->ArrayScale(1.0/norm, V+current*ldV, nrows);
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
-                        GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2 - current]/norm, 
+                        ops->ArrayAXPBY(-d_tmp[current_V2 - current]/norm, 
                             V+current*ldV, 1.0, V+current_V2*ldV, nrows);
                 }
             }
@@ -1693,7 +1693,7 @@ void GCGE_SCBOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nrow
                 if(current != *end-1)
                 {
                     //下面这个函数的方式应该是copy（from ,to， OK！
-                    GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                    ops->ArrayCopy(V+(*end -1)*ldV, V+current*ldV, nrows);
                 }//end if (current != *end-1)
                 (*end)--;
                 current--;
@@ -2153,16 +2153,16 @@ void GCGE_MultiOrthonormalizationInSubspace(double *V, GCGE_INT ldV, GCGE_INT nr
     {
         //GCGE_OrthonormalizationInSubspace(V+start*ldV, ldV, nrows, 0, &length, 
         //      B, ldB, orth_para);
-        value_tmp = GCGE_ArrayNormInSubspace(V+start*ldV, nrows);
+        value_tmp = ops->ArrayNorm(V+start*ldV, nrows);
         if(value_tmp > orth_para->orth_zero_tol)
         {
-            GCGE_ArrayScaleInSubspace(1.0/value_tmp, V+start*ldV, nrows);
+            ops->ArrayScale(1.0/value_tmp, V+start*ldV, nrows);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else
         {
             *end = start;
         }
-        //value_tmp = GCGE_ArrayNormInSubspace(V+start*ldV, nrows);
+        //value_tmp = ops->ArrayNorm(V+start*ldV, nrows);
         //GCGE_Printf("line 2406, start: %d, end: %d, length: %d, ip: %e\n", 
         //      start, *end, length, value_tmp);
         //if(length < old_length)

@@ -22,7 +22,6 @@
 
 #define GCGE_DOUBLE double
 #define GCGE_INT int
-#define BLASname(name) d##name##_
 #define GET_PART_TIME 1
 #define GCGE_USE_MPI 0
 

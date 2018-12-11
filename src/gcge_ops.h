@@ -78,6 +78,7 @@ typedef struct GCGE_OPS_ {
                                      GCGE_INT *start, GCGE_INT *end, GCGE_INT lda, struct GCGE_OPS_ *ops);
     void (*MultiVecSwap)            (void **V_1, void **V_2, GCGE_INT *start, GCGE_INT *end, 
                                      struct GCGE_OPS_ *ops);
+    void (*MultiVecPrint)           (void **x, GCGE_INT n);
 
     /* TODO kernal function should use this op to get j-th vector */
     void (*GetVecFromMultiVec)      (void **V, GCGE_INT j, void **x);
@@ -204,7 +205,12 @@ typedef struct GCGE_OPS_ {
                                      GCGE_DOUBLE *b, GCGE_INT *ldb, GCGE_DOUBLE *beta,
                                      GCGE_DOUBLE *c, GCGE_INT *ldc);
 
-    void (*MultiVecPrint)           (void **x, GCGE_INT n);
+    GCGE_DOUBLE (*ArrayDotArray)    (GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length);
+    GCGE_DOUBLE (*ArrayNorm)        (GCGE_DOUBLE *x, GCGE_INT length);
+    void (*ArrayAXPBY)              (GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, GCGE_INT length);
+    void (*ArrayCopy)               (GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length);
+    void (*ArrayScale)              (GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT length);
+
    
 }GCGE_OPS;
 
@@ -228,7 +234,11 @@ extern void dsymm_(char *side, char *uplo,
         GCGE_DOUBLE *b,     GCGE_INT    *ldb, GCGE_DOUBLE *beta,
         GCGE_DOUBLE *c,     GCGE_INT    *ldc);
 
-extern void daxpy_(int *size, double *alpha, double *x, int *incx, double *y, int *incy);
+extern void   daxpy_(int *size, double *alpha, double *x, int *incx, double *y, int *incy);
+extern double ddot_(int *length, double *x, int *incx, double *y, int *incy);
+extern double dnrm2_(int *length, double *x, int *inc);
+extern void   dscal_(int *length, double *a, double *x, int *inc);
+extern void   dcopy_(int *length, double *x, int *incx, double *y, int *incy);
 
 void GCGE_OPS_Create(GCGE_OPS **ops);
 GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops);
@@ -236,11 +246,4 @@ void GCGE_OPS_Free(GCGE_OPS **ops);
 
 void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_workspace);
 
-//子空间线性代数操作
-GCGE_DOUBLE GCGE_ArrayDotArrayInSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT length);
-GCGE_DOUBLE GCGE_ArrayNormInSubspace(GCGE_DOUBLE *a, GCGE_INT length);
-void GCGE_ArrayAXPBYInSubspace(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, 
-        GCGE_INT length);
-void GCGE_ArrayCopyInSubspace(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length);
-void GCGE_ArrayScaleInSubspace(GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT length);
 #endif

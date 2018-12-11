@@ -357,6 +357,78 @@ void GCGE_Default_DenseSymMatDotDenseMat(char *side, char *uplo,
            b, ldb, beta, c, ldc);
 }
 
+//计算向量x和y的内积
+GCGE_DOUBLE GCGE_Default_ArrayDotArray(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length)
+{
+#if 0
+    GCGE_INT i;
+    GCGE_DOUBLE value = 0.0;
+    for( i=0; i<length; i++ )
+        value += a[i]*b[i];
+    return value;
+#else
+    GCGE_INT inc = 1;
+    return ddot_(&length, x, &inc, y, &inc);
+#endif
+}
+
+//计算向量a的范数
+GCGE_DOUBLE GCGE_Default_ArrayNorm(GCGE_DOUBLE *x, GCGE_INT length)
+{
+#if 0
+    GCGE_INT i;
+    GCGE_DOUBLE value = 0.0;
+    for( i=0; i<length; i++ )
+        value += a[i]*a[i];
+    return sqrt(value);
+#else
+    GCGE_INT inc = 1;
+    return dnrm2_(&length, x, &inc);
+#endif
+}
+
+//计算y=a*x+b*y
+void GCGE_Default_ArrayAXPBY(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, GCGE_INT length)
+{
+#if 0
+    GCGE_INT i;
+    for( i=0; i<length; i++ )
+        y[i] = a*x[i] + b*y[i];
+#else
+    GCGE_INT inc = 1;
+    if(b != 1.0)
+    {
+        dscal_(&length, &b, y, &inc);
+    }
+    daxpy_(&length, &a, x, &inc, y, &inc);
+#endif
+}
+
+/* TODO y = x, should shift parameters */
+void GCGE_Default_ArrayCopy(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length)
+{
+#if 0
+    memcpy(y, x, length*sizeof(GCGE_DOUBLE));
+#else
+    GCGE_INT inc = 1;
+    dcopy_(&length, x, &inc, y, &inc);
+#endif
+}
+
+//x=a*x
+void GCGE_Default_ArrayScale(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_INT length)
+{
+#if 0
+    GCGE_INT i;
+    for( i=0; i<length; i++ )
+        a[i] *= alpha;
+#else
+    GCGE_INT inc = 1;
+    dscal_(&length, &a, x, &inc);
+#endif
+}
+
+
 //创建OPS的一个向量，进行初始的设置
 void GCGE_OPS_Create(GCGE_OPS **ops)
 {
@@ -385,8 +457,13 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->DenseMatDotDenseMat = NULL;
     (*ops)->DenseSymMatDotDenseMat = NULL;
     (*ops)->Orthonormalization = NULL;
-    (*ops)->DenseMatCreate = NULL;
+    (*ops)->DenseMatCreate  = NULL;
     (*ops)->DenseMatDestroy = NULL;
+    (*ops)->ArrayDotArray = NULL;
+    (*ops)->ArrayNorm  = NULL;
+    (*ops)->ArrayAXPBY = NULL;
+    (*ops)->ArrayCopy  = NULL;
+    (*ops)->ArrayScale = NULL;
     (*ops)->LinearSolver = NULL;
 }
 //OPS的setup: 主要是进行对OPS的赋值， 同时也判断赋值是否充足和合理了
@@ -505,6 +582,26 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
     {
         ops->DenseSymMatDotDenseMat = GCGE_Default_DenseSymMatDotDenseMat;
     }
+    if(ops->ArrayDotArray == NULL)
+    {
+        ops->ArrayDotArray = GCGE_Default_ArrayDotArray;
+    }
+    if(ops->ArrayNorm == NULL)
+    {
+        ops->ArrayNorm = GCGE_Default_ArrayNorm;
+    }
+    if(ops->ArrayAXPBY == NULL)
+    {
+        ops->ArrayAXPBY = GCGE_Default_ArrayAXPBY;
+    }
+    if(ops->ArrayCopy == NULL)
+    {
+        ops->ArrayCopy = GCGE_Default_ArrayCopy;
+    }
+    if(ops->ArrayScale == NULL)
+    {
+        ops->ArrayScale = GCGE_Default_ArrayScale;
+    }
 }                                           
                                             
 void GCGE_OPS_Free(GCGE_OPS **ops)
@@ -516,77 +613,3 @@ void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_worksp
 {
     ops->linear_solver_workspace = linear_solver_workspace;
 }
-
-//子空间向量操作
-//计算向量a和b的内积
-GCGE_DOUBLE GCGE_ArrayDotArrayInSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT length)
-{
-#if 1
-    GCGE_INT i;
-    GCGE_DOUBLE value = 0.0;
-    for( i=0; i<length; i++ )
-        value += a[i]*b[i];
-    return value;
-#else
-    GCGE_INT inc = 1;
-    return BLASname(dot)(&length, a, &inc, b, &inc);
-#endif
-}
-
-//计算向量a的范数
-GCGE_DOUBLE GCGE_ArrayNormInSubspace(GCGE_DOUBLE *a, GCGE_INT length)
-{
-#if 1
-    GCGE_INT i;
-    GCGE_DOUBLE value = 0.0;
-    for( i=0; i<length; i++ )
-        value += a[i]*a[i];
-    return sqrt(value);
-#else
-    GCGE_INT inc = 1;
-    return BLASname(nrm2)(&length, a, &inc);
-#endif
-}
-
-//计算y=a*x+b*y
-void GCGE_ArrayAXPBYInSubspace(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, 
-        GCGE_INT length)
-{
-#if 1
-    GCGE_INT i;
-    for( i=0; i<length; i++ )
-        y[i] = a*x[i] + b*y[i];
-#else
-    GCGE_INT inc = 1;
-    if(b != 1.0)
-    {
-        BLASname(scal)(&length, &b, y, &inc);
-    }
-    BLASname(axpy)(&length, &a, x, &inc, y, &inc);
-#endif
-}
-
-/* TODO y = x, should shift parameters */
-void GCGE_ArrayCopyInSubspace(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length)
-{
-#if 1
-    memcpy(y, x, length*sizeof(GCGE_DOUBLE));
-#else
-    GCGE_INT inc = 1;
-    BLASname(copy)(&length, x, &inc, y, &inc);
-#endif
-}
-
-//a=alpha*a
-void GCGE_ArrayScaleInSubspace(GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT length)
-{
-#if 1
-    GCGE_INT i;
-    for( i=0; i<length; i++ )
-        a[i] *= alpha;
-#else
-    GCGE_INT inc = 1;
-    BLASname(scal)(&length, &alpha, a, &inc);
-#endif
-}
-
