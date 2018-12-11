@@ -57,7 +57,7 @@ void CSR_VecSetRandomValue(CSR_VEC *vec);
 //如果 a=0.0, b=0.0, 那么 y = 0, 相当于VecSetZero
 void CSR_VecAxpby(double a, CSR_VEC *x, double b, CSR_VEC *y);
 //计算向量内积，如果计算向量范数，就先计算内积，再开平方
-void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy);
+void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *value_ip);
 //由已给矩阵创建向量
 void CSR_VecCreateByMat(CSR_VEC **vec, CSR_MAT *mat);
 //由已给向量创建向量

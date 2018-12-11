@@ -140,14 +140,14 @@ void GCGE_PETSC_VecAxpby(GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y)
 	    ierr = VecAXPY((Vec)y, a, (Vec)x);
     }
 }
-void GCGE_PETSC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_PETSC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, xTy);
+	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, value_ip);
 }
 
-void GCGE_PETSC_VecLocalInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_PETSC_VecLocalInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-    PETSC_VecLocalInnerProd((Vec)x, (Vec)y, xTy);
+    PETSC_VecLocalInnerProd((Vec)x, (Vec)y, value_ip);
 }
 
 void GCGE_PETSC_LinearSolver(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)

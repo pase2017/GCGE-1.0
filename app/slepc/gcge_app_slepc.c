@@ -129,14 +129,14 @@ void GCGE_SLEPC_VecAxpby(GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y)
 	    ierr = VecAXPY((Vec)y, a, (Vec)x);
     }
 }
-void GCGE_SLEPC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_SLEPC_VecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, xTy);
+	PetscErrorCode ierr = VecDot((Vec)x, (Vec)y, value_ip);
 }
 
-void GCGE_SLEPC_VecLocalInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_SLEPC_VecLocalInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-    SLEPC_VecLocalInnerProd((Vec)x, (Vec)y, xTy);
+    SLEPC_VecLocalInnerProd((Vec)x, (Vec)y, value_ip);
 }
 
 void GCGE_SLEPC_LinearSolver(void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops)

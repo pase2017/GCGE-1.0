@@ -74,16 +74,16 @@ void GCGE_HYPRE_VecAxpby(GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y)
    hypre_ParVectorScale(b, (HYPRE_ParVector)y);
    hypre_ParVectorAxpy(a, (HYPRE_ParVector)x, (HYPRE_ParVector)y);
 }
-void GCGE_HYPRE_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_HYPRE_VecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-   HYPRE_ParVectorInnerProd((HYPRE_ParVector)x,  (HYPRE_ParVector)y,  xTy);
+   HYPRE_ParVectorInnerProd((HYPRE_ParVector)x,  (HYPRE_ParVector)y,  value_ip);
 }
 
-void GCGE_HYPRE_LocalVecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_HYPRE_LocalVecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
    hypre_Vector *x_local = hypre_ParVectorLocalVector((HYPRE_ParVector)x);
    hypre_Vector *y_local = hypre_ParVectorLocalVector((HYPRE_ParVector)y);
-   *xTy = hypre_SeqVectorInnerProd(x_local, y_local);
+   *value_ip = hypre_SeqVectorInnerProd(x_local, y_local);
 }
 void GCGE_HYPRE_MultiVecPrint(void **x, GCGE_INT n)
 {

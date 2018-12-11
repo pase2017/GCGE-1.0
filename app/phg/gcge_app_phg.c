@@ -53,17 +53,17 @@ void GCGE_PHG_VecAxpby(GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y)
 {
    phgMatVec(0, a, NULL, (VEC *)x, b, (VEC **)&y);
 }
-void GCGE_PHG_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_PHG_VecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
-   phgVecDot((VEC *)x, 0, (VEC *)y, 0,  xTy);
+   phgVecDot((VEC *)x, 0, (VEC *)y, 0,  value_ip);
 }
 
-void GCGE_PHG_LocalVecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
+void GCGE_PHG_LocalVecInnerProd(void *x, void *y, GCGE_DOUBLE *value_ip)
 {
    int i;
-   *xTy = 0;
+   *value_ip = 0;
    for (i = 0; i < ((VEC *)x)->map->nlocal; i++)
-      *xTy += ((VEC *)x)->data[i] * ((VEC *)y)->data[i];
+      *value_ip += ((VEC *)x)->data[i] * ((VEC *)y)->data[i];
 }
 void GCGE_PHG_MultiVecPrint(void **x, GCGE_INT n)
 {

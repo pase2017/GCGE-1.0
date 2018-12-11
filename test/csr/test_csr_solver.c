@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     //创建一个特征值solver实例
     GCGE_SOLVER *csr_solver = GCGE_CSR_Solver_Init(A, B, nev, argc,  argv);   
      //一些参数的设置
-    csr_solver->para->ev_tol = 1e-11;
+    //csr_solver->para->ev_tol = 1e-8;
     csr_solver->para->dirichlet_boundary = 1;
     csr_solver->para->cg_max_it = 20;
     csr_solver->para->ev_max_it = 150;
