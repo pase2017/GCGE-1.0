@@ -70,9 +70,9 @@ void GCGE_PARA_Create(GCGE_PARA **para)
     (*para)->use_mpi_bcast   = 1; //Rayleigh-Ritz广播子空间特征向量
 
     (*para)->print_cg_error  = 0;
-    (*para)->print_eval      = 1;
+    (*para)->print_eval      = 0;
     //(*para)->print_matlab    = 0;
-    (*para)->print_part_time = 1;
+    (*para)->print_part_time = 0;
     (*para)->print_para      = 1;
     (*para)->print_result    = 1;
     /* print_level: 0：什么都不打印
@@ -363,7 +363,8 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
      //分批计算特征值的个数: 默认情况下设置为求解特征值的个数
     if(para->block_size == 0)
     {
-        para->block_size = (nev/5 > 1)?(nev/5):nev;
+        //para->block_size = (nev/5 > 1)?(nev/5):nev;
+	para->block_size = nev;
     }
     if(para->orth_para->x_orth_block_size == 0)
     {
