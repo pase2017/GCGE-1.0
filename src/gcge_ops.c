@@ -517,3 +517,76 @@ void GCGE_OPS_SetLinearSolverWorkspace(GCGE_OPS *ops, void *linear_solver_worksp
     ops->linear_solver_workspace = linear_solver_workspace;
 }
 
+//子空间向量操作
+//计算向量a和b的内积
+GCGE_DOUBLE GCGE_ArrayDotArrayInSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT length)
+{
+#if 1
+    GCGE_INT i;
+    GCGE_DOUBLE value = 0.0;
+    for( i=0; i<length; i++ )
+        value += a[i]*b[i];
+    return value;
+#else
+    GCGE_INT inc = 1;
+    return BLASname(dot)(&length, a, &inc, b, &inc);
+#endif
+}
+
+//计算向量a的范数
+GCGE_DOUBLE GCGE_ArrayNormInSubspace(GCGE_DOUBLE *a, GCGE_INT length)
+{
+#if 1
+    GCGE_INT i;
+    GCGE_DOUBLE value = 0.0;
+    for( i=0; i<length; i++ )
+        value += a[i]*a[i];
+    return sqrt(value);
+#else
+    GCGE_INT inc = 1;
+    return BLASname(nrm2)(&length, a, &inc);
+#endif
+}
+
+//计算y=a*x+b*y
+void GCGE_ArrayAXPBYInSubspace(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, 
+        GCGE_INT length)
+{
+#if 1
+    GCGE_INT i;
+    for( i=0; i<length; i++ )
+        y[i] = a*x[i] + b*y[i];
+#else
+    GCGE_INT inc = 1;
+    if(b != 1.0)
+    {
+        BLASname(scal)(&length, &b, y, &inc);
+    }
+    BLASname(axpy)(&length, &a, x, &inc, y, &inc);
+#endif
+}
+
+/* TODO y = x, should shift parameters */
+void GCGE_ArrayCopyInSubspace(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length)
+{
+#if 1
+    memcpy(y, x, length*sizeof(GCGE_DOUBLE));
+#else
+    GCGE_INT inc = 1;
+    BLASname(copy)(&length, x, &inc, y, &inc);
+#endif
+}
+
+//a=alpha*a
+void GCGE_ArrayScaleInSubspace(GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT length)
+{
+#if 1
+    GCGE_INT i;
+    for( i=0; i<length; i++ )
+        a[i] *= alpha;
+#else
+    GCGE_INT inc = 1;
+    BLASname(scal)(&length, &alpha, a, &inc);
+#endif
+}
+

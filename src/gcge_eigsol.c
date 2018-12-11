@@ -587,9 +587,10 @@ void GCGE_CheckConvergence(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
             ops->VecAxpby(-eval[i], tmp2, 1.0, tmp1);
         }
         //tmp1是残差向量
-        //GCGE_VecNorm：这个函数可以放到ops中去。
-        res_norm  = GCGE_VecNorm(tmp1, ops);
-        evec_norm = GCGE_VecNorm(ev, ops);
+        ops->VecInnerProd(tmp1, tmp1, &res_norm);
+        res_norm = sqrt(res_norm);
+        ops->VecInnerProd(ev, ev, &evec_norm);
+        evec_norm = sqrt(evec_norm);
         //计算相对/绝对残差
         if(strcmp(conv_type, "R") == 0)
         {
