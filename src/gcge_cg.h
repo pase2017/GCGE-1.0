@@ -24,7 +24,6 @@
 #include "gcge_ops.h"
 
 #include "gcge_workspace.h"
-#include "gcge_matvec.h"
 
 #if GCGE_USE_MPI
 #include <mpi.h>

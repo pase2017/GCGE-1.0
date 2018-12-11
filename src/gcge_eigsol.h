@@ -28,7 +28,6 @@
 #include "gcge_ops.h"
 
 #include "gcge_workspace.h"
-#include "gcge_matvec.h"
 
 #include "gcge_orthogonal.h"
 #include "gcge_rayleighritz.h"

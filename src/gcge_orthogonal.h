@@ -26,7 +26,6 @@
 
 #include "gcge_workspace.h"
 #include "gcge_utilities.h"
-#include "gcge_matvec.h"
 
 //GCGE算法中用到的正交化操作
 /**

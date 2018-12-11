@@ -6,13 +6,11 @@ include $(GCGEHOME)/config/make.inc
 ########################################################################
 FILES   = gcge_utilities.c gcge_statistics.c gcge_para.c gcge_ops.c \
           gcge_workspace.c \
-          gcge_matvec.c \
           gcge_orthogonal.c gcge_rayleighritz.c gcge_cg.c gcge_xpw.c \
           gcge_eigsol.c \
           gcge_solver.c
 HEADERS = gcge_utilities.h gcge_statistics.h gcge_para.h gcge_ops.h \
           gcge_workspace.h \
-          gcge_matvec.h \
           gcge_orthogonal.h gcge_rayleighritz.h gcge_cg.h gcge_xpw.h \
           gcge_eigsol.h \
           gcge_solver.h \
