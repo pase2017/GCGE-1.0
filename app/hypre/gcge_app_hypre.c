@@ -24,7 +24,7 @@
 /* external head file */
 #include "gcge_app_hypre.h"
 
-void GCGE_HYPRE_VecCreateByVec(void *s_vec, void **d_vec)
+void GCGE_HYPRE_VecCreateByVec(void **d_vec, void *s_vec)
 {
   HYPRE_ParVector  x_hypre      = (HYPRE_ParVector)s_vec;
   MPI_Comm         comm         = hypre_ParVectorComm(x_hypre);
@@ -36,7 +36,7 @@ void GCGE_HYPRE_VecCreateByVec(void *s_vec, void **d_vec)
   hypre_ParVectorSetPartitioningOwner(y_hypre, 0);
   *d_vec = (void *)y_hypre;
 }
-void GCGE_HYPRE_VecCreateByMat(void *mat, void **vec)
+void GCGE_HYPRE_VecCreateByMat(void **vec, void *mat)
 {
   HYPRE_ParCSRMatrix A_hypre      = (HYPRE_ParCSRMatrix)mat;
   MPI_Comm           comm         = hypre_ParCSRMatrixComm(A_hypre);
@@ -137,7 +137,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
     //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
-        GCGE_HYPRE_VecCreateByMat((void *)A, (void **)evec+i);
+        GCGE_HYPRE_VecCreateByMat((void **)evec+i, (void *)A);
     }
     hypre_solver->evec = (void**)evec;
 

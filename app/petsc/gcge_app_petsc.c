@@ -76,17 +76,17 @@ void PETSC_VecLocalInnerProd(Vec x, Vec y, double *value)
 }
 
 
-void GCGE_PETSC_VecCreateByVec(void *s_vec, void **d_vec)
+void GCGE_PETSC_VecCreateByVec(void **d_vec, void *s_vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDuplicate((Vec)s_vec, (Vec*)d_vec);
 }
-void GCGE_PETSC_VecCreateByMat(void *mat, void **vec)
+void GCGE_PETSC_VecCreateByMat(void **vec, void *mat)
 {
 	PetscErrorCode ierr;
     ierr = MatCreateVecs((Mat)mat, NULL, (Vec*)vec);
 }
-void GCGE_PETSC_MultiVecCreateByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_PETSC_MultiVecCreateByMat(void ***multi_vec, GCGE_INT n_vec, void *mat, GCGE_OPS *ops)
 {
 	PetscErrorCode ierr;
 	Vec vector;

@@ -29,13 +29,13 @@ void GCGE_CSR_SetDirichletBoundary(void**Vecs, GCGE_INT nev, void* A, void* B)
   CSR_SetDirichletBoundary((CSR_VEC **)Vecs, (int)nev, (CSR_MAT*)A, (CSR_MAT*)B);
 }
 
-void GCGE_CSR_VecCreateByVec(void *s_vec, void **d_vec)
+void GCGE_CSR_VecCreateByVec(void **d_vec, void *s_vec)
 {
-   CSR_VecCreateByVec((CSR_VEC*)s_vec, (CSR_VEC**)d_vec);
+   CSR_VecCreateByVec((CSR_VEC**)d_vec, (CSR_VEC*)s_vec);
 }
-void GCGE_CSR_VecCreateByMat(void *mat, void **vec)
+void GCGE_CSR_VecCreateByMat(void **vec, void *mat)
 {
-   CSR_VecCreateByMat((CSR_MAT*)mat, (CSR_VEC**)vec);
+   CSR_VecCreateByMat((CSR_VEC**)vec, (CSR_MAT*)mat);
 }
 void GCGE_CSR_VecDestroy(void **vec)
 {
@@ -108,7 +108,7 @@ GCGE_SOLVER* GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, i
     //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
-        CSR_VecCreateByMat(A, evec+i);
+        CSR_VecCreateByMat(evec+i, A);
     }
 
     GCGE_SOLVER_SetMatA(csr_solver, A);
@@ -378,7 +378,7 @@ void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy)
 }
 
 //由已给向量创建向量组
-void CSR_VecCreateByVec(CSR_VEC *s_vec, CSR_VEC **d_vec)
+void CSR_VecCreateByVec(CSR_VEC **d_vec, CSR_VEC *s_vec)
 {
     int size = s_vec->size;
     (*d_vec) = (CSR_VEC *)malloc(sizeof(CSR_VEC));
@@ -387,7 +387,7 @@ void CSR_VecCreateByVec(CSR_VEC *s_vec, CSR_VEC **d_vec)
 }
 
 //由已给矩阵创建向量
-void CSR_VecCreateByMat(CSR_MAT *mat, CSR_VEC **vec)
+void CSR_VecCreateByMat(CSR_VEC **vec, CSR_MAT *mat)
 {
     int size = mat->N_Rows;
     (*vec) = (CSR_VEC *)malloc(sizeof(CSR_VEC));
@@ -396,7 +396,7 @@ void CSR_VecCreateByMat(CSR_MAT *mat, CSR_VEC **vec)
 }
 
 //由已给矩阵创建向量组
-void CSR_MultiVecCreateByMat(CSR_MAT *mat, CSR_VEC ***vec, int nev)
+void CSR_MultiVecCreateByMat(CSR_VEC ***vec, CSR_MAT *mat, int nev)
 {
     int size = mat->N_Rows;
     int i = 0;

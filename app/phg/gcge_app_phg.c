@@ -24,13 +24,13 @@
 /* external head file */
 #include "gcge_app_phg.h"
 
-void GCGE_PHG_VecCreateByVec(void *s_vec, void **d_vec)
+void GCGE_PHG_VecCreateByVec(void **d_vec, void *s_vec)
 {
    VEC* x_phg = (VEC*)s_vec;
    VEC* y_phg = phgMapCreateVec(x_phg->map, 1);
    *d_vec = (void *)y_phg;
 }
-void GCGE_PHG_VecCreateByMat(void *mat, void **vec)
+void GCGE_PHG_VecCreateByMat(void **vec, void *mat)
 {
   MAT* A_phg = (MAT*)mat;
   VEC* y_phg = phgMapCreateVec(A_phg->cmap, 1);
@@ -77,9 +77,9 @@ void GCGE_PHG_MultiVecPrint(void **x, GCGE_INT n)
 void GCGE_PHG_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
-    ops->VecCreateByVec     = GCGE_PHG_VecCreateByVec;
-    ops->VecCreateByMat     = GCGE_PHG_VecCreateByMat;
-    ops->VecDestroy           = GCGE_PHG_VecDestroy;
+    ops->VecCreateByVec    = GCGE_PHG_VecCreateByVec;
+    ops->VecCreateByMat    = GCGE_PHG_VecCreateByMat;
+    ops->VecDestroy        = GCGE_PHG_VecDestroy;
 
     ops->VecSetRandomValue = GCGE_PHG_VecSetRandomValue;
     ops->MatDotVec         = GCGE_PHG_MatDotVec;
@@ -116,7 +116,7 @@ GCGE_SOLVER* GCGE_PHG_Solver_Init(MAT *A, MAT *B, int num_eigenvalues, int argc,
     //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
-        GCGE_PHG_VecCreateByMat((void *)A, (void **)evec+i);
+        GCGE_PHG_VecCreateByMat((void **)evec+i, (void *)A);
     }
     phg_solver->evec = (void**)evec;
 

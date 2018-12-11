@@ -74,12 +74,12 @@ void SLEPC_VecLocalInnerProd(Vec x, Vec y, double *value)
 }
 
 
-void GCGE_SLEPC_VecCreateByVec(void *s_vec, void **d_vec)
+void GCGE_SLEPC_VecCreateByVec(void **d_vec, void *s_vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDuplicate((Vec)s_vec, (Vec*)d_vec);
 }
-void GCGE_SLEPC_VecCreateByMat(void *mat, void **vec)
+void GCGE_SLEPC_VecCreateByMat(void **vec, void *mat)
 {
 	PetscErrorCode ierr;
     ierr = MatCreateVecs((Mat)mat, NULL, (Vec*)vec);
@@ -155,8 +155,8 @@ void GCGE_SLEPC_RestoreVecForMultiVec(void **V, GCGE_INT j, void **x)
     PetscErrorCode ierr = BVRestoreColumn((BV)V, j, (Vec*)x);
 }
 
-void GCGE_SLEPC_MultiVecCreateByMat(void *mat, void ***multi_vec, 
-        GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_SLEPC_MultiVecCreateByMat(void ***multi_vec, 
+        GCGE_INT n_vec, void *mat, struct GCGE_OPS_ *ops)
 {
 	PetscErrorCode ierr;
 	Vec            vector;
