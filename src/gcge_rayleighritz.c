@@ -328,20 +328,20 @@ void GCGE_ComputeSubspaceEigenpairs(GCGE_DOUBLE *subspace_matrix,
             memset(subspace_evec+i*ldm, 0.0, rr_eigen_start*sizeof(GCGE_DOUBLE));
         if(strcmp(para->x_orth_type, "scbgs") == 0)
         {
-            GCGE_BlockOrthogonalSubspace(subspace_evec + rr_eigen_start*ldm +
+            GCGE_BlockOrthonormalizationSubspace(subspace_evec + rr_eigen_start*ldm +
                         rr_eigen_start, ldm, ldm - rr_eigen_start, &sub_end, 
                         para->orth_para->x_orth_block_size,
                         ops, para, workspace->subspace_dtmp);
         }
         else if(strcmp(para->x_orth_type, "bgs") == 0)
         {
-            GCGE_BOrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+            GCGE_BOrthonormalizationSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
                         ldm, ldm - rr_eigen_start, 0, &sub_end, 
                         NULL, -1, para->orth_para, workspace->subspace_dtmp, ops);
         }
         else
         {
-            GCGE_OrthogonalSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
+            GCGE_OrthonormalizationSubspace(subspace_evec+rr_eigen_start*ldm+rr_eigen_start, 
                         ldm, ldm - rr_eigen_start, 0, &sub_end, 
                         NULL, -1, para->orth_para);
         }

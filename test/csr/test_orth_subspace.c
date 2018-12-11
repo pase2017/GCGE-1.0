@@ -183,7 +183,7 @@
   * @param V_tmp
   * @param d_tmp
   */
-void OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+void OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
 {
     GCGE_INT    current = 0;
@@ -226,7 +226,7 @@ void OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end,
             current--;
             if(orth_para->print_orth_zero == 1)
             {
-                printf("In OrthogonalSubspace, there is a zero vector!, "
+                printf("In OrthonormalizationSubspace, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);
             }
         }
@@ -283,15 +283,15 @@ int main(int argc, char* argv[])
         entries[3+i] = entries[i];
     }
 
-    //GCGE_OrthogonalSubspace((double *)entries, 0, &end, 3, 
+    //GCGE_OrthonormalizationSubspace((double *)entries, 0, &end, 3, 
     //	  NULL, -1, solver->para->orth_para, solver->workspace);
     end = 1;
     start = 0;
-    OrthogonalSubspace(entries, ldV, start, &end, 
+    OrthonormalizationSubspace(entries, ldV, start, &end, 
       NULL, -1, solver->para->orth_para);
     end = 3;
     start = 1;
-    OrthogonalSubspace(entries, ldV, start, &end, 
+    OrthonormalizationSubspace(entries, ldV, start, &end, 
       NULL, -1, solver->para->orth_para);
     for(i=0; i<n; i++)
     {

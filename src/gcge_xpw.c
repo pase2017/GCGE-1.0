@@ -253,7 +253,7 @@ void GCGE_ComputeW(void *A, void *B, void **V, GCGE_DOUBLE *eval,
  *
  * >对coef的p_start到p_end进行正交化
  *  p_end = p_start + p_ncols
- *  GCGE_OrthogonalSubspace(coef, ldc, p_start, &p_end, NULL, -1, orth_para)
+ *  GCGE_OrthonormalizationSubspace(coef, ldc, p_start, &p_end, NULL, -1, orth_para)
  *  p_ncols = p_end - p_start
  *
  * >V线性组合得到X中看作重特征值的特征向量，存放在V_tmp中
@@ -360,25 +360,25 @@ void GCGE_ComputeP(GCGE_DOUBLE *subspace_evec, void **V, GCGE_OPS *ops, GCGE_PAR
     p_end = p_start + p_ncols;
     if(strcmp(para->p_orth_type, "scbgs") == 0)
     {
-        GCGE_SCBOrthogonalSubspace(coef + orth_start*ldc + orth_start, 
+        GCGE_SCBOrthonormalizationSubspace(coef + orth_start*ldc + orth_start, 
                 ldc, orth_length, p_start, &p_end, NULL, -1, 
                 para->orth_para, workspace, ops);
     }
     else if(strcmp(para->p_orth_type, "bgs") == 0)
     {
-        GCGE_BOrthogonalSubspace(coef + orth_start*ldc + orth_start, 
+        GCGE_BOrthonormalizationSubspace(coef + orth_start*ldc + orth_start, 
                 ldc, orth_length, p_start, &p_end, NULL, -1, 
                 para->orth_para, workspace->subspace_dtmp, ops);
     }
     else if(strcmp(para->p_orth_type, "multi") == 0)
     {
-        GCGE_StableMultiOrthogonalSubspace(coef+orth_start*ldc + orth_start, 
+        GCGE_StableMultiOrthonormalizationSubspace(coef+orth_start*ldc + orth_start, 
                 ldc, orth_length, p_start, &p_end, NULL, -1, 
                 para->orth_para, workspace, ops);
     }
     else
     {
-        GCGE_OrthogonalSubspace(coef + orth_start*ldc + orth_start, ldc, 
+        GCGE_OrthonormalizationSubspace(coef + orth_start*ldc + orth_start, ldc, 
                 orth_length, p_start, &p_end, NULL, -1, para->orth_para);
     }
     p_ncols = p_end - p_start;

@@ -65,9 +65,9 @@ int main(int argc, char* argv[])
     }
 
     printf ( "x\n" );
-    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+    ops->MultiVecPrint((void **)multi_vec_x, num_vec_x);
     printf ( "y\n" );
-    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
 
     double mvTmv[4], norm[2];
@@ -77,9 +77,9 @@ int main(int argc, char* argv[])
 //    ops->MultiVecSetRandomValue((void **)multi_vec_x, mv_s, mv_e, ops);
 //    ops->MultiVecSetRandomValue((void **)multi_vec_y, mv_s+1, mv_e+1, ops);
 //    printf ( "x\n" );
-//    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+//    ops->MultiVecPrint((void **)multi_vec_x, num_vec_x);
 //    printf ( "y\n" );
-//    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+//    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
     printf ( "MultiVecNorm \n" );
     printf ( "x norm\n" );
@@ -95,19 +95,19 @@ int main(int argc, char* argv[])
     ops->MatDotMultiVec((void *)A, (void **)multi_vec_x, (void **)multi_vec_y, 
 	  mv_s, mv_e, ops);
     printf ( "y\n" );
-    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
     double alpha = 2.0, beta = -1.0;
     printf ( "MultiVecAxpby y = %0.4fx+%0.4fy\n", alpha, beta );
     ops->MultiVecAxpby(alpha, (void **)multi_vec_x, beta, (void **)multi_vec_y, 
 	  mv_s, mv_e, ops);
-    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
     printf ( "MultiVecLinearComb y = x coord\n" );
     int ldcoord = 2;
     double coord[6] = {1.0, 1.0, -1.0, -1.0, 1.0, -1.0};
     printf ( "x\n" );
-    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+    ops->MultiVecPrint((void **)multi_vec_x, num_vec_x);
     printf ( "coord\n" );
     printf ( "%f\t%f\t%f\n", coord[0], coord[2], coord[4] );
     printf ( "%f\t%f\t%f\n", coord[1], coord[3], coord[5] );
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     ops->MultiVecLinearComb((void **)multi_vec_x, (void **)multi_vec_y, 
 	  mv_s, mv_e, coord, ldcoord, NULL, -1, ops);
     printf ( "y\n" );
-    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
 
     printf ( "MultiVecInnerProd xTy\n" );
     double xTy[6] = {1.0, 1.0, -1.0, -1.0, 1.0, -1.0};
@@ -133,16 +133,16 @@ int main(int argc, char* argv[])
     ops->MultiVecSwap((void **)multi_vec_x, (void **)multi_vec_y, 
 	  mv_s, mv_e, ops);
     printf ( "x\n" );
-    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+    ops->MultiVecPrint((void **)multi_vec_x, num_vec_x);
     printf ( "y\n" );
-    ops->PrintMultiVec((void **)multi_vec_y, num_vec_y);
+    ops->MultiVecPrint((void **)multi_vec_y, num_vec_y);
     printf ( "Get and Restor x\n" );
     CSR_VEC *tmp;
     ops->GetVecFromMultiVec((void **)multi_vec_x, 1, (void *)&tmp);
     tmp->Entries[0] = 100.0;
     ops->RestoreVecForMultiVec((void **)multi_vec_x, 1, (void *)&tmp);
     printf ( "x\n" );
-    ops->PrintMultiVec((void **)multi_vec_x, num_vec_x);
+    ops->MultiVecPrint((void **)multi_vec_x, num_vec_x);
 
 
     //释放矩阵空间

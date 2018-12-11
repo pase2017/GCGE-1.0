@@ -98,7 +98,7 @@
  * @param V_tmp 长度1
  * @param d_tmp 长度×end
  */
-void Orthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void Orthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_ORTH_PARA *orth_para, void **V_tmp, GCGE_DOUBLE *d_tmp)
 {
     GCGE_INT    current = 0;
@@ -174,7 +174,7 @@ void Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
           current--;
           if(orth_para->print_orth_zero == 1)
           {
-              printf("In Orthogonal, there is a zero vector!, "
+              printf("In Orthonormalization, there is a zero vector!, "
                       "current = %d, start = %d, end = %d\n", current, start, *end);
           }
       }
@@ -242,16 +242,16 @@ int main(int argc, char* argv[])
        CSR_PrintVec(multi_vec[k]);
     }
     int start = 0, end = 1;
-    Orthogonal((void **)multi_vec, start, &end, (void *)A, 
+    Orthonormalization((void **)multi_vec, start, &end, (void *)A, 
 	  solver->ops, solver->para->orth_para, 
           solver->workspace->V_tmp,
           solver->workspace->subspace_dtmp);
     /* SHOULD be modified to ops */
-    //GCGE_Orthogonal((void **)multi_vec, start, &end, (void *)B, 
+    //GCGE_Orthonormalization((void **)multi_vec, start, &end, (void *)B, 
 	//  solver->ops, solver->para->orth_para, solver->workspace);
-    //Orthogonal((void **)multi_vec, start, &end, NULL, 
+    //Orthonormalization((void **)multi_vec, start, &end, NULL, 
     start = 1, end = 3;
-    Orthogonal((void **)multi_vec, start, &end, (void *)A, 
+    Orthonormalization((void **)multi_vec, start, &end, (void *)A, 
 	  solver->ops, solver->para->orth_para, 
           solver->workspace->V_tmp,
           solver->workspace->subspace_dtmp);
@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
     
     double entries[6] = {0.0, 1.0, 2.0, 1.0, 2.0, 3.0};
     end = 2;
-    GCGE_OrthogonalSubspace((double *)entries, 0, &end, 3, 
+    GCGE_OrthonormalizationSubspace((double *)entries, 0, &end, 3, 
 	  NULL, -1, solver->para->orth_para, solver->workspace);
     //printf ( "entries\n" );
     //printf ( "%f\t%f\t%f\n%f\t%f\t%f\n", 

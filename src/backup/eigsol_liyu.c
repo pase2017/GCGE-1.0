@@ -119,7 +119,7 @@ void GCGE_Default_SolveEigenvalues(void *A, void *B, GCGE_DOUBLE *eval, void **e
     * 对初始近似特征向量做B正交化, 会删去线性相关的向量
     * 返回end_X
     */
-   ops->Orthogonalize(V, &start_X, &end_X, B, ops);
+   ops->Orthonormalizationize(V, &start_X, &end_X, B, ops);
    size_X = end_X - start_X;
    if(size_X < nev)
    {

@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     void **V = slepc_solver->workspace->V;
     slepc_solver->ops->MultiVecSetRandomValue(V, 0, xpw_length, slepc_solver->ops);
 
-    GCGE_Orthogonal(V, 0, &xp_length, (void *)B, 
+    GCGE_Orthonormalization(V, 0, &xp_length, (void *)B, 
 	    slepc_solver->ops, slepc_solver->para, 
         slepc_solver->workspace->V_tmp, slepc_solver->workspace->subspace_dtmp);
 
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
-    GCGE_BOrthogonal(V, xp_length, &xpw_length, (void *)B, 
+    GCGE_BOrthonormalization(V, xp_length, &xpw_length, (void *)B, 
 	    slepc_solver->ops, slepc_solver->para, slepc_solver->workspace);
 
     slepc_solver->ops->MatDotMultiVec((void*)B, V, (void**)evec, 

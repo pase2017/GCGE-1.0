@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     CSR_VEC **multi_vec;
     solver->ops->MultiVecCreateByMat((void*)A, (void***)(&multi_vec), num_vec, solver->ops);
     solver->ops->MultiVecSetRandomValue((void**)multi_vec, num_vec, solver->ops);
-    solver->ops->PrintMultiVec((void**)multi_vec, 3);
+    solver->ops->MultiVecPrint((void**)multi_vec, 3);
 
     int num_vec_2 = 3;
     CSR_VEC **multi_vec_2;
@@ -82,11 +82,11 @@ int main(int argc, char* argv[])
     solver->ops->MatDotVec((void*)A, (void*)(multi_vec[1]), (void*)(multi_vec_2[1]));
     solver->ops->MatDotVec((void*)B, (void*)(multi_vec[0]), (void*)(multi_vec_2[0]));
     printf("Aw,Bx");
-    solver->ops->PrintMultiVec((void**)multi_vec_2, 2);
+    solver->ops->MultiVecPrint((void**)multi_vec_2, 2);
     solver->ops->VecAxpby(1.0, (void*)multi_vec_2[1], -eval[0], (void*)multi_vec_2[0]);
 
     printf("Aw-lambdaBx");
-    solver->ops->PrintMultiVec((void**)multi_vec_2, 2);
+    solver->ops->MultiVecPrint((void**)multi_vec_2, 2);
 
     //释放矩阵空间
     GCGE_SOLVER_Free(&solver);

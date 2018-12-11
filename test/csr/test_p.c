@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 
     int k;
     printf("before P:\n");
-    solver->ops->PrintMultiVec((void**)multi_vec, num_vec);
+    solver->ops->MultiVecPrint((void**)multi_vec, num_vec);
 
     int dim_x = 2;
     solver->workspace->dim_xpw = num_vec;
@@ -80,13 +80,13 @@ int main(int argc, char* argv[])
     double subspace_evec[9] = {5.0, 12.0, 3.0, 34.0, 5.0, 6.0, 1.0, 1.0, 1.0};
 
     //对基底multi_vec正交化
-    GCGE_Orthogonal((void**)multi_vec, 0, &num_vec, NULL, solver->ops, solver->para->orth_para, 
+    GCGE_Orthonormalization((void**)multi_vec, 0, &num_vec, NULL, solver->ops, solver->para->orth_para, 
             solver->workspace->V_tmp, solver->workspace->subspace_dtmp);
 
     printf("after  X orth:\n");
-    solver->ops->PrintMultiVec((void**)multi_vec, num_vec);
+    solver->ops->MultiVecPrint((void**)multi_vec, num_vec);
 
-    GCGE_OrthogonalSubspace(subspace_evec, num_vec, 0, &dim_x, NULL, -1, solver->para->orth_para);
+    GCGE_OrthonormalizationSubspace(subspace_evec, num_vec, 0, &dim_x, NULL, -1, solver->para->orth_para);
     //基底multi_vec线性组合得到multi_vec_2, dim_x个
     int mv_s[2] = { 0, 0 };
     int mv_e[2] = { num_vec, dim_x };

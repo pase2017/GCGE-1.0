@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     int start[2] = {0, 0};
     int end[2] = {3, 1};
     int lda = 3;
-    GCGE_Orthogonal((void**)multi_vec, 0, &lda, NULL, solver->ops, solver->para->orth_para, solver->workspace);
+    GCGE_Orthonormalization((void**)multi_vec, 0, &lda, NULL, solver->ops, solver->para->orth_para, solver->workspace);
     solver->ops->MultiVecLinearComb((void**)multi_vec, (void**)multi_vec_2,
             (int*)start, (int*)end, subspace_evec, lda, NULL, -1, solver->ops);
 

@@ -40,26 +40,26 @@
  * @param orth_para
  * @param workspace
  */
-void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_Orthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, 
       void **V_tmp, GCGE_DOUBLE *d_tmp);
 
-void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
+void GCGE_OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
-void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_BOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_CBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_SCBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 
-void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+void GCGE_BOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
       GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
       GCGE_DOUBLE *d_tmp, GCGE_OPS *ops);
-void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+void GCGE_SCBOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
       GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
       GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
-void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
+void GCGE_BlockOrthonormalizationSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
         GCGE_INT nrows, GCGE_INT *end, GCGE_INT orth_block_size,
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_DOUBLE *subspace_dtmp);
 void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end, 
@@ -67,19 +67,19 @@ void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end,
 void GCGE_SCBOrth_Minus(void **V, GCGE_INT start, GCGE_INT *end, 
         void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
 
-//Multi Orthogonal:
-void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+//Multi Orthonormalization:
+void GCGE_StableMultiOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
          void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-void *GCGE_SubOrthogonal(void **V, GCGE_INT *start, GCGE_INT *end,
+void *GCGE_SubOrthonormalization(void **V, GCGE_INT *start, GCGE_INT *end,
       void *B, void *V_tmp, GCGE_DOUBLE *subspace_dtmp, GCGE_OPS *ops);
-void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
+void GCGE_MultiOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
       GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace);
-void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_SubOrthonormalizationSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace);
-void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
+void GCGE_MultiOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
         GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
         GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
-void GCGE_StableMultiOrthogonalSubspace(double *V, GCGE_INT ldV, 
+void GCGE_StableMultiOrthonormalizationSubspace(double *V, GCGE_INT ldV, 
        GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
        GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops);
 #endif

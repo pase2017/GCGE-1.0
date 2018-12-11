@@ -69,7 +69,7 @@ typedef struct PASE_OPS_ {
     /* TODO kernal function should use this op to get j-th vector */
     void (*GetVecFromMultiVec)      (void **V, GCGE_INT j, void **x);
     void (*RestoreVecForMultiVec)   (void **V, GCGE_INT j, void **x);
-    void (*PrintMultiVec)           (void **x, GCGE_INT n);
+    void (*MultiVecPrint)           (void **x, GCGE_INT n);
    
 }PASE_OPS;
 void PASE_OPS_Create(PASE_OPS **ops);

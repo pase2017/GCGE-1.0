@@ -384,7 +384,7 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->DenseMatEigenSolver = NULL;
     (*ops)->DenseMatDotDenseMat = NULL;
     (*ops)->DenseSymMatDotDenseMat = NULL;
-    (*ops)->Orthogonal = NULL;
+    (*ops)->Orthonormalization = NULL;
     (*ops)->DenseMatCreate = NULL;
     (*ops)->DenseMatDestroy = NULL;
     (*ops)->LinearSolver = NULL;

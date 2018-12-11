@@ -15,7 +15,7 @@
  *
  * 2018-10-03 by Hehu Xie
  * 改了一下正交化的选择：精度低的时候选择block的形式，当精度高了之后选择单个向量的形式,
- * 同时GCGE_Orthogonal函数的para-Orth_para 改成了para,为了得到sum_res的值.
+ * 同时GCGE_Orthonormalization函数的para-Orth_para 改成了para,为了得到sum_res的值.
  * =====================================================================================
  */
 #include <stdio.h>
@@ -109,7 +109,7 @@
  //对V的某些列进行正交化，start: 表示开始的位置，end[0]表示之前已经做好正交化向量的最后位置，
  //end[1]表示需要正交化向量的最终位置，矩阵B表示进行内积计算的矩阵，orth_para: 定义正交化方式的参数
  //V_tmp: 用来存储正交化过程中的临时向量, d_tmp: 用来存储当前向量与之前已经正交化向量的内积 
-void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_Orthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_OPS *ops, GCGE_PARA *para, void **V_tmp, GCGE_DOUBLE *d_tmp)
 {
     GCGE_ORTH_PARA *orth_para = para->orth_para; 
@@ -297,7 +297,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             current--;
             if(orth_para->print_orth_zero == 1)
             {
-                GCGE_Printf("In Orthogonal, there is a zero vector!, "
+                GCGE_Printf("In Orthonormalization, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);    
             }//end if(orth_para->print_orth_zero == 1)            
         }//end if(vout > orth_para->orth_zero_tol)      
@@ -349,7 +349,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
  *     end
  *
  */
-void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_BOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_ORTH_PARA *orth_para = para->orth_para; 
@@ -519,7 +519,7 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 current--;
                 if(orth_para->print_orth_zero == 1)
                 {
-                    GCGE_Printf("In Orthogonal, there is a zero vector!, "
+                    GCGE_Printf("In Orthonormalization, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);		      
                 }//end if(orth_para->print_orth_zero == 1)	    
             }//end if(vout > orth_para->orth_zero_tol)	  
@@ -578,7 +578,7 @@ void GCGE_BOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
  * @param V_tmp 长度1
  * @param d_tmp 长度×end
  */
-void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
+void GCGE_OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
 {
     GCGE_INT    current = 0; //当前进行正交化操作的向量编号
@@ -637,14 +637,14 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
             //如果这个时候需要输出提醒信息，就输出
             if(orth_para->print_orth_zero == 1)
             {
-                GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
+                GCGE_Printf("In OrthonormalizationSubspace, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);
             }//end if (orth_para->print_orth_zero == 1)
         }//end if (vout > orth_para->orth_zero_tol)
     }//end for current to the end
 }//end for this subprogram
 #if 0
-void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+void GCGE_OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para)
 {
     GCGE_INT    current = 0; //当前进行正交化操作的向量编号
@@ -703,7 +703,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
             //如果这个时候需要输出提醒信息，就输出
             if(orth_para->print_orth_zero == 1)
             {
-                printf("In OrthogonalSubspace, there is a zero vector!, "
+                printf("In OrthonormalizationSubspace, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);
             }//end if (orth_para->print_orth_zero == 1)
         }//end if (vout > orth_para->orth_zero_tol)
@@ -751,8 +751,8 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
  *   > 计算 V3 = V3 * Y
  *
  */
-//Classical Block Orthogonalization
-void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+//Classical Block Orthonormalizationization
+void GCGE_CBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_ORTH_PARA *orth_para = para->orth_para; 
@@ -963,8 +963,8 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     }//end for(i=0; i <2; ++i)
 }//end for the block orthogonalization
 
-//Classical Block Orthogonalization
-void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+//Classical Block Orthonormalizationization
+void GCGE_SCBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_ORTH_PARA  *orth_para = para->orth_para; 
@@ -1191,7 +1191,7 @@ void GCGE_SCBOrth_Minus(void **V, GCGE_INT start, GCGE_INT *end,
 }//end for orth_minus  
         
 
-//subfunction for orthogonalization process: Orthogonalization for the vectors self
+//subfunction for orthogonalization process: Orthonormalizationization for the vectors self
 //对V中[start：end]向量组本身进行正交化    
 void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end, 
               void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
@@ -1270,7 +1270,7 @@ void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end,
                 current--;                          
                 if(orth_para->print_orth_zero == 1)
                 {
-                    GCGE_Printf("In Orthogonal, there is a zero vector!, "
+                    GCGE_Printf("In Orthonormalization, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);		      
                 }//end if(orth_para->print_orth_zero == 1)	    
             }//end if(vout > orth_para->orth_zero_tol)	  
@@ -1280,8 +1280,8 @@ void GCGE_SCBOrth_Self(void **V, GCGE_INT start, GCGE_INT *end,
 
 
 #if 0
-//Classical Block Orthogonalization
-void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+//Classical Block Orthonormalizationization
+void GCGE_SCBOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
                       void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_ORTH_PARA  *orth_para = para->orth_para; 
@@ -1451,7 +1451,7 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 current--;
                 if(orth_para->print_orth_zero == 1)
                 {
-                    GCGE_Printf("In Orthogonal, there is a zero vector!, "
+                    GCGE_Printf("In Orthonormalization, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);		      
                 }//end if(orth_para->print_orth_zero == 1)	    
             }//end if(vout > orth_para->orth_zero_tol)	  
@@ -1498,11 +1498,11 @@ void GCGE_SCBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
  *     end
  *
  */
-void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+void GCGE_BOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
         GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
         GCGE_DOUBLE *d_tmp, GCGE_OPS *ops)
 {
-    GCGE_Printf("Use GCGE_BOrthogonalSubspace.\n");
+    GCGE_Printf("Use GCGE_BOrthonormalizationSubspace.\n");
     GCGE_INT    current = 0;        //当前进行正交化操作的向量编号
     GCGE_INT    current_V2 = 0;     //当前进行正交化操作的向量编号
     GCGE_INT    reorth_count = 0;
@@ -1571,7 +1571,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
                 //如果这个时候需要输出提醒信息，就输出
                 if(orth_para->print_orth_zero == 1)
                 {
-                    GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
+                    GCGE_Printf("In OrthonormalizationSubspace, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);
                 }//end if (orth_para->print_orth_zero == 1)
             }//end if (vout > orth_para->orth_zero_tol)
@@ -1616,11 +1616,11 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
  *     end
  *
  */
-void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
+void GCGE_SCBOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT start, 
         GCGE_INT *end, void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para, 
         GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
 {
-    GCGE_Printf("Use GCGE_SCBOrthogonalSubspace.\n");
+    GCGE_Printf("Use GCGE_SCBOrthonormalizationSubspace.\n");
     GCGE_INT    current = 0; //当前进行正交化操作的向量编号
     GCGE_INT    current_V2 = 0; //当前进行正交化操作的向量编号
     GCGE_INT    reorth_count = 0;
@@ -1700,7 +1700,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
                 //如果这个时候需要输出提醒信息，就输出
                 if(orth_para->print_orth_zero == 1)
                 {
-                    GCGE_Printf("In OrthogonalSubspace, there is a zero vector!, "
+                    GCGE_Printf("In OrthonormalizationSubspace, there is a zero vector!, "
                             "current = %d, start = %d, end = %d\n", current, start, *end);
                 }//end if (orth_para->print_orth_zero == 1)
             }//end if (vout > orth_para->orth_zero_tol)
@@ -1709,7 +1709,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
 }//end for this subprogram
 
 /*
- *  子空间正交化分批计算 GCGE_BlockOrthogonalSubspace
+ *  子空间正交化分批计算 GCGE_BlockOrthonormalizationSubspace
  *  V:         input,        要正交化的向量组
  *  ldV:       input,        向量组V的leading dimension
  *  nrows:     input,        要进行正交化的向量长度
@@ -1751,7 +1751,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
  *     end
  *
  */
-void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
+void GCGE_BlockOrthonormalizationSubspace(GCGE_DOUBLE *V, GCGE_INT ldV, 
         GCGE_INT nrows, GCGE_INT *end, GCGE_INT orth_block_size,
         GCGE_OPS *ops, GCGE_PARA *para, GCGE_DOUBLE *subspace_dtmp)
 {
@@ -1798,12 +1798,12 @@ void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
         //自身正交化
         if(strcmp(para->x_orth_type, "bgs") == 0)
         {
-            GCGE_BOrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
+            GCGE_BOrthonormalizationSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
                 NULL, -1, orth_para, subspace_dtmp, ops);
         }
         else
         {
-            GCGE_OrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
+            GCGE_OrthonormalizationSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
                 NULL, -1, orth_para);
         }
         //更新下一批次的start
@@ -1820,7 +1820,7 @@ void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
 }
 
 
-//Multi Orthogonal:
+//Multi Orthonormalization:
 //先减去要正交化的向量中已正交化部分的分量, 
 //再使用多重正交化方法进行自身的正交化
 /*
@@ -1830,12 +1830,12 @@ void GCGE_BlockOrthogonalSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
  *  2. V2 自身正交化
  *
  */
-void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_StableMultiOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, 
          void *B, GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     GCGE_INT mv_s[2];
     GCGE_INT mv_e[2];
-    //GCGE_Printf("in GCGE_StableMultiOrthogonal\n");
+    //GCGE_Printf("in GCGE_StableMultiOrthonormalization\n");
 
     GCGE_DOUBLE value_inner = 1.0;
     GCGE_DOUBLE norm_tmp = 0.0;
@@ -1855,7 +1855,7 @@ void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
     {   
         iter ++;      
 
-        GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
+        GCGE_SubOrthonormalization(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
 
         value_inner = 0.0;
         for(i=0;i<start*(*end - start);i++)
@@ -1869,15 +1869,15 @@ void GCGE_StableMultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
             break;
     }//end while for value_inner
 
-    //GCGE_Printf("in GCGE_StableMultiOrthogonal, after GCGE_SubOrthogonal\n");
+    //GCGE_Printf("in GCGE_StableMultiOrthonormalization, after GCGE_SubOrthonormalization\n");
     //然后start到end自身做正交化
-    GCGE_MultiOrthogonal(V, start, end, B, ops, para, workspace);
+    GCGE_MultiOrthonormalization(V, start, end, B, ops, para, workspace);
 
     //GCGE_Printf("line 1868, start: %d, end: %d\n",  start, *end);
 }
 
 //计算 V2 = V2 - V1 * (V1' * B * V2)
-void *GCGE_SubOrthogonal(void **V, GCGE_INT *start, GCGE_INT *end,
+void *GCGE_SubOrthonormalization(void **V, GCGE_INT *start, GCGE_INT *end,
       void *B, void *V_tmp, GCGE_DOUBLE *subspace_dtmp, GCGE_OPS *ops)
 {
     GCGE_INT length_1 = end[0]-start[0];
@@ -1936,18 +1936,18 @@ void *GCGE_SubOrthogonal(void **V, GCGE_INT *start, GCGE_INT *end,
  *     使用 BGS 直接对这部分进行正交化
  *     否则进行下面的过程
  *
- *  2. 调用 GCGE_MultiOrthogonal 对 V1 部分进行正交化
+ *  2. 调用 GCGE_MultiOrthonormalization 对 V1 部分进行正交化
  *  3. 减去 V2 中 V1 方向的分量
  *     V2 = V2 - V1 * (V1^T * V2)
- *  4. 调用 GCGE_MultiOrthogonal 对 V2 部分进行正交化
+ *  4. 调用 GCGE_MultiOrthonormalization 对 V2 部分进行正交化
  *
  */
-void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
+void GCGE_MultiOrthonormalization(void **V, GCGE_INT start, GCGE_INT *end, void *B, 
       GCGE_OPS *ops, GCGE_PARA *para, GCGE_WORKSPACE *workspace)
 {
     //GCGE_Printf("line 1873, start: %d, end: %d\n",  start, *end);
     GCGE_INT length = *end - start;
-    //GCGE_Printf("in GCGE_MultiOrthogonal, start: %d, end: %d, length: %d\n", 
+    //GCGE_Printf("in GCGE_MultiOrthonormalization, start: %d, end: %d, length: %d\n", 
     //          start, *end, length);
     //将start到end进行二分，并确定左右两侧的起始、终点位置，以及向量个数
     GCGE_INT length_1;
@@ -1974,17 +1974,17 @@ void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B,
     GCGE_INT max_direct_orth_length = para->orth_para->max_direct_orth_length;
     if(length <= max_direct_orth_length)
     {
-        //使用GCGE_SubOrthogonalSelfWithEigen这种正交化方式，
+        //使用GCGE_SubOrthonormalizationSelfWithEigen这种正交化方式，
         //精度要求较高时，很容易出问题
-        GCGE_SubOrthogonalSelfBGS(V, start, end, B, 
+        GCGE_SubOrthonormalizationSelfBGS(V, start, end, B, 
               para, ops, workspace);
     }
     else
     {
 
         //左侧
-        //因为可以直接处理length==1, 所以直接调用GCGE_MultiOrthogonal
-        GCGE_MultiOrthogonal(V, start, &mid, B, ops, para, workspace);
+        //因为可以直接处理length==1, 所以直接调用GCGE_MultiOrthonormalization
+        GCGE_MultiOrthonormalization(V, start, &mid, B, ops, para, workspace);
         
         //右侧
         //如果左侧有0向量出现，先将右侧最后的向量拷贝到前面
@@ -2009,7 +2009,7 @@ void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B,
                 mv_e[0] = mid;
                 mv_s[1] = mid;
                 mv_e[1] = *end;
-                GCGE_SubOrthogonal(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
+                GCGE_SubOrthonormalization(V, mv_s, mv_e, B, V_tmp, subspace_dtmp, ops);
                 value_inner = 0.0;
                 for(i=0;i<length_1*length_2;i++)
                 { 
@@ -2023,16 +2023,16 @@ void GCGE_MultiOrthogonal(void **V, GCGE_INT start, GCGE_INT *end, void *B,
             }//end while for value_inner
 	    if(value_inner > Orth_Tol)
 	    {
-	       GCGE_Printf("in GCGE_SubOrthogonal, V1: %d-%d, V2: %d-%d, reorth_count: %d, value_inner: %e\n", 
+	       GCGE_Printf("in GCGE_SubOrthonormalization, V1: %d-%d, V2: %d-%d, reorth_count: %d, value_inner: %e\n", 
 		     start, mid-1, mid, *end, orth_para->max_reorth_time, value_inner);
 	    }
 	}
         
-        GCGE_MultiOrthogonal(V, mid, end, B, ops, para, workspace);
+        GCGE_MultiOrthonormalization(V, mid, end, B, ops, para, workspace);
     }
 }
 
-void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
+void GCGE_SubOrthonormalizationSelfBGS(void **V, GCGE_INT start, GCGE_INT *end, 
       void *B, GCGE_PARA *para, GCGE_OPS *ops, GCGE_WORKSPACE *workspace)
 {
     GCGE_INT current;
@@ -2107,7 +2107,7 @@ void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end,
             current--;
             if(para->orth_para->print_orth_zero == 1)
             {
-                GCGE_Printf("In GCGE_SubOrthogonalSelfBGS, there is a zero vector!, "
+                GCGE_Printf("In GCGE_SubOrthonormalizationSelfBGS, there is a zero vector!, "
                         "current = %d, start = %d, end = %d\n", current, start, *end);              
             }//end if(orth_para->print_orth_zero == 1)        
         }//end if(vout > orth_para->orth_zero_tol)      
@@ -2121,13 +2121,13 @@ void GCGE_SubOrthogonalSelfBGS(void **V, GCGE_INT start, GCGE_INT *end,
  *     使用 BGS 直接对这部分进行正交化
  *     否则进行下面的过程
  *
- *  2. 调用 GCGE_MultiOrthogonalSubspace 对 V1 部分进行正交化
+ *  2. 调用 GCGE_MultiOrthonormalizationSubspace 对 V1 部分进行正交化
  *  3. 减去 V2 中 V1 方向的分量
  *     V2 = V2 - V1 * (V1^T * V2)
- *  4. 调用 GCGE_MultiOrthogonalSubspace 对 V2 部分进行正交化
+ *  4. 调用 GCGE_MultiOrthonormalizationSubspace 对 V2 部分进行正交化
  *
  */
-void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
+void GCGE_MultiOrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, 
         GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
         GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
 {
@@ -2151,7 +2151,7 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
     //if(length <= max_direct_orth_length)
     if(length == 1)
     {
-        //GCGE_OrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &length, 
+        //GCGE_OrthonormalizationSubspace(V+start*ldV, ldV, nrows, 0, &length, 
         //      B, ldB, orth_para);
         value_tmp = GCGE_ArrayNormInSubspace(V+start*ldV, nrows);
         if(value_tmp > orth_para->orth_zero_tol)
@@ -2170,7 +2170,7 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
     }
     else
     {
-        GCGE_MultiOrthogonalSubspace(V, ldV, nrows, start, &mid, B, ldB, 
+        GCGE_MultiOrthonormalizationSubspace(V, ldV, nrows, start, &mid, B, ldB, 
               orth_para, workspace, ops);
         if(mid + length_2 < *end)
         {
@@ -2198,7 +2198,7 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
                         &beta, V+mid*ldV, &ldV);
             }
 	}
-        GCGE_MultiOrthogonalSubspace(V, ldV, nrows, mid, end, B, ldB, 
+        GCGE_MultiOrthonormalizationSubspace(V, ldV, nrows, mid, end, B, ldB, 
               orth_para, workspace, ops);
     }
 }
@@ -2212,7 +2212,7 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
  *  2. V2 自身正交化
  *
  */
-void GCGE_StableMultiOrthogonalSubspace(double *V, GCGE_INT ldV, 
+void GCGE_StableMultiOrthonormalizationSubspace(double *V, GCGE_INT ldV, 
        GCGE_INT nrows, GCGE_INT start, GCGE_INT *end, void *B, GCGE_INT ldB, 
        GCGE_ORTH_PARA *orth_para, GCGE_WORKSPACE *workspace, GCGE_OPS *ops)
 {
@@ -2242,7 +2242,7 @@ void GCGE_StableMultiOrthogonalSubspace(double *V, GCGE_INT ldV,
                     &beta, V+start*ldV, &ldV);
         }
     }
-    GCGE_MultiOrthogonalSubspace(V, ldV, nrows, start, end, B, ldB, 
+    GCGE_MultiOrthonormalizationSubspace(V, ldV, nrows, start, end, B, ldB, 
         orth_para, workspace, ops);
 }
 

@@ -123,7 +123,7 @@ void GCGE_Default_SolveEigenvalues(void *A, void *B, GCGE_DOUBLE *eval, void **e
 	 * 返回end_X
 	 */
 
-    GCGE_Orthogonal(V, start_X, &end_X, Orth_mat, ops, para->orth_para, 
+    GCGE_Orthonormalization(V, start_X, &end_X, Orth_mat, ops, para->orth_para, 
 			workspace->V_tmp, workspace->subspace_dtmp);
 
 	size_X = end_X - start_X;
@@ -208,7 +208,7 @@ void GCGE_Default_SolveEigenvalues(void *A, void *B, GCGE_DOUBLE *eval, void **e
 			size_W = unconv_bs;
 			end_W  = start_W + size_W;
 			GCGE_ComputeW(A, B, V, start_W, size_W, subspace_eval, ops, para, workspace);
-			GCGE_Orthogonal(V, start_W, &end_W, Orth_mat, ops, para->orth_para, 
+			GCGE_Orthonormalization(V, start_W, &end_W, Orth_mat, ops, para->orth_para, 
 				workspace->V_tmp, workspace->subspace_dtmp);
 		}
 		size_W = end_W - start_W;

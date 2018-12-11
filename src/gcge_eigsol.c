@@ -188,7 +188,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
                 t1 = GCGE_GetTime();
 #endif
-                GCGE_Orthogonal(evec, num_init_evec, &(workspace->dim_x), Orth_mat, ops, para, 
+                GCGE_Orthonormalization(evec, num_init_evec, &(workspace->dim_x), Orth_mat, ops, para, 
                         workspace->V_tmp, workspace->subspace_dtmp);
 #if GET_PART_TIME
                 t2 = GCGE_GetTime();
@@ -202,7 +202,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     }
     else
     {
-        GCGE_Orthogonal(evec, 0, &(workspace->dim_x), Orth_mat, ops, para, 
+        GCGE_Orthonormalization(evec, 0, &(workspace->dim_x), Orth_mat, ops, para, 
                     workspace->V_tmp, workspace->subspace_dtmp);
     }
 #if GET_PART_TIME
@@ -229,7 +229,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
     workspace->dim_x = nev;
     // 对 V(:,0:dim_x)进行正交化,正交矩阵 Orth_mat,V_tmp:用来做正交的辅助向量,一般只用V_tmp[0]
     //subspace_dtmp: 用来记录不同的两个向量之间的内积 (是一个数组)
-    GCGE_Orthogonal(V, 0, &(workspace->dim_x), Orth_mat, ops, para->orth_para, 
+    GCGE_Orthonormalization(V, 0, &(workspace->dim_x), Orth_mat, ops, para->orth_para, 
     workspace->V_tmp, workspace->subspace_dtmp);
     //默认初始近似特征向量是线性无关的，否则报错
     if(workspace->dim_x < nev)
@@ -340,7 +340,7 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #if GET_PART_TIME
     t1 = GCGE_GetTime();
 #endif
-    GCGE_Orthogonal(V, workspace->dim_x, &(workspace->dim_xpw), Orth_mat, ops, para, 
+    GCGE_Orthonormalization(V, workspace->dim_x, &(workspace->dim_xpw), Orth_mat, ops, para, 
             workspace->V_tmp, workspace->subspace_dtmp);
 #if GET_PART_TIME
     t2 = GCGE_GetTime();
@@ -447,27 +447,27 @@ void GCGE_EigenSolver(void *A, void *B, GCGE_DOUBLE *eval, void **evec,
 #endif
         if(strcmp(para->w_orth_type, "bgs") == 0)
         {
-            GCGE_BOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+            GCGE_BOrthonormalization(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace);
         }
         else if(strcmp(para->w_orth_type, "cbgs") == 0)
         {
-            GCGE_CBOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+            GCGE_CBOrthonormalization(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace);
         }
         else if(strcmp(para->w_orth_type, "scbgs") == 0)
         {
-            GCGE_SCBOrthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+            GCGE_SCBOrthonormalization(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace);
         }
         else if(strcmp(para->w_orth_type, "multi") == 0)
         {
-            GCGE_StableMultiOrthogonal(V, workspace->dim_xp, 
+            GCGE_StableMultiOrthonormalization(V, workspace->dim_xp, 
 		  &(workspace->dim_xpw), Orth_mat, ops, para, workspace);
         }
         else
         {
-            GCGE_Orthogonal(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
+            GCGE_Orthonormalization(V, workspace->dim_xp, &(workspace->dim_xpw), Orth_mat, ops, para,
                 workspace->V_tmp, workspace->subspace_dtmp);
         }
 #if GET_PART_TIME

@@ -43,9 +43,9 @@ typedef struct GCGE_OPS_ {
     void (*LinearSolver)            (void *Matrix, void *b, void *x, struct GCGE_OPS_ *ops);
     void *linear_solver_workspace;
 
-    /* DenseMatCreate, DenseMatDestroy should in function Orthogonal 
+    /* DenseMatCreate, DenseMatDestroy should in function Orthonormalization 
      * Add struct member name void *orth_workspace to save tmp variables */
-    void (*Orthogonal)              (void **V, GCGE_INT start, GCGE_INT *end, 
+    void (*Orthonormalization)              (void **V, GCGE_INT start, GCGE_INT *end, 
                                      void *B, GCGE_DOUBLE orth_zero_tol, 
                                      void **work); /* TODO */
     void (*DenseMatCreate)          (void **densemat, GCGE_INT nrows, GCGE_INT ncols);
@@ -204,7 +204,7 @@ typedef struct GCGE_OPS_ {
                                      GCGE_DOUBLE *b, GCGE_INT *ldb, GCGE_DOUBLE *beta,
                                      GCGE_DOUBLE *c, GCGE_INT *ldc);
 
-    void (*PrintMultiVec)           (void **x, GCGE_INT n);
+    void (*MultiVecPrint)           (void **x, GCGE_INT n);
    
 }GCGE_OPS;
 

@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     }
     int start = 0, end = 2;
     /* SHOULD be modified to ops */
-    GCGE_Orthogonal((void **)multi_vec, start, &end, (void *)B, 
+    GCGE_Orthonormalization((void **)multi_vec, start, &end, (void *)B, 
 	  solver->ops, solver->para->orth_para, solver->workspace->V_tmp, solver->workspace->subspace_dtmp);
 
     for(k=0; k<num_vec; k++)
@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
     double entries[6] = {0.0, 1.0, 2.0, 1.0, 2.0, 3.0};
     end = 2;
     
-    //  void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
+    //  void GCGE_OrthonormalizationSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end, 
     //  void *B, GCGE_INT ldB, GCGE_ORTH_PARA *orth_para);
-    GCGE_OrthogonalSubspace((double *)entries, 3, 0, &end,
+    GCGE_OrthonormalizationSubspace((double *)entries, 3, 0, &end,
 	  NULL, -1, solver->para->orth_para);
     printf ( "entries\n" );
     printf ( "%16.5f\t%10.15f\t%10.15f\n%10.15f\t%10.15f\t%10.15f\n", 

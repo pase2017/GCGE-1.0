@@ -58,7 +58,7 @@ void GCGE_CSR_VecInnerProd(void *x, void *y, GCGE_DOUBLE *xTy)
 {
    CSR_VecInnerProd((CSR_VEC*)x, (CSR_VEC*)y, xTy);
 }
-void GCGE_CSR_PrintMultiVec(void **x, GCGE_INT n)
+void GCGE_CSR_MultiVecPrint(void **x, GCGE_INT n)
 {
    GCGE_INT i = 0;
    for(i=0; i<n; i++)
@@ -79,7 +79,7 @@ void GCGE_CSR_SetOps(GCGE_OPS *ops)
     ops->VecAxpby          = GCGE_CSR_VecAxpby;
     ops->VecInnerProd      = GCGE_CSR_VecInnerProd;
     ops->VecLocalInnerProd = GCGE_CSR_VecInnerProd;
-    ops->PrintMultiVec     = GCGE_CSR_PrintMultiVec;
+    ops->MultiVecPrint     = GCGE_CSR_MultiVecPrint;
     ops->SetDirichletBoundary = GCGE_CSR_SetDirichletBoundary;
 }
 
