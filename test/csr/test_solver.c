@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     solver->para->cg_max_it = 10;
     solver->para->ev_max_it = 30;
     int i = 0; 
-    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
+    //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
         CSR_VecCreateByMat(A, evec+i);

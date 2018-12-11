@@ -86,7 +86,7 @@ void GCGE_PETSC_VecCreateByMat(void *mat, void **vec)
 	PetscErrorCode ierr;
     ierr = MatCreateVecs((Mat)mat, NULL, (Vec*)vec);
 }
-void GCGE_PETSC_BuildMultiVecByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_PETSC_MultiVecCreateByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
 {
 	PetscErrorCode ierr;
 	Vec vector;
@@ -170,7 +170,7 @@ void GCGE_PETSC_SetOps(GCGE_OPS *ops)
     ops->VecLocalInnerProd = GCGE_PETSC_VecLocalInnerProd;
 
     ops->MultiVecDestroy           = GCGE_PETSC_MultiVecDestroy;
-    ops->BuildMultiVecByMat     = GCGE_PETSC_BuildMultiVecByMat;
+    ops->MultiVecCreateByMat     = GCGE_PETSC_MultiVecCreateByMat;
     ops->MultiVecSetRandomValue = GCGE_PETSC_MultiVecSetRandomValue;
 }
 

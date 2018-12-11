@@ -54,11 +54,11 @@ typedef struct GCGE_OPS_ {
 
     /* DEEP */
 
-    void (*BuildMultiVecByVec)      (void *vec, void ***multi_vec, GCGE_INT n_vec, 
+    void (*MultiVecCreateByVec)      (void *vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct GCGE_OPS_ *ops);
-    void (*BuildMultiVecByMat)      (void *mat, void ***multi_vec, GCGE_INT n_vec, 
+    void (*MultiVecCreateByMat)      (void *mat, void ***multi_vec, GCGE_INT n_vec, 
                                      struct GCGE_OPS_ *ops);
-    void (*BuildMultiVecByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
+    void (*MultiVecCreateByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct GCGE_OPS_ *ops);
     void (*MultiVecDestroy)            (void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
 

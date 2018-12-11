@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     nev = slepc_solver->para->nev;
     double *eval = (double *)calloc(nev, sizeof(double)); 
     BV evec;
-    slepc_solver->ops->BuildMultiVecByMat((void*)A, (void***)(&evec), nev, slepc_solver->ops);
+    slepc_solver->ops->MultiVecCreateByMat((void*)A, (void***)(&evec), nev, slepc_solver->ops);
 
     //将矩阵与特征对设置到petsc_solver中
     GCGE_SOLVER_SetMatA(slepc_solver, A);

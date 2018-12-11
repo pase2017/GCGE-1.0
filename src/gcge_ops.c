@@ -59,7 +59,7 @@ void GCGE_Default_RestoreVecForMultiVec(void **V, GCGE_INT j, void **x)
     V[j] = *x;
 }
 
-void GCGE_Default_BuildMultiVecByVec(void *vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByVec(void *vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
@@ -69,7 +69,7 @@ void GCGE_Default_BuildMultiVecByVec(void *vec, void ***multi_vec, GCGE_INT n_ve
     }
 }
 
-void GCGE_Default_BuildMultiVecByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
@@ -79,7 +79,7 @@ void GCGE_Default_BuildMultiVecByMat(void *mat, void ***multi_vec, GCGE_INT n_ve
     }
 }
 
-void GCGE_Default_BuildMultiVecByMultiVec(void **init_vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByMultiVec(void **init_vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
@@ -368,9 +368,9 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->VecLocalInnerProd = NULL;
     (*ops)->VecCreateByVec = NULL;
     (*ops)->VecDestroy = NULL;
-    (*ops)->BuildMultiVecByVec = NULL;
-    (*ops)->BuildMultiVecByMat = NULL;
-    (*ops)->BuildMultiVecByMultiVec = NULL;
+    (*ops)->MultiVecCreateByVec = NULL;
+    (*ops)->MultiVecCreateByMat = NULL;
+    (*ops)->MultiVecCreateByMultiVec = NULL;
     (*ops)->MultiVecDestroy = NULL;
     (*ops)->MultiVecSetRandomValue = NULL;
     (*ops)->MatDotMultiVec = NULL;
@@ -441,17 +441,17 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
         printf("ERROR: Please provide the VecSetRandomValue operation!\n");
         return error;
     }
-    if(ops->BuildMultiVecByVec == NULL)
+    if(ops->MultiVecCreateByVec == NULL)
     {
-        ops->BuildMultiVecByVec = GCGE_Default_BuildMultiVecByVec;
+        ops->MultiVecCreateByVec = GCGE_Default_MultiVecCreateByVec;
     }
-    if(ops->BuildMultiVecByMat == NULL)
+    if(ops->MultiVecCreateByMat == NULL)
     {
-        ops->BuildMultiVecByMat = GCGE_Default_BuildMultiVecByMat;
+        ops->MultiVecCreateByMat = GCGE_Default_MultiVecCreateByMat;
     }
-    if(ops->BuildMultiVecByMultiVec == NULL)
+    if(ops->MultiVecCreateByMultiVec == NULL)
     {
-        ops->BuildMultiVecByMultiVec = GCGE_Default_BuildMultiVecByMultiVec;
+        ops->MultiVecCreateByMultiVec = GCGE_Default_MultiVecCreateByMultiVec;
     }
     if(ops->MultiVecDestroy == NULL)
     {

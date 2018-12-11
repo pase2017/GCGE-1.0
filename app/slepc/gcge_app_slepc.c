@@ -155,7 +155,7 @@ void GCGE_SLEPC_RestoreVecForMultiVec(void **V, GCGE_INT j, void **x)
     PetscErrorCode ierr = BVRestoreColumn((BV)V, j, (Vec*)x);
 }
 
-void GCGE_SLEPC_BuildMultiVecByMat(void *mat, void ***multi_vec, 
+void GCGE_SLEPC_MultiVecCreateByMat(void *mat, void ***multi_vec, 
         GCGE_INT n_vec, struct GCGE_OPS_ *ops)
 {
 	PetscErrorCode ierr;
@@ -303,7 +303,7 @@ void GCGE_SLEPC_SetOps(GCGE_OPS *ops)
     ops->VecLocalInnerProd = GCGE_SLEPC_VecLocalInnerProd;
 
     ops->MultiVecDestroy           = GCGE_SLEPC_MultiVecDestroy;
-    ops->BuildMultiVecByMat     = GCGE_SLEPC_BuildMultiVecByMat;
+    ops->MultiVecCreateByMat     = GCGE_SLEPC_MultiVecCreateByMat;
     ops->MultiVecSetRandomValue = GCGE_SLEPC_MultiVecSetRandomValue;
 
     ops->GetVecFromMultiVec = GCGE_SLEPC_GetVecFromMultiVec;

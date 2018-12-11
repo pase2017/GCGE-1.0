@@ -73,9 +73,9 @@ void GCGE_WORKSPACE_Setup(GCGE_WORKSPACE *workspace, GCGE_PARA *para, GCGE_OPS *
     workspace->CG_p_size = CG_p_size;
 
     //V,V_tmp,RitzVec是向量工作空间
-    ops->BuildMultiVecByMat(A, &(workspace->V), V_size, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->V_tmp), V_tmp_size, ops);
-    ops->BuildMultiVecByMat(A, &(workspace->CG_p), CG_p_size, ops);
+    ops->MultiVecCreateByMat(A, &(workspace->V), V_size, ops);
+    ops->MultiVecCreateByMat(A, &(workspace->V_tmp), V_tmp_size, ops);
+    ops->MultiVecCreateByMat(A, &(workspace->CG_p), CG_p_size, ops);
 
     //对GCGE算法中用到的一些参数进行初始化
     workspace->max_dim_x = max_dim_x;

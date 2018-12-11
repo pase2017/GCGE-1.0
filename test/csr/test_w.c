@@ -57,13 +57,13 @@ int main(int argc, char* argv[])
 
     int num_vec = 3;
     CSR_VEC **multi_vec;
-    solver->ops->BuildMultiVecByMat((void*)A, (void***)(&multi_vec), num_vec, solver->ops);
+    solver->ops->MultiVecCreateByMat((void*)A, (void***)(&multi_vec), num_vec, solver->ops);
     solver->ops->MultiVecSetRandomValue((void**)multi_vec, num_vec, solver->ops);
     solver->ops->PrintMultiVec((void**)multi_vec, 3);
 
     int num_vec_2 = 3;
     CSR_VEC **multi_vec_2;
-    solver->ops->BuildMultiVecByMat((void*)A, (void***)(&multi_vec_2), num_vec_2, solver->ops);
+    solver->ops->MultiVecCreateByMat((void*)A, (void***)(&multi_vec_2), num_vec_2, solver->ops);
 
     solver->workspace->dim_xp = 1;
     solver->workspace->unconv_bs = 1;

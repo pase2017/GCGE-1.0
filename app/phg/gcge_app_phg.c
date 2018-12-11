@@ -113,7 +113,7 @@ GCGE_SOLVER* GCGE_PHG_Solver_Init(MAT *A, MAT *B, int num_eigenvalues, int argc,
 
     VEC** evec = phgCalloc(sizeof(VEC*),  nev);
     int i = 0; 
-    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
+    //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
         GCGE_PHG_VecCreateByMat((void *)A, (void **)evec+i);

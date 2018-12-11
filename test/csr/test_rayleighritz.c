@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     */
 
     CSR_VEC **multi_vec_tmp;
-    solver->ops->BuildMultiVecByMat((void *)A, (void ***)&multi_vec_tmp, 3, solver->ops);
+    solver->ops->MultiVecCreateByMat((void *)A, (void ***)&multi_vec_tmp, 3, solver->ops);
 
     double vTAw[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1};
 

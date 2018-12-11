@@ -60,9 +60,9 @@ void GCGE_EIGSOL_WS_Create(GCGE_EIGSOL_WS **eigsol_ws, GCGE_EIGSOL_PARA *para,
 	(*eigsol_ws)->subspace_dtmp   = (GCGE_DOUBLE*)calloc(size_subdtmp, sizeof(GCGE_DOUBLE));
 	(*eigsol_ws)->subspace_itmp   = (GCGE_INT*)calloc(size_subitmp, sizeof(GCGE_DOUBLE));
 
-    ops->BuildMultiVecByMat(A, &((*eigsol_ws)->V),       size_V,       ops);
-    ops->BuildMultiVecByMat(A, &((*eigsol_ws)->V_tmp),   size_V_tmp,   ops);
-    ops->BuildMultiVecByMat(A, &((*eigsol_ws)->RitzVec), size_RitzVec, ops);
+    ops->MultiVecCreateByMat(A, &((*eigsol_ws)->V),       size_V,       ops);
+    ops->MultiVecCreateByMat(A, &((*eigsol_ws)->V_tmp),   size_V_tmp,   ops);
+    ops->MultiVecCreateByMat(A, &((*eigsol_ws)->RitzVec), size_RitzVec, ops);
 }
 
 //释放GCGE_Para结构中分配的空间

@@ -105,7 +105,7 @@ GCGE_SOLVER* GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, i
     csr_solver->eval = eval;
     CSR_VEC **evec = (CSR_VEC**)malloc(nev*sizeof(CSR_VEC*));
     int i = 0; 
-    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
+    //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
         CSR_VecCreateByMat(A, evec+i);
@@ -396,7 +396,7 @@ void CSR_VecCreateByMat(CSR_MAT *mat, CSR_VEC **vec)
 }
 
 //由已给矩阵创建向量组
-void CSR_BuildMultiVecByMat(CSR_MAT *mat, CSR_VEC ***vec, int nev)
+void CSR_MultiVecCreateByMat(CSR_MAT *mat, CSR_VEC ***vec, int nev)
 {
     int size = mat->N_Rows;
     int i = 0;

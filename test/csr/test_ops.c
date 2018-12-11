@@ -46,9 +46,9 @@ int main(int argc, char* argv[])
     int num_vec_y = 3;
     CSR_VEC **multi_vec_x;
     CSR_VEC **multi_vec_y;
-    printf ( "BuildMultiVecByMat\n" );
-    ops->BuildMultiVecByMat((void *)A, (void ***)(&multi_vec_x), num_vec_x, ops);
-    ops->BuildMultiVecByMat((void *)A, (void ***)(&multi_vec_y), num_vec_y, ops);
+    printf ( "MultiVecCreateByMat\n" );
+    ops->MultiVecCreateByMat((void *)A, (void ***)(&multi_vec_x), num_vec_x, ops);
+    ops->MultiVecCreateByMat((void *)A, (void ***)(&multi_vec_y), num_vec_y, ops);
 
 //    printf ( "MultiVecSetRandomValue x, y\n" );
 //    ops->MultiVecSetRandomValue((void **)multi_vec_x, num_vec_x, ops);

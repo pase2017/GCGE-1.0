@@ -134,7 +134,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
 
     HYPRE_ParVector *evec = hypre_CTAlloc(HYPRE_ParVector,  nev);
     int i = 0; 
-    //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
+    //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
         GCGE_HYPRE_VecCreateByMat((void *)A, (void **)evec+i);
