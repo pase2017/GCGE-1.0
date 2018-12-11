@@ -219,7 +219,7 @@ bc_map(int bctype)
 int
 main(int argc, char *argv[])
 {
-    static char *fn = "../data/cube4.dat";
+    static char *fn = "../test/data/cube4.dat";
     static INT mem_max = 3000;
     size_t mem, mem_peak;
     int i, j, k, n, nit;

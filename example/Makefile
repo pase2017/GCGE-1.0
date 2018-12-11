@@ -1,7 +1,7 @@
 ############################################################
 GCGEHOME = ..
 include $(GCGEHOME)/config/make.inc
-.PHONY: all clean help
+.PHONY: all exe clean help
 ############################################################
 
 EXE_CSR    = csr_solver.exe
@@ -24,9 +24,9 @@ C_SLEPC    = slepc_solver.c
            
 INC_CSR    = $(CSRFLAGS)   -I$(GCGEINC)            
 INC_HYPRE  = $(HYPREFLAGS) -I$(GCGEINC) -I$(HYPREINC) 
-INC_PETSC  = $(PETSCFLAGS) -I$(GCGEINC) -I$(PETSCINC) 
+INC_PETSC  = $(PETSCFLAGS) -I$(GCGEINC) -I$(PETSCINC)
 INC_PHG    = $(PHGFLAGS)   -I$(GCGEINC) -I$(PHGINC)   
-INC_SLEPC  = $(SLEPCFLAGS) -I$(GCGEINC) -I$(SLEPCINC) 
+INC_SLEPC  = $(SLEPCFLAGS) -I$(GCGEINC) -I$(SLEPCINC) -I$(PETSCINC) 
           
 LIBS_CSR   = $(LIBGCGECSR)   $(LIBGCGE) $(LIBLAPACK) $(LIBBLAS) $(LIBF)
 LIBS_HYPRE = $(LIBGCGEHYPRE) $(LIBGCGE) $(LIBHYPRE)
@@ -36,20 +36,24 @@ LIBS_SLEPC = $(LIBGCGESLEPC) $(LIBGCGE) $(LIBSLEPC)
 
 ############################################################
 
-all:	    help
+all:    help
+
+exe:    $(EXE_CSR) $(EXE_HYPRE) $(EXE_PETSC) $(EXE_PHG) $(EXE_SLEPC)
 
 clean:
 	@$(RM) $(RMFLAGS) *.o *.exe
 
 help:
 	@echo " "
-	@echo "make {run-xx-solver|clean|help}"
+	@echo "make {exe|run-xx-solver|clean|help}"
 	@echo " "
-	@echo "   run-csr-solver   - test gcge solver in csr"
-	@echo "   run-hypre-solver - test gcge solver in hypre"
-	@echo "   run-petsc-solver - test gcge solver in petsc"
-	@echo "   run-phg-solver   - test gcge solver in phg"
-	@echo "   run-slepc-solver - test gcge solver in slepc"
+	@echo "   exe              - compile all executables"
+	@echo " "
+	@echo "   run-csr-solver   - run gcge solver in csr"
+	@echo "   run-hypre-solver - run gcge solver in hypre"
+	@echo "   run-petsc-solver - run gcge solver in petsc"
+	@echo "   run-phg-solver   - run gcge solver in phg"
+	@echo "   run-slepc-solver - run gcge solver in slepc"
 	@echo " "
 	@echo "   clean            - remove temporary files"
 	@echo "   help             - print this message"

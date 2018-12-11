@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
    //创建一个特征值solver实例
    GCGE_SOLVER *hypre_solver = GCGE_HYPRE_Solver_Init(parcsr_A, parcsr_B, nev, argc,  argv);   
    //一些参数的设置
-   hypre_solver->para->ev_tol = 1e-11;
+   hypre_solver->para->ev_tol = 1e-8;
    hypre_solver->para->dirichlet_boundary = 0;
 //   hypre_solver->para->cg_max_it = 20;
 //   hypre_solver->para->ev_max_it = 150;

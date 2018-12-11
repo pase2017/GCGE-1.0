@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
     double t1 = 0.0;
     double t2 = 0.0;
 
-    const char *file_A = "../data/A_5.petsc.bin";
-    const char *file_B = "../data/M_5.petsc.bin";
+    const char *file_A = "../test/data/A_5.petsc.bin";
+    const char *file_B = "../test/data/M_5.petsc.bin";
     PETSC_ReadMatrixBinary(&A, file_A);
     PETSC_ReadMatrixBinary(&B, file_B);
     int nev = 30;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     petsc_solver->para->orth_para->print_orth_zero = 1;
     petsc_solver->para->dirichlet_boundary = 0;
     petsc_solver->para->cg_max_it = 10;
-    petsc_solver->para->ev_max_it = 30;
+    petsc_solver->para->ev_max_it = 10;
     petsc_solver->para->print_part_time = 1;
 
     GCGE_SOLVER_Solve(petsc_solver);  
