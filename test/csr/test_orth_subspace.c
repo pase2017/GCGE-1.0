@@ -153,9 +153,9 @@
   *     for(current=start; current<(*end); ++current)
   *       norm = sqrt(theta[current])
   *       if theta[current] > orth_zero_tol
-  *           GCGE_VecScaleSubspace(1.0/norm, d_mat[current], lda);
+  *           GCGE_ArrayScaleInSubspace(1.0/norm, d_mat[current], lda);
   *       else
-  *           GCGE_VecCopySubspace(d_mat[end], d_mat[current], lda);
+  *           GCGE_ArrayCopyInSubspace(d_mat[end], d_mat[current], lda);
   *           current--;
   *           (*end)--;
   *       end
@@ -195,7 +195,7 @@ void OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end,
     GCGE_DOUBLE ip = 1.0;
     for(current = start; current < (*end); ++current)
     {
-        vout = GCGE_VecNormSubspace(V+current*ldV, ldV);
+        vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
         if(current != 0)
         {
             reorth_count = 0;
@@ -206,7 +206,7 @@ void OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end,
                     ip = GCGE_VecDotVecSubspace(V+idx*ldV, V+current*ldV, ldV);
                     GCGE_VecAXPBYSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
                 }
-                vout = GCGE_VecNormSubspace(V+current*ldV, ldV);
+                vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
 
                 ratio = vout/vin;
 
@@ -217,11 +217,11 @@ void OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *end,
 
         if(vout > orth_para->orth_zero_tol)
         {
-            GCGE_VecScaleSubspace(1.0/vout, V+current*ldV, ldV);
+            GCGE_ArrayScaleInSubspace(1.0/vout, V+current*ldV, ldV);
         }
         else 
         {
-            GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, ldV);
+            GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, ldV);
             (*end)--;
             current--;
             if(orth_para->print_orth_zero == 1)

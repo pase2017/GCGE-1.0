@@ -591,7 +591,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
     for(current = start; current < (*end); ++current)
     {
         // 计算当前向量的范数
-        vout = GCGE_VecNormSubspace(V+current*ldV, nrows);
+        vout = GCGE_ArrayNormInSubspace(V+current*ldV, nrows);
         if(current != 0)
         {
             reorth_count = 0;
@@ -606,7 +606,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
                     GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
                 }
                 // 计算当前向量的范数
-                vout = GCGE_VecNormSubspace(V+current*ldV, nrows);
+                vout = GCGE_ArrayNormInSubspace(V+current*ldV, nrows);
 
                 ratio = vout/vin;
 
@@ -619,7 +619,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
         if(vout > orth_para->orth_zero_tol)
         {
             //如果v_current不为0，就做归一化
-            GCGE_VecScaleSubspace(1.0/vout, V+current*ldV, nrows);
+            GCGE_ArrayScaleInSubspace(1.0/vout, V+current*ldV, nrows);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else 
         {
@@ -630,7 +630,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
             if(current != *end-1)
             {
                    //下面这个函数的方式应该是copy（from ,to， OK！
-                GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
             }//end if (current != *end-1)
             (*end)--;
             current--;
@@ -657,7 +657,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
     for(current = start; current < (*end); ++current)
     {
         // 计算当前向量的范数
-        vout = GCGE_VecNormSubspace(V+current*ldV, ldV);
+        vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
         if(current != 0)
         {
             reorth_count = 0;
@@ -672,7 +672,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
                     GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
                 }
                 // 计算当前向量的范数
-                vout = GCGE_VecNormSubspace(V+current*ldV, ldV);
+                vout = GCGE_ArrayNormInSubspace(V+current*ldV, ldV);
 
                 ratio = vout/vin;
 
@@ -685,7 +685,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
         if(vout > orth_para->orth_zero_tol)
         {
             //如果v_current不为0，就做归一化
-            GCGE_VecScaleSubspace(1.0/vout, V+current*ldV, ldV);
+            GCGE_ArrayScaleInSubspace(1.0/vout, V+current*ldV, ldV);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else 
         {
@@ -696,7 +696,7 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
             if(current != *end-1)
             {
                    //下面这个函数的方式应该是copy（from ,to， OK！
-                GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, ldV);
+                GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, ldV);
             }//end if (current != *end-1)
             (*end)--;
             current--;
@@ -925,7 +925,7 @@ void GCGE_CBOrthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                 }
                 else
                 {
-                    GCGE_VecScaleSubspace(1.0/sqrt(tmp_eval[j]), tmp_evec+j*w_length, w_length);
+                    GCGE_ArrayScaleInSubspace(1.0/sqrt(tmp_eval[j]), tmp_evec+j*w_length, w_length);
                 }
             }
             if(tmp_eval_nonzero_start)
@@ -1547,7 +1547,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
             norm = sqrt(d_tmp[0]);
             if(norm > orth_zero_tol)
             {
-                GCGE_VecScaleSubspace(1.0/norm, V+current*ldV, nrows);
+                GCGE_ArrayScaleInSubspace(1.0/norm, V+current*ldV, nrows);
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
@@ -1564,7 +1564,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
                 if(current != *end-1)
                 {
                     //下面这个函数的方式应该是copy（from ,to， OK！
-                    GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                    GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
                 }//end if (current != *end-1)
                 (*end)--;
                 current--;
@@ -1676,7 +1676,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
             norm = sqrt(d_tmp[0]);
             if(norm > orth_zero_tol)
             {
-                GCGE_VecScaleSubspace(1.0/norm, V+current*ldV, nrows);
+                GCGE_ArrayScaleInSubspace(1.0/norm, V+current*ldV, nrows);
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
@@ -1693,7 +1693,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
                 if(current != *end-1)
                 {
                     //下面这个函数的方式应该是copy（from ,to， OK！
-                    GCGE_VecCopySubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
+                    GCGE_ArrayCopyInSubspace(V+(*end -1)*ldV, V+current*ldV, nrows);
                 }//end if (current != *end-1)
                 (*end)--;
                 current--;
@@ -2153,16 +2153,16 @@ void GCGE_MultiOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows,
     {
         //GCGE_OrthogonalSubspace(V+start*ldV, ldV, nrows, 0, &length, 
         //      B, ldB, orth_para);
-        value_tmp = GCGE_VecNormSubspace(V+start*ldV, nrows);
+        value_tmp = GCGE_ArrayNormInSubspace(V+start*ldV, nrows);
         if(value_tmp > orth_para->orth_zero_tol)
         {
-            GCGE_VecScaleSubspace(1.0/value_tmp, V+start*ldV, nrows);
+            GCGE_ArrayScaleInSubspace(1.0/value_tmp, V+start*ldV, nrows);
         }//做完归一化的情况，下面考虑是 0 向量的情况
         else
         {
             *end = start;
         }
-        //value_tmp = GCGE_VecNormSubspace(V+start*ldV, nrows);
+        //value_tmp = GCGE_ArrayNormInSubspace(V+start*ldV, nrows);
         //GCGE_Printf("line 2406, start: %d, end: %d, length: %d, ip: %e\n", 
         //      start, *end, length, value_tmp);
         //if(length < old_length)

@@ -147,12 +147,12 @@ int main(int argc, char* argv[])
     CSR_MatFree(&B);
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecFree(multi_vec+i);
+        CSR_VecDestroy(multi_vec+i);
     }
     free(multi_vec); multi_vec = NULL;
     for(i=0; i<num_vec_2; i++)
     {
-        CSR_VecFree(multi_vec_2+i);
+        CSR_VecDestroy(multi_vec_2+i);
     }
     free(multi_vec_2); multi_vec_2 = NULL;
 

@@ -76,12 +76,12 @@ void PETSC_VecLocalInnerProd(Vec x, Vec y, double *value)
 }
 
 
-void GCGE_PETSC_BuildVecByVec(void *s_vec, void **d_vec)
+void GCGE_PETSC_VecCreateByVec(void *s_vec, void **d_vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDuplicate((Vec)s_vec, (Vec*)d_vec);
 }
-void GCGE_PETSC_BuildVecByMat(void *mat, void **vec)
+void GCGE_PETSC_VecCreateByMat(void *mat, void **vec)
 {
 	PetscErrorCode ierr;
     ierr = MatCreateVecs((Mat)mat, NULL, (Vec*)vec);
@@ -93,12 +93,12 @@ void GCGE_PETSC_BuildMultiVecByMat(void *mat, void ***multi_vec, GCGE_INT n_vec,
     ierr = MatCreateVecs((Mat)mat, NULL, &vector);
     ierr = VecDuplicateVecs(vector, n_vec, (Vec**)multi_vec);
 }
-void GCGE_PETSC_VecFree(void **vec)
+void GCGE_PETSC_VecDestroy(void **vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDestroy((Vec*)vec);
 }
-void GCGE_PETSC_FreeMultiVec(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_PETSC_MultiVecDestroy(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
 {
 	PetscErrorCode ierr;
     ierr = VecDestroyVecs(n_vec, (Vec**)MultiVec);
@@ -159,9 +159,9 @@ void GCGE_PETSC_LinearSolver(void *Matrix, void *b, void *x, struct GCGE_OPS_ *o
 void GCGE_PETSC_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
-    ops->BuildVecByVec     = GCGE_PETSC_BuildVecByVec;
-    ops->BuildVecByMat     = GCGE_PETSC_BuildVecByMat;
-    ops->FreeVec           = GCGE_PETSC_VecFree;
+    ops->VecCreateByVec     = GCGE_PETSC_VecCreateByVec;
+    ops->VecCreateByMat     = GCGE_PETSC_VecCreateByMat;
+    ops->VecDestroy           = GCGE_PETSC_VecDestroy;
 
     ops->VecSetRandomValue = GCGE_PETSC_VecSetRandomValue;
     ops->MatDotVec         = GCGE_PETSC_MatDotVec;
@@ -169,7 +169,7 @@ void GCGE_PETSC_SetOps(GCGE_OPS *ops)
     ops->VecInnerProd      = GCGE_PETSC_VecInnerProd;
     ops->VecLocalInnerProd = GCGE_PETSC_VecLocalInnerProd;
 
-    ops->FreeMultiVec           = GCGE_PETSC_FreeMultiVec;
+    ops->MultiVecDestroy           = GCGE_PETSC_MultiVecDestroy;
     ops->BuildMultiVecByMat     = GCGE_PETSC_BuildMultiVecByMat;
     ops->MultiVecSetRandomValue = GCGE_PETSC_MultiVecSetRandomValue;
 }

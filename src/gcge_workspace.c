@@ -160,11 +160,11 @@ void GCGE_WORKSPACE_Free(GCGE_WORKSPACE **workspace, GCGE_PARA *para, GCGE_OPS *
     GCGE_INT max_dim_xpw = max_dim_x + 2 * para->block_size;
     if((*workspace)->V)
     {
-        ops->FreeMultiVec(&((*workspace)->V), (*workspace)->V_size, ops);
-        ops->FreeMultiVec(&((*workspace)->V_tmp), (*workspace)->V_tmp_size, ops);
-        //ops->FreeMultiVec(&((*workspace)->RitzVec), max_dim_x, ops);
-        ops->FreeMultiVec(&((*workspace)->CG_p), (*workspace)->CG_p_size,  ops);
-        //ops->FreeMultiVec(&((*workspace)->CG_r), para->block_size, ops);
+        ops->MultiVecDestroy(&((*workspace)->V), (*workspace)->V_size, ops);
+        ops->MultiVecDestroy(&((*workspace)->V_tmp), (*workspace)->V_tmp_size, ops);
+        //ops->MultiVecDestroy(&((*workspace)->RitzVec), max_dim_x, ops);
+        ops->MultiVecDestroy(&((*workspace)->CG_p), (*workspace)->CG_p_size,  ops);
+        //ops->MultiVecDestroy(&((*workspace)->CG_r), para->block_size, ops);
         //if(ops->DenseMatCreate)
         //{
         //    ops->DenseMatDestroy(&((*workspace)->dense_matrix));

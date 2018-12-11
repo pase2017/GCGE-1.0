@@ -59,10 +59,10 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<num_vec; i++)
     {
-        CSR_BuildVecByMat(A, multi_vec+i);
+        CSR_VecCreateByMat(A, multi_vec+i);
     }
 //    CSR_VEC *vec;
-//    CSR_BuildVecByMat(A, &vec);
+//    CSR_VecCreateByMat(A, &vec);
 //
 //    for(i=0; i<vec->size; i++)
 //    {
@@ -151,17 +151,17 @@ int main(int argc, char* argv[])
     //CSR_PrintMat(A);
 
     //释放矩阵空间
-    solver->ops->FreeMultiVec((void ***)&multi_vec_tmp, 3, solver->ops);
+    solver->ops->MultiVecDestroy((void ***)&multi_vec_tmp, 3, solver->ops);
 
     GCGE_SOLVER_Free(&solver);
     CSR_MatFree(&A);
     CSR_MatFree(&B);
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecFree(multi_vec+i);
+        CSR_VecDestroy(multi_vec+i);
     }
     free(multi_vec); multi_vec = NULL;
-//    CSR_VecFree(&vec);
+//    CSR_VecDestroy(&vec);
 
     return 0;
 }

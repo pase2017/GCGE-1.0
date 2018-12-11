@@ -100,15 +100,15 @@ void GCGE_EIGSOL_WS_Free(GCGE_EIGSOL_WS **eigsol_ws, GCGE_OPS *ops)
     }
     if((*eigsol_ws)->V)
     {
-        ops->FreeMultiVec(&((*eigsol_ws)->V), (*eigsol_ws)->space_size_V, ops);
+        ops->MultiVecDestroy(&((*eigsol_ws)->V), (*eigsol_ws)->space_size_V, ops);
     }
     if((*eigsol_ws)->V)
     {
-        ops->FreeMultiVec(&((*eigsol_ws)->V_tmp), (*eigsol_ws)->space_size_V_tmp, ops);
+        ops->MultiVecDestroy(&((*eigsol_ws)->V_tmp), (*eigsol_ws)->space_size_V_tmp, ops);
     }
     if((*eigsol_ws)->V)
     {
-        ops->FreeMultiVec(&((*eigsol_ws)->RitzVec), (*eigsol_ws)->space_size_RitzVec, ops);
+        ops->MultiVecDestroy(&((*eigsol_ws)->RitzVec), (*eigsol_ws)->space_size_RitzVec, ops);
     }
 
     free((*eigsol_ws)); (*eigsol_ws) = NULL;

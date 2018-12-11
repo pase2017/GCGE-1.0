@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     //CSR_PrintMat(B);
 
     CSR_VEC *rhs;
-    CSR_BuildVecByMat(A, &rhs);
+    CSR_VecCreateByMat(A, &rhs);
 
     srand( (unsigned)time( NULL ) ); 
     int i;
@@ -54,12 +54,12 @@ int main(int argc, char* argv[])
     }
 
     CSR_VEC *x;
-    CSR_BuildVecByMat(A, &x);
+    CSR_VecCreateByMat(A, &x);
 
     CSR_VEC **vec_tmp = (CSR_VEC**)malloc(4*sizeof(CSR_VEC*));
     for(i=0; i<4; i++)
     {
-        CSR_BuildVecByMat(A, vec_tmp+i);
+        CSR_VecCreateByMat(A, vec_tmp+i);
     }
 
     //printf ( "Ax=rhs\n" );
@@ -98,12 +98,12 @@ int main(int argc, char* argv[])
     //释放矩阵空间
     CSR_MatFree(&A);
     CSR_MatFree(&B);
-    CSR_VecFree(&rhs); rhs = NULL;
-    CSR_VecFree(&x);   x   = NULL;
+    CSR_VecDestroy(&rhs); rhs = NULL;
+    CSR_VecDestroy(&x);   x   = NULL;
 
     for(i=0; i<4; i++)
     {
-        CSR_VecFree(vec_tmp+i);
+        CSR_VecDestroy(vec_tmp+i);
     }
     free(vec_tmp); vec_tmp = NULL;
 

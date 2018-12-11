@@ -24,7 +24,7 @@
 /* external head file */
 #include "gcge_app_hypre.h"
 
-void GCGE_HYPRE_BuildVecByVec(void *s_vec, void **d_vec)
+void GCGE_HYPRE_VecCreateByVec(void *s_vec, void **d_vec)
 {
   HYPRE_ParVector  x_hypre      = (HYPRE_ParVector)s_vec;
   MPI_Comm         comm         = hypre_ParVectorComm(x_hypre);
@@ -36,7 +36,7 @@ void GCGE_HYPRE_BuildVecByVec(void *s_vec, void **d_vec)
   hypre_ParVectorSetPartitioningOwner(y_hypre, 0);
   *d_vec = (void *)y_hypre;
 }
-void GCGE_HYPRE_BuildVecByMat(void *mat, void **vec)
+void GCGE_HYPRE_VecCreateByMat(void *mat, void **vec)
 {
   HYPRE_ParCSRMatrix A_hypre      = (HYPRE_ParCSRMatrix)mat;
   MPI_Comm           comm         = hypre_ParCSRMatrixComm(A_hypre);
@@ -55,7 +55,7 @@ void GCGE_HYPRE_BuildVecByMat(void *mat, void **vec)
   hypre_ParVectorSetPartitioningOwner(y_hypre, 1);
   *vec = (void *)y_hypre;
 }
-void GCGE_HYPRE_VecFree(void **vec)
+void GCGE_HYPRE_VecDestroy(void **vec)
 {
    hypre_ParVectorDestroy((HYPRE_ParVector)(*vec));
    *vec = NULL;
@@ -98,9 +98,9 @@ void GCGE_HYPRE_PrintMultiVec(void **x, GCGE_INT n)
 void GCGE_HYPRE_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
-    ops->BuildVecByVec     = GCGE_HYPRE_BuildVecByVec;
-    ops->BuildVecByMat     = GCGE_HYPRE_BuildVecByMat;
-    ops->FreeVec           = GCGE_HYPRE_VecFree;
+    ops->VecCreateByVec     = GCGE_HYPRE_VecCreateByVec;
+    ops->VecCreateByMat     = GCGE_HYPRE_VecCreateByMat;
+    ops->VecDestroy           = GCGE_HYPRE_VecDestroy;
 
     ops->VecSetRandomValue = GCGE_HYPRE_VecSetRandomValue;
     ops->MatDotVec         = GCGE_HYPRE_MatDotVec;
@@ -137,7 +137,7 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
     //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
     for(i=0; i<nev; i++)
     {
-        GCGE_HYPRE_BuildVecByMat((void *)A, (void **)evec+i);
+        GCGE_HYPRE_VecCreateByMat((void *)A, (void **)evec+i);
     }
     hypre_solver->evec = (void**)evec;
 
@@ -156,11 +156,11 @@ GCGE_SOLVER* GCGE_HYPRE_Solver_Init(HYPRE_ParCSRMatrix A, HYPRE_ParCSRMatrix B, 
 
 /**
  * @brief 设置hypre的线性解法器，这里由于hypre没能对解法器进行一个封装，所以必须一个个写，
- *        需要在ops中加入一个成员函数，或者在GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser中新增一个形式参数，
+ *        需要在ops中加入一个成员函数，或者在GCGE_HYPRE_Solver_Init_Linear SolverGivenByUser中新增一个形式参数，
  *        表征用了那个线性解法器，比如，id == 0 表示pcg，id == 1 表示amg, id == 2 表示gemrs
  *        而且对于precond也的setup也会有问题
  *        需要讨论
- *        我认为最佳方案是在GCGE_HYPRE_Solver_Init_LinearSolverGivenByUser中加入新的参数
+ *        我认为最佳方案是在GCGE_HYPRE_Solver_Init_Linear SolverGivenByUser中加入新的参数
  *
  * @param Matrix
  * @param b

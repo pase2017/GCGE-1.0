@@ -74,17 +74,17 @@ void SLEPC_VecLocalInnerProd(Vec x, Vec y, double *value)
 }
 
 
-void GCGE_SLEPC_BuildVecByVec(void *s_vec, void **d_vec)
+void GCGE_SLEPC_VecCreateByVec(void *s_vec, void **d_vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDuplicate((Vec)s_vec, (Vec*)d_vec);
 }
-void GCGE_SLEPC_BuildVecByMat(void *mat, void **vec)
+void GCGE_SLEPC_VecCreateByMat(void *mat, void **vec)
 {
 	PetscErrorCode ierr;
     ierr = MatCreateVecs((Mat)mat, NULL, (Vec*)vec);
 }
-void GCGE_SLEPC_VecFree(void **vec)
+void GCGE_SLEPC_VecDestroy(void **vec)
 {
 	PetscErrorCode ierr;
     ierr = VecDestroy((Vec*)vec);
@@ -167,7 +167,7 @@ void GCGE_SLEPC_BuildMultiVecByMat(void *mat, void ***multi_vec,
     ierr = VecDestroy(&vector);
 }
 
-void GCGE_SLEPC_FreeMultiVec(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_SLEPC_MultiVecDestroy(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
 {
     PetscErrorCode ierr = BVDestroy((BV*)MultiVec);
 }
@@ -292,9 +292,9 @@ void GCGE_SLEPC_MultiVecSwap(void **V_1, void **V_2,
 void GCGE_SLEPC_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
-    ops->BuildVecByVec     = GCGE_SLEPC_BuildVecByVec;
-    ops->BuildVecByMat     = GCGE_SLEPC_BuildVecByMat;
-    ops->FreeVec           = GCGE_SLEPC_VecFree;
+    ops->VecCreateByVec     = GCGE_SLEPC_VecCreateByVec;
+    ops->VecCreateByMat     = GCGE_SLEPC_VecCreateByMat;
+    ops->VecDestroy           = GCGE_SLEPC_VecDestroy;
 
     ops->VecSetRandomValue = GCGE_SLEPC_VecSetRandomValue;
     ops->MatDotVec         = GCGE_SLEPC_MatDotVec;
@@ -302,7 +302,7 @@ void GCGE_SLEPC_SetOps(GCGE_OPS *ops)
     ops->VecInnerProd      = GCGE_SLEPC_VecInnerProd;
     ops->VecLocalInnerProd = GCGE_SLEPC_VecLocalInnerProd;
 
-    ops->FreeMultiVec           = GCGE_SLEPC_FreeMultiVec;
+    ops->MultiVecDestroy           = GCGE_SLEPC_MultiVecDestroy;
     ops->BuildMultiVecByMat     = GCGE_SLEPC_BuildMultiVecByMat;
     ops->MultiVecSetRandomValue = GCGE_SLEPC_MultiVecSetRandomValue;
 

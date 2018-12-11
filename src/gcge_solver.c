@@ -49,7 +49,7 @@ void GCGE_SOLVER_Free_All(GCGE_SOLVER **solver)
 {    
     GCGE_INT nev; 
     nev = (*solver)->para->nev;
-    (*solver)->ops->FreeMultiVec(&((*solver)->evec), nev, (*solver)->ops);
+    (*solver)->ops->MultiVecDestroy(&((*solver)->evec), nev, (*solver)->ops);
     free((*solver)->eval); (*solver)->eval = NULL;
     GCGE_SOLVER_Free(solver);     
 }

@@ -37,9 +37,9 @@ typedef struct PASE_OPS_ {
     void (*VecAxpby)                (GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y); /* y = ax+by */
     void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *xTy);
     void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *xTy);
-    void (*BuildVecByVec)           (void *src_vec, void **des_vec);
-    void (*BuildVecByMat)           (void *mat, void **vec);
-    void (*FreeVec)                 (void **vec);
+    void (*VecCreateByVec)           (void *src_vec, void **des_vec);
+    void (*VecCreateByMat)           (void *mat, void **vec);
+    void (*VecDestroy)                 (void **vec);
 
     void (*BuildMultiVecByVec)      (void *vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct PASE_OPS_ *ops);
@@ -47,7 +47,7 @@ typedef struct PASE_OPS_ {
                                      struct PASE_OPS_ *ops);
     void (*BuildMultiVecByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct PASE_OPS_ *ops);
-    void (*FreeMultiVec)            (void ***MultiVec, GCGE_INT n_vec, struct PASE_OPS_ *ops);
+    void (*MultiVecDestroy)            (void ***MultiVec, GCGE_INT n_vec, struct PASE_OPS_ *ops);
 
     /* TODO */
     void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT start, GCGE_INT n_vec, struct PASE_OPS_ *ops);

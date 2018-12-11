@@ -29,17 +29,17 @@ void GCGE_CSR_SetDirichletBoundary(void**Vecs, GCGE_INT nev, void* A, void* B)
   CSR_SetDirichletBoundary((CSR_VEC **)Vecs, (int)nev, (CSR_MAT*)A, (CSR_MAT*)B);
 }
 
-void GCGE_CSR_BuildVecByVec(void *s_vec, void **d_vec)
+void GCGE_CSR_VecCreateByVec(void *s_vec, void **d_vec)
 {
-   CSR_BuildVecByVec((CSR_VEC*)s_vec, (CSR_VEC**)d_vec);
+   CSR_VecCreateByVec((CSR_VEC*)s_vec, (CSR_VEC**)d_vec);
 }
-void GCGE_CSR_BuildVecByMat(void *mat, void **vec)
+void GCGE_CSR_VecCreateByMat(void *mat, void **vec)
 {
-   CSR_BuildVecByMat((CSR_MAT*)mat, (CSR_VEC**)vec);
+   CSR_VecCreateByMat((CSR_MAT*)mat, (CSR_VEC**)vec);
 }
-void GCGE_CSR_VecFree(void **vec)
+void GCGE_CSR_VecDestroy(void **vec)
 {
-   CSR_VecFree((CSR_VEC**)vec);
+   CSR_VecDestroy((CSR_VEC**)vec);
 }
 
 void GCGE_CSR_VecSetRandomValue(void *vec)
@@ -70,9 +70,9 @@ void GCGE_CSR_PrintMultiVec(void **x, GCGE_INT n)
 void GCGE_CSR_SetOps(GCGE_OPS *ops)
 {
     /* either-or */
-    ops->BuildVecByVec     = GCGE_CSR_BuildVecByVec;
-    ops->BuildVecByMat     = GCGE_CSR_BuildVecByMat;
-    ops->FreeVec           = GCGE_CSR_VecFree;
+    ops->VecCreateByVec     = GCGE_CSR_VecCreateByVec;
+    ops->VecCreateByMat     = GCGE_CSR_VecCreateByMat;
+    ops->VecDestroy           = GCGE_CSR_VecDestroy;
 
     ops->VecSetRandomValue = GCGE_CSR_VecSetRandomValue;
     ops->MatDotVec         = GCGE_CSR_MatDotVec;
@@ -108,7 +108,7 @@ GCGE_SOLVER* GCGE_CSR_Solver_Init(CSR_MAT *A, CSR_MAT *B, int num_eigenvalues, i
     //这里为什么不一次性生成 CSR_BuildMultiVecByMat?
     for(i=0; i<nev; i++)
     {
-        CSR_BuildVecByMat(A, evec+i);
+        CSR_VecCreateByMat(A, evec+i);
     }
 
     GCGE_SOLVER_SetMatA(csr_solver, A);
@@ -378,7 +378,7 @@ void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy)
 }
 
 //由已给向量创建向量组
-void CSR_BuildVecByVec(CSR_VEC *s_vec, CSR_VEC **d_vec)
+void CSR_VecCreateByVec(CSR_VEC *s_vec, CSR_VEC **d_vec)
 {
     int size = s_vec->size;
     (*d_vec) = (CSR_VEC *)malloc(sizeof(CSR_VEC));
@@ -387,7 +387,7 @@ void CSR_BuildVecByVec(CSR_VEC *s_vec, CSR_VEC **d_vec)
 }
 
 //由已给矩阵创建向量
-void CSR_BuildVecByMat(CSR_MAT *mat, CSR_VEC **vec)
+void CSR_VecCreateByMat(CSR_MAT *mat, CSR_VEC **vec)
 {
     int size = mat->N_Rows;
     (*vec) = (CSR_VEC *)malloc(sizeof(CSR_VEC));
@@ -410,14 +410,14 @@ void CSR_BuildMultiVecByMat(CSR_MAT *mat, CSR_VEC ***vec, int nev)
 }
 
 //释放向量组空间
-void CSR_VecFree(CSR_VEC **vec)
+void CSR_VecDestroy(CSR_VEC **vec)
 {
     free((*vec)->Entries); (*vec)->Entries = NULL;
     free(*vec); (*vec) = NULL;
 }
 
 //释放向量组空间
-void CSR_MultiVecFree(CSR_VEC ***vec, int n)
+void CSR_MultiVecDestroy(CSR_VEC ***vec, int n)
 {
     int i = 0;
     for(i=0; i<n; i++)

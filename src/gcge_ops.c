@@ -65,7 +65,7 @@ void GCGE_Default_BuildMultiVecByVec(void *vec, void ***multi_vec, GCGE_INT n_ve
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->BuildVecByVec(vec, (*multi_vec)+i);
+        ops->VecCreateByVec(vec, (*multi_vec)+i);
     }
 }
 
@@ -75,7 +75,7 @@ void GCGE_Default_BuildMultiVecByMat(void *mat, void ***multi_vec, GCGE_INT n_ve
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->BuildVecByMat(mat, (*multi_vec)+i);
+        ops->VecCreateByMat(mat, (*multi_vec)+i);
     }
 }
 
@@ -85,16 +85,16 @@ void GCGE_Default_BuildMultiVecByMultiVec(void **init_vec, void ***multi_vec, GC
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->BuildVecByVec(init_vec[0], (*multi_vec)+i);
+        ops->VecCreateByVec(init_vec[0], (*multi_vec)+i);
     }
 }
 
-void GCGE_Default_FreeMultiVec(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
+void GCGE_Default_MultiVecDestroy(void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops)
 {
     GCGE_INT i = 0;
     for(i=0; i<n_vec; i++)
     {
-       ops->FreeVec(&(*MultiVec)[i]);  (*MultiVec)[i] = NULL;
+       ops->VecDestroy(&(*MultiVec)[i]);  (*MultiVec)[i] = NULL;
     }
     free(*MultiVec); *MultiVec = NULL;
 }
@@ -366,12 +366,12 @@ void GCGE_OPS_Create(GCGE_OPS **ops)
     (*ops)->VecAxpby = NULL;
     (*ops)->VecInnerProd = NULL;
     (*ops)->VecLocalInnerProd = NULL;
-    (*ops)->BuildVecByVec = NULL;
-    (*ops)->FreeVec = NULL;
+    (*ops)->VecCreateByVec = NULL;
+    (*ops)->VecDestroy = NULL;
     (*ops)->BuildMultiVecByVec = NULL;
     (*ops)->BuildMultiVecByMat = NULL;
     (*ops)->BuildMultiVecByMultiVec = NULL;
-    (*ops)->FreeMultiVec = NULL;
+    (*ops)->MultiVecDestroy = NULL;
     (*ops)->MultiVecSetRandomValue = NULL;
     (*ops)->MatDotMultiVec = NULL;
     (*ops)->MultiVecAxpby = NULL;
@@ -417,22 +417,22 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
         printf("ERROR: Please provide the VecLocalInnerProd operation!\n");
         return error;
     }
-    if(ops->BuildVecByVec == NULL)
+    if(ops->VecCreateByVec == NULL)
     {
         error = 1;
-        printf("ERROR: Please provide the BuildVecByVec operation!\n");
+        printf("ERROR: Please provide the VecCreateByVec operation!\n");
         return error;
     }
-    if(ops->BuildVecByMat == NULL)
+    if(ops->VecCreateByMat == NULL)
     {
         error = 1;
-        printf("ERROR: Please provide the BuildVecByMat operation!\n");
+        printf("ERROR: Please provide the VecCreateByMat operation!\n");
         return error;
     }
-    if(ops->FreeVec == NULL)
+    if(ops->VecDestroy == NULL)
     {
         error = 1;
-        printf("ERROR: Please provide the FreeVec operation!\n");
+        printf("ERROR: Please provide the VecDestroy operation!\n");
         return error;
     }
     if(ops->VecSetRandomValue == NULL)
@@ -453,9 +453,9 @@ GCGE_INT GCGE_OPS_Setup(GCGE_OPS *ops)
     {
         ops->BuildMultiVecByMultiVec = GCGE_Default_BuildMultiVecByMultiVec;
     }
-    if(ops->FreeMultiVec == NULL)
+    if(ops->MultiVecDestroy == NULL)
     {
-        ops->FreeMultiVec = GCGE_Default_FreeMultiVec; 
+        ops->MultiVecDestroy = GCGE_Default_MultiVecDestroy; 
     }
     if(ops->MultiVecSetRandomValue == NULL)
     {

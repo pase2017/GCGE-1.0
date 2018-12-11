@@ -58,10 +58,10 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<num_vec; i++)
     {
-        CSR_BuildVecByMat(A, multi_vec+i);
+        CSR_VecCreateByMat(A, multi_vec+i);
     }
     CSR_VEC *vec;
-    CSR_BuildVecByMat(A, &vec);
+    CSR_VecCreateByMat(A, &vec);
 
     for(i=0; i<vec->size; i++)
     {
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     }
 
     CSR_VEC *tmp;
-    CSR_BuildVecByMat(A, &tmp);
+    CSR_VecCreateByMat(A, &tmp);
 
     double vAv = GCGE_VecMatrixVec((void *)vec, (void *)A, (void *)vec, (void *)tmp, solver->ops);
     double vn = GCGE_VecNorm((void *)vec, solver->ops);
@@ -85,11 +85,11 @@ int main(int argc, char* argv[])
     CSR_MatFree(&B);
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecFree(multi_vec+i);
+        CSR_VecDestroy(multi_vec+i);
     }
     free(multi_vec); multi_vec = NULL;
-    CSR_VecFree(&vec);
-    CSR_VecFree(&tmp);
+    CSR_VecDestroy(&vec);
+    CSR_VecDestroy(&tmp);
 
     return 0;
 }

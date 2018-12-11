@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 
     //释放特征值、特征向量、KSP空间
     free(eval); eval = NULL;
-    slepc_solver->ops->FreeMultiVec((void***)(&evec), nev, slepc_solver->ops);
+    slepc_solver->ops->MultiVecDestroy((void***)(&evec), nev, slepc_solver->ops);
     if(strcmp(file_P, "fileinput") != 0)
     {
         KSPDestroy(&ksp);

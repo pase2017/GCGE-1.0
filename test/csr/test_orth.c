@@ -182,9 +182,9 @@ typedef struct ORTH_WS_ {
   *     for(current=start; current<(*end); ++current)
   *       norm = sqrt(theta[current])
   *       if theta[current] > orth_zero_tol
-  *           GCGE_VecScaleSubspace(1.0/norm, d_mat[current], lda);
+  *           GCGE_ArrayScaleInSubspace(1.0/norm, d_mat[current], lda);
   *       else
-  *           GCGE_VecCopySubspace(d_mat[end], d_mat[current], lda);
+  *           GCGE_ArrayCopyInSubspace(d_mat[end], d_mat[current], lda);
   *           current--;
   *           (*end)--;
   *       end
@@ -353,8 +353,8 @@ int main(int argc, char* argv[])
 
    //释放矩阵空间
    CSR_MatFree(&A);
-   ops->FreeMultiVec((void ***)&multi_vec, num_vec, ops);
-   ops->FreeMultiVec((void ***)&vec_tmp,   num_vec, ops);
+   ops->MultiVecDestroy((void ***)&multi_vec, num_vec, ops);
+   ops->MultiVecDestroy((void ***)&vec_tmp,   num_vec, ops);
 
    GCGE_OPS_Free(&ops);
 

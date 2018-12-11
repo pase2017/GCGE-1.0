@@ -139,8 +139,8 @@ int main(int argc, char* argv[])
     CSR_MatFree(&A);
     CSR_MatFree(&B);
 
-    ops->FreeMultiVec ((void ***)&multi_vec_x, num_vec_x, ops);
-    ops->FreeMultiVec ((void ***)&multi_vec_y, num_vec_y, ops);
+    ops->MultiVecDestroy ((void ***)&multi_vec_x, num_vec_x, ops);
+    ops->MultiVecDestroy ((void ***)&multi_vec_y, num_vec_y, ops);
 
     GCGE_OPS_Free(&ops);
 //    mwTerm();

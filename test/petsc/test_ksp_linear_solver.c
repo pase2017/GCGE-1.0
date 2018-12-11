@@ -107,9 +107,9 @@ int main(int argc, char* argv[])
     Vec x;
     Vec rhs;
     Vec tmp;
-    ops->BuildVecByMat((void*)A, (void*)(&x));
-    ops->BuildVecByMat((void*)A, (void*)(&rhs));
-    ops->BuildVecByMat((void*)A, (void*)(&tmp));
+    ops->VecCreateByMat((void*)A, (void*)(&x));
+    ops->VecCreateByMat((void*)A, (void*)(&rhs));
+    ops->VecCreateByMat((void*)A, (void*)(&tmp));
     ops->VecSetRandomValue((void*)x);
     ops->VecSetRandomValue((void*)rhs);
 
@@ -121,9 +121,9 @@ int main(int argc, char* argv[])
 
     GCGE_Printf("|| A * x - rhs ||_2: %e\n", norm);
 
-    ops->FreeVec((void*)(&x));
-    ops->FreeVec((void*)(&rhs));
-    ops->FreeVec((void*)(&tmp));
+    ops->VecDestroy((void*)(&x));
+    ops->VecDestroy((void*)(&rhs));
+    ops->VecDestroy((void*)(&tmp));
 
     GCGE_OPS_Free(&ops);
     //释放矩阵空间

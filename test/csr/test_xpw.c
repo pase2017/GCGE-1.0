@@ -58,14 +58,14 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<num_vec; i++)
     {
-        CSR_BuildVecByMat(A, multi_vec+i);
+        CSR_VecCreateByMat(A, multi_vec+i);
     }
 
     int num_vec_2 = 2;
     CSR_VEC **multi_vec_2 = (CSR_VEC**)malloc(num_vec*sizeof(CSR_VEC*));
     for(i=0; i<num_vec_2; i++)
     {
-        CSR_BuildVecByMat(A, multi_vec_2+i);
+        CSR_VecCreateByMat(A, multi_vec_2+i);
     }
 
     int j = 0;
@@ -127,12 +127,12 @@ int main(int argc, char* argv[])
     CSR_MatFree(&B);
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecFree(multi_vec+i);
+        CSR_VecDestroy(multi_vec+i);
     }
     free(multi_vec); multi_vec = NULL;
     for(i=0; i<num_vec_2; i++)
     {
-        CSR_VecFree(multi_vec_2+i);
+        CSR_VecDestroy(multi_vec_2+i);
     }
     free(multi_vec_2); multi_vec_2 = NULL;
 
