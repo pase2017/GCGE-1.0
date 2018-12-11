@@ -26,11 +26,10 @@ GCGE_DOUBLE GCGE_VecMatrixVec(void *a, void *Matrix, void *b, void *temp, GCGE_O
 GCGE_DOUBLE GCGE_VecNorm(void *x, GCGE_OPS *ops);
 
 //子空间线性代数操作
-GCGE_DOUBLE GCGE_VecDotVecSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT n);
-GCGE_DOUBLE GCGE_VecNormSubspace(GCGE_DOUBLE *a, GCGE_INT n);
-void GCGE_VecAXPBYSubspace(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, 
-        GCGE_INT n);
-void GCGE_VecCopySubspace(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT n);
-void GCGE_VecScaleSubspace(GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT n);
-
+GCGE_DOUBLE GCGE_ArrayDotArrayInSubspace(GCGE_DOUBLE *a, GCGE_DOUBLE *b, GCGE_INT length);
+GCGE_DOUBLE GCGE_ArrayNormInSubspace(GCGE_DOUBLE *a, GCGE_INT length);
+void GCGE_ArrayAXPBYInSubspace(GCGE_DOUBLE a, GCGE_DOUBLE *x, GCGE_DOUBLE b, GCGE_DOUBLE *y, 
+        GCGE_INT length);
+void GCGE_ArrayCopyInSubspace(GCGE_DOUBLE *x, GCGE_DOUBLE *y, GCGE_INT length);
+void GCGE_ArrayScaleInSubspace(GCGE_DOUBLE alpha, GCGE_DOUBLE *a, GCGE_INT length);
 #endif

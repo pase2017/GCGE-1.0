@@ -260,7 +260,7 @@ void GCGE_Orthogonal(void **V, GCGE_INT start, GCGE_INT *end,
                  *  (vi1, vi1) = (vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j, 
                  *                vi0 - \sum_{j=0}^{i-1} (vi0, v_j) * v_j)
                  *             = (vi0, vi0) - \sum_{j=0}^{i-1} (vi0, v_j)^2 */
-                d_tmp[current] = d_tmp[current] - GCGE_VecDotVecSubspace(d_tmp, d_tmp, current);
+                d_tmp[current] = d_tmp[current] - GCGE_ArrayDotArrayInSubspace(d_tmp, d_tmp, current);
                 // ratio = vout / vin
                 vout = sqrt(d_tmp[current]);
                 ratio = vout/vin;
@@ -601,9 +601,9 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT s
                 {
                     //修正的Gram-Schmidt正交化方法
                     //计算ip = (v_idx, v_current)
-                    ip = GCGE_VecDotVecSubspace(V+idx*ldV, V+current*ldV, nrows);
+                    ip = GCGE_ArrayDotArrayInSubspace(V+idx*ldV, V+current*ldV, nrows);
                     //计算v_current = v_current - ip * v_idx
-                    GCGE_VecAXPBYSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
+                    GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, nrows);
                 }
                 // 计算当前向量的范数
                 vout = GCGE_VecNormSubspace(V+current*ldV, nrows);
@@ -667,9 +667,9 @@ void GCGE_OrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT start, GCGE_INT *
                 {
                     //修正的Gram-Schmidt正交化方法
                     //计算ip = (v_idx, v_current)
-                    ip = GCGE_VecDotVecSubspace(V+idx*ldV, V+current*ldV, ldV);
+                    ip = GCGE_ArrayDotArrayInSubspace(V+idx*ldV, V+current*ldV, ldV);
                     //计算v_current = v_current - ip * v_idx
-                    GCGE_VecAXPBYSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
+                    GCGE_ArrayAXPBYInSubspace(-ip, V+idx*ldV, 1.0, V+current*ldV, ldV);
                 }
                 // 计算当前向量的范数
                 vout = GCGE_VecNormSubspace(V+current*ldV, ldV);
@@ -1529,7 +1529,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
             for(current_V2 = start; current_V2 < *end; current_V2++)
             {
                 if(fabs(d_tmp[current_V2-start]) > 10.0*orth_zero_tol)
-                     GCGE_VecAXPBYSubspace(-d_tmp[current_V2-start], V+current*ldV,
+                     GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2-start], V+current*ldV,
                         1.0, V+current_V2*ldV, nrows);
             }
         }
@@ -1551,7 +1551,7 @@ void GCGE_BOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_INT 
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
-                        GCGE_VecAXPBYSubspace(-d_tmp[current_V2 - current]/norm, 
+                        GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2 - current]/norm, 
                             V+current*ldV, 1.0, V+current_V2*ldV, nrows);
                 }
             }
@@ -1680,7 +1680,7 @@ void GCGE_SCBOrthogonalSubspace(double *V, GCGE_INT ldV, GCGE_INT nrows, GCGE_IN
                 for(current_V2=current+1; current_V2 < *end; current_V2++)
                 {
                     if(fabs(d_tmp[current_V2 - current]/norm) > 10.0*orth_zero_tol)
-                        GCGE_VecAXPBYSubspace(-d_tmp[current_V2 - current]/norm, 
+                        GCGE_ArrayAXPBYInSubspace(-d_tmp[current_V2 - current]/norm, 
                             V+current*ldV, 1.0, V+current_V2*ldV, nrows);
                 }
             }
