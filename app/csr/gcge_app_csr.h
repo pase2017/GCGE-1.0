@@ -59,10 +59,10 @@ void CSR_VecAxpby(double a, CSR_VEC *x, double b, CSR_VEC *y);
 //计算向量内积，如果计算向量范数，就先计算内积，再开平方
 void CSR_VecInnerProd(CSR_VEC *x, CSR_VEC *y, double *xTy);
 //由已给矩阵创建向量
-void CSR_VecCreateByMat(CSR_MAT *mat, CSR_VEC **vec);
+void CSR_VecCreateByMat(CSR_VEC **vec, CSR_MAT *mat);
 //由已给向量创建向量
-void CSR_VecCreateByVec(CSR_VEC *s_vec, CSR_VEC **d_vec);
-void CSR_MultiVecCreateByMat(CSR_MAT *mat, CSR_VEC ***vec, int nev);
+void CSR_VecCreateByVec(CSR_VEC **d_vec, CSR_VEC *s_vec);
+void CSR_MultiVecCreateByMat(CSR_VEC ***vec, int nev, CSR_MAT *mat);
 //释放向量组空间
 void CSR_VecDestroy(CSR_VEC **vec);
 void CSR_MultiVecDestroy(CSR_VEC ***vec, int n);

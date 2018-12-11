@@ -59,33 +59,33 @@ void GCGE_Default_RestoreVecForMultiVec(void **V, GCGE_INT j, void **x)
     V[j] = *x;
 }
 
-void GCGE_Default_MultiVecCreateByVec(void *vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByVec(void ***multi_vec, GCGE_INT n_vec, void *vec, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->VecCreateByVec(vec, (*multi_vec)+i);
+        ops->VecCreateByVec((*multi_vec)+i, vec);
     }
 }
 
-void GCGE_Default_MultiVecCreateByMat(void *mat, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByMat(void ***multi_vec, GCGE_INT n_vec, void *mat, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->VecCreateByMat(mat, (*multi_vec)+i);
+        ops->VecCreateByMat((*multi_vec)+i, mat);
     }
 }
 
-void GCGE_Default_MultiVecCreateByMultiVec(void **init_vec, void ***multi_vec, GCGE_INT n_vec, GCGE_OPS *ops)
+void GCGE_Default_MultiVecCreateByMultiVec(void ***multi_vec, GCGE_INT n_vec, void **init_vec, GCGE_OPS *ops)
 {
     GCGE_INT i = 0;
     *multi_vec = (void**)malloc(n_vec*sizeof(void*));
     for(i=0; i<n_vec; i++)
     {
-        ops->VecCreateByVec(init_vec[0], (*multi_vec)+i);
+        ops->VecCreateByVec((*multi_vec)+i, init_vec[0]);
     }
 }
 

@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     //CSR_PrintMat(B);
 
     CSR_VEC *rhs;
-    CSR_VecCreateByMat(A, &rhs);
+    CSR_VecCreateByMat(&rhs, A);
 
     srand( (unsigned)time( NULL ) ); 
     int i;
@@ -54,12 +54,12 @@ int main(int argc, char* argv[])
     }
 
     CSR_VEC *x;
-    CSR_VecCreateByMat(A, &x);
+    CSR_VecCreateByMat(&x, A);
 
     CSR_VEC **vec_tmp = (CSR_VEC**)malloc(4*sizeof(CSR_VEC*));
     for(i=0; i<4; i++)
     {
-        CSR_VecCreateByMat(A, vec_tmp+i);
+        CSR_VecCreateByMat(vec_tmp+i, A);
     }
 
     //printf ( "Ax=rhs\n" );

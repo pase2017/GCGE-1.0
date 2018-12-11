@@ -37,13 +37,13 @@ typedef struct PASE_OPS_ {
     void (*VecAxpby)                (GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y); /* y = ax+by */
     void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *xTy);
     void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *xTy);
-    void (*VecCreateByVec)           (void *src_vec, void **des_vec);
-    void (*VecCreateByMat)           (void *mat, void **vec);
+    void (*VecCreateByVec)           (void **des_vec, void *src_vec);
+    void (*VecCreateByMat)           (void **vec, void *mat);
     void (*VecDestroy)                 (void **vec);
 
-    void (*MultiVecCreateByVec)      (void *vec, void ***multi_vec, GCGE_INT n_vec, 
+    void (*MultiVecCreateByVec)      (void ***multi_vec, GCGE_INT n_vec, void *vec, 
                                      struct PASE_OPS_ *ops);
-    void (*MultiVecCreateByMat)      (void *mat, void ***multi_vec, GCGE_INT n_vec, 
+    void (*MultiVecCreateByMat)      (void ***multi_vec, GCGE_INT n_vec, void *mat, 
                                      struct PASE_OPS_ *ops);
     void (*MultiVecCreateByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
                                      struct PASE_OPS_ *ops);

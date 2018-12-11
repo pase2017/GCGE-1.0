@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     //这里为什么不一次性生成 CSR_MultiVecCreateByMat?
     for(i=0; i<nev; i++)
     {
-        CSR_VecCreateByMat(A, evec+i);
+        CSR_VecCreateByMat(evec+i, A);
     }
 
     GCGE_SOLVER_SetMatA(solver, A);

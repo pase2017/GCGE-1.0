@@ -312,8 +312,8 @@ int main(int argc, char* argv[])
    GCGE_CSR_SetOps(ops);
    GCGE_OPS_Setup(ops);
 
-   ops->MultiVecCreateByMat((void *)A, (void ***)&multi_vec, num_vec, ops);
-   ops->MultiVecCreateByMat((void *)A, (void ***)&vec_tmp,   num_vec, ops);
+   ops->MultiVecCreateByMat((void ***)&multi_vec, num_vec, (void *)A, ops);
+   ops->MultiVecCreateByMat((void ***)&vec_tmp,   num_vec, (void *)A, ops);
 
    ops->Orthogonalize = GCGE_Default_Orthogonalize;
    ORTH_WS workspace = {1e-3, 3, 1e-8, (void **)vec_tmp, array_tmp, 0};

@@ -58,14 +58,14 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecCreateByMat(A, multi_vec+i);
+        CSR_VecCreateByMat(multi_vec+i, A);
     }
 
     int num_vec_2 = 2;
     CSR_VEC **multi_vec_2 = (CSR_VEC**)malloc(num_vec*sizeof(CSR_VEC*));
     for(i=0; i<num_vec_2; i++)
     {
-        CSR_VecCreateByMat(A, multi_vec_2+i);
+        CSR_VecCreateByMat(multi_vec_2+i, A);
     }
 
     int j = 0;

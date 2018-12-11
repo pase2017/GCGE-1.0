@@ -190,11 +190,11 @@ int main(int argc, char* argv[])
 //   hypre_ParCSRMatrixGetLocalRange(parcsr_A, &rs, &re, &cs, &ce);
 //   printf ( "%d, %d, %d, %d\n", rs, re, cs, ce );
 
-   ops_hypre->VecCreateByMat((void *)parcsr_A, (void **)(vec));
-//   ops_hypre->VecCreateByVec((void *)par_x, (void **)(vec));
+   ops_hypre->VecCreateByMat((void **)(vec), (void *)parcsr_A);
+//   ops_hypre->VecCreateByVec((void **)(vec), (void *)par_x);
 
-   ops_hypre->VecCreateByVec((void *)(vec[0]), (void **)(vec+1));
-//   ops_hypre->VecCreateByVec((void *)par_x, (void **)(vec+1));
+   ops_hypre->VecCreateByVec((void **)(vec+1), (void *)(vec[0]));
+//   ops_hypre->VecCreateByVec((void **)(vec+1), (void *)par_x);
 
    ops_hypre->VecDestroy((void **)(vec));
    ops_hypre->VecDestroy((void **)(vec+1));

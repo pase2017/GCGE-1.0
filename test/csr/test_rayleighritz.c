@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<num_vec; i++)
     {
-        CSR_VecCreateByMat(A, multi_vec+i);
+        CSR_VecCreateByMat(multi_vec+i, A);
     }
 //    CSR_VEC *vec;
 //    CSR_VecCreateByMat(A, &vec);
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     */
 
     CSR_VEC **multi_vec_tmp;
-    solver->ops->MultiVecCreateByMat((void *)A, (void ***)&multi_vec_tmp, 3, solver->ops);
+    solver->ops->MultiVecCreateByMat((void ***)&multi_vec_tmp, 3, (void *)A, solver->ops);
 
     double vTAw[9] = {-1, -1, -1, -1, -1, -1, -1, -1, -1};
 

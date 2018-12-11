@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
     int i = 0; 
     for(i=0; i<nev; i++)
     {
-        CSR_VecCreateByMat(A, evec+i);
+        CSR_VecCreateByMat(evec+i, A);
     }
 
     //------------------- dsyevx -----------------------

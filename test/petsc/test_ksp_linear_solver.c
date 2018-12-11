@@ -107,9 +107,9 @@ int main(int argc, char* argv[])
     Vec x;
     Vec rhs;
     Vec tmp;
-    ops->VecCreateByMat((void*)A, (void*)(&x));
-    ops->VecCreateByMat((void*)A, (void*)(&rhs));
-    ops->VecCreateByMat((void*)A, (void*)(&tmp));
+    ops->VecCreateByMat((void*)(&x), (void*)A);
+    ops->VecCreateByMat((void*)(&rhs), (void*)A);
+    ops->VecCreateByMat((void*)(&tmp), (void*)A);
     ops->VecSetRandomValue((void*)x);
     ops->VecSetRandomValue((void*)rhs);
 

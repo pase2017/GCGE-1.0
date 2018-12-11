@@ -396,7 +396,7 @@ void CSR_VecCreateByMat(CSR_VEC **vec, CSR_MAT *mat)
 }
 
 //由已给矩阵创建向量组
-void CSR_MultiVecCreateByMat(CSR_VEC ***vec, CSR_MAT *mat, int nev)
+void CSR_MultiVecCreateByMat(CSR_VEC ***vec, int nev, CSR_MAT *mat)
 {
     int size = mat->N_Rows;
     int i = 0;
