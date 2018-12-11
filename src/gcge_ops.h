@@ -33,9 +33,9 @@ typedef struct GCGE_OPS_ {
     void (*VecAxpby)                (GCGE_DOUBLE a, void *x, GCGE_DOUBLE b, void *y); /* y = ax+by */
     void (*VecInnerProd)            (void *x, void *y, GCGE_DOUBLE *xTy);
     void (*VecLocalInnerProd)       (void *x, void *y, GCGE_DOUBLE *xTy);
-    void (*VecCreateByVec)           (void *src_vec, void **des_vec);
-    void (*VecCreateByMat)           (void *mat, void **vec);
-    void (*VecDestroy)                 (void **vec);
+    void (*VecCreateByVec)          (void *src_vec, void **des_vec);
+    void (*VecCreateByMat)          (void *mat, void **vec);
+    void (*VecDestroy)              (void **vec);
 
 
     /* option */
@@ -45,7 +45,7 @@ typedef struct GCGE_OPS_ {
 
     /* DenseMatCreate, DenseMatDestroy should in function Orthonormalization 
      * Add struct member name void *orth_workspace to save tmp variables */
-    void (*Orthonormalization)              (void **V, GCGE_INT start, GCGE_INT *end, 
+    void (*Orthonormalization)      (void **V, GCGE_INT start, GCGE_INT *end, 
                                      void *B, GCGE_DOUBLE orth_zero_tol, 
                                      void **work); /* TODO */
     void (*DenseMatCreate)          (void **densemat, GCGE_INT nrows, GCGE_INT ncols);
@@ -55,12 +55,12 @@ typedef struct GCGE_OPS_ {
     /* DEEP */
 
     void (*MultiVecCreateByVec)      (void *vec, void ***multi_vec, GCGE_INT n_vec, 
-                                     struct GCGE_OPS_ *ops);
+                                      struct GCGE_OPS_ *ops);
     void (*MultiVecCreateByMat)      (void *mat, void ***multi_vec, GCGE_INT n_vec, 
-                                     struct GCGE_OPS_ *ops);
+                                      struct GCGE_OPS_ *ops);
     void (*MultiVecCreateByMultiVec) (void **init_vec, void ***multi_vec, GCGE_INT n_vec, 
-                                     struct GCGE_OPS_ *ops);
-    void (*MultiVecDestroy)            (void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
+                                      struct GCGE_OPS_ *ops);
+    void (*MultiVecDestroy)          (void ***MultiVec, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
 
     /* TODO */
     void (*MultiVecSetRandomValue)  (void **multi_vec, GCGE_INT start, GCGE_INT n_vec, struct GCGE_OPS_ *ops);
@@ -82,7 +82,7 @@ typedef struct GCGE_OPS_ {
     /* TODO kernal function should use this op to get j-th vector */
     void (*GetVecFromMultiVec)      (void **V, GCGE_INT j, void **x);
     void (*RestoreVecForMultiVec)   (void **V, GCGE_INT j, void **x);
-    void (*SetDirichletBoundary)(void**Vecs, GCGE_INT nev, void* A, void* B);
+    void (*SetDirichletBoundary)    (void**Vecs, GCGE_INT nev, void* A, void* B);
 
 
     /* DEEP option */
