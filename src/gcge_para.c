@@ -92,7 +92,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     GCGE_STATISTIC_PARA_Create(&((*para)->stat_para));
 
-    (*para)->opt_rr_eig_partly = 1;
+    (*para)->opt_rr_eig_partly = 0;
     (*para)->opt_bcast = 1;
     (*para)->opt_allgatherv = 0;
     return;
