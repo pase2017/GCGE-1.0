@@ -1804,7 +1804,7 @@ void GCGE_BlockOrthonormalizationInSubspace(GCGE_DOUBLE *V, GCGE_INT ldV,
         else
         {
             GCGE_OrthonormalizationInSubspace(V+start*ldV, ldV, nrows, 0, &orth_size, 
-                NULL, -1, orth_para);
+                NULL, -1, orth_para, ops);
         }
         //更新下一批次的start
         start += orth_size;
