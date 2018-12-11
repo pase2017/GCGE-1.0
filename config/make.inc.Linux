@@ -1,5 +1,5 @@
 ############################################################
-INSTALLDIR   = ${HOME}/GCGE-2.0
+INSTALLDIR   = ${HOME}/GCGE-3.0
 
 ############################################################
 # DEFINE libs and dirs of include of OEM package
@@ -70,7 +70,7 @@ GCGELIB       = $(GCGEHOME)/lib
 GCGESRC       = $(GCGEHOME)/src
 
 ############################################################
-version       = 2.0
+version       = 3.0
 
 ############################################################
 # DEFINE libs and dirs of include

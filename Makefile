@@ -110,11 +110,14 @@ cleanall: clean
 	@$(RM) $(RMFLAGS) $(GCGEHOME)/blaslapack/*.a
 
 install:
-	@echo "Create $(INSTALLDIR)/include and $(INSTALLDIR)/lib"
+	@echo "Create $(INSTALLDIR)"
 	@mkdir -p  $(INSTALLDIR)
 	@mkdir -p  $(INSTALLDIR)/include
 	@mkdir -p  $(INSTALLDIR)/lib
+	@mkdir -p  $(INSTALLDIR)/share
+	@mkdir -p  $(INSTALLDIR)/share/gcge
 	@$(CP) -fR $(GCGEINC)/*.h $(INSTALLDIR)/include
+	@$(CP) -fR $(GCGEHOME)/config/make.inc $(INSTALLDIR)/share/gcge
 	@if [ -f $(LIBGCGE) ];      then $(AR) -x  $(LIBGCGE)     ; fi
 	@if [ -f $(LIBGCGECSR) ];   then $(AR) -x  $(LIBGCGECSR)  ; fi
 	@if [ -f $(LIBGCGEHYPRE) ]; then $(AR) -x  $(LIBGCGEHYPRE); fi
@@ -127,8 +130,10 @@ install:
 	@$(RANLIB) libGCGE-$(version).a
 	@$(RM) $(RMFLAGS) *.o
 	@$(CP) -fR libGCGE-$(version).a $(INSTALLDIR)/lib
-	@echo "Install complete."
 	@echo "======================================="
+	@find $(INSTALLDIR)
+	@echo "======================================="
+	@echo "Install complete."
 
 help:
 	@echo " "

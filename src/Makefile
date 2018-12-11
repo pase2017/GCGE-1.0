@@ -15,8 +15,8 @@ HEADERS = gcge_utilities.h gcge_statistics.h gcge_para.h gcge_ops.h \
           gcge_eigsol.h \
           gcge_solver.h \
           gcge.h
-#          gcge_config.h \
 OBJS    = ${FILES:.c=.o}
+#          gcge_config.h \
 
 INC     = 
 LIB     = $(LIBGCGE)

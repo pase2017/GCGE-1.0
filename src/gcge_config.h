@@ -23,6 +23,6 @@
 #define GCGE_DOUBLE double
 #define GCGE_INT int
 #define GET_PART_TIME 1
-#define GCGE_USE_MPI 0
+#define GCGE_USE_MPI 1
 
 #endif
