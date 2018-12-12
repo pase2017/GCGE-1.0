@@ -363,7 +363,8 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
      //分批计算特征值的个数: 默认情况下设置为求解特征值的个数
     if(para->block_size == 0)
     {
-        para->block_size = (nev/5 > 1)?(nev/5):nev;
+        para->block_size = (nev < 10)?nev:10;
+        para->block_size = (nev/5 > para->block_size)?(nev/5):(para->block_size);
 	//para->block_size = nev;
     }
     else if(para->block_size > nev)
