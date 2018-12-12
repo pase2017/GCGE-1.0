@@ -496,3 +496,8 @@ TODO:
 1. CG和BCG不依赖于GCGE_WORKSPACE
    修改 gcge_cg.c gcge_cg.h gcge_xpw.c
 2. 修改 test_slepc_solver.c 如果不给输入矩阵，就算差分矩阵标准特征值问题
+
+2018.12.12 zhangning
+TODO
+1. 子空间矩阵计算特征值时，往前考虑重数，但此时矩阵没有把重数的部分构造出来，而是在判断重数之后多构造的。
+   应该在构造矩阵前先重新判断当前的重数，即把rr_eigen里面判断重数的部分挪到构造矩阵之前
