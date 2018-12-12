@@ -92,7 +92,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
     GCGE_STATISTIC_PARA_Create(&((*para)->stat_para));
 
-    (*para)->opt_rr_eig_partly = 0;
+    (*para)->opt_rr_eig_partly = 1;
     (*para)->opt_bcast = 1;
     (*para)->opt_allgatherv = 0;
     return;
@@ -363,8 +363,12 @@ void GCGE_PARA_Setup(GCGE_PARA *para)
      //分批计算特征值的个数: 默认情况下设置为求解特征值的个数
     if(para->block_size == 0)
     {
-        //para->block_size = (nev/5 > 1)?(nev/5):nev;
-	para->block_size = nev;
+        para->block_size = (nev/5 > 1)?(nev/5):nev;
+	//para->block_size = nev;
+    }
+    else if(para->block_size > nev)
+    {
+        para->block_size = nev;
     }
     if(para->orth_para->x_orth_block_size == 0)
     {
