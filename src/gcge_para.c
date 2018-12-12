@@ -44,7 +44,7 @@ void GCGE_PARA_Create(GCGE_PARA **para)
 
      //正交化参数
     (*para)->orth_para = (GCGE_ORTH_PARA *)malloc(sizeof(GCGE_PARA));
-    (*para)->orth_para->orth_zero_tol    = 1e-16;
+    (*para)->orth_para->orth_zero_tol    = 1e-14;//对1089维有限元矩阵, nev=20时, 需要这个参数设为1e-14, 否则正交化后的结果会不正交
     (*para)->orth_para->reorth_tol       = 0.75;
     (*para)->orth_para->scbgs_reorth_tol = 1e-16;
     (*para)->orth_para->max_reorth_time  = 3;
